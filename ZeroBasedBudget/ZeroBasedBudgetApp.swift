@@ -10,23 +10,37 @@ import SwiftData
 
 @main
 struct ZeroBasedBudgetApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    let container: ModelContainer
 
+    init() {
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            // Configure schema with all models
+            let schema = Schema([
+                Transaction.self,
+                BudgetCategory.self,
+                MonthlyBudget.self
+            ])
+
+            // Configure ModelContainer with local-only storage (NO cloud sync)
+            let configuration = ModelConfiguration(
+                schema: schema,
+                cloudKitDatabase: .none  // Explicitly disables cloud sync
+            )
+
+            // Initialize ModelContainer
+            container = try ModelContainer(
+                for: schema,
+                configurations: configuration
+            )
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("Failed to configure SwiftData container: \(error)")
         }
-    }()
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(container)
     }
 }
