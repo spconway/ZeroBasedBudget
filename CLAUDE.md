@@ -19,11 +19,11 @@ iOS budget tracking app built with SwiftUI and SwiftData. Migrates Excel-based z
 
 **Detailed Tasks**:
 - [x] Create CLAUDE.md with full roadmap
-- [ ] Read and understand Docs/TechnicalSpec.md thoroughly
-- [ ] Create Models/ folder and SwiftData model files:
-  - [ ] BudgetCategory.swift (with @Model, @Attribute(.unique), @Relationship)
-  - [ ] Transaction.swift (with @Model, #Index macros, TransactionType enum)
-  - [ ] MonthlyBudget.swift (with @Model, computed properties)
+- [x] Read and understand Docs/TechnicalSpec.md thoroughly
+- [x] Create Models/ folder and SwiftData model files:
+  - [x] BudgetCategory.swift (with @Model, @Attribute(.unique), @Relationship)
+  - [x] Transaction.swift (with @Model, #Index macros, TransactionType enum)
+  - [x] MonthlyBudget.swift (with @Model, computed properties)
 - [ ] Update ZeroBasedBudgetApp.swift:
   - [ ] Configure ModelContainer with cloudKitDatabase: .none
   - [ ] Add proper schema configuration
@@ -38,9 +38,12 @@ iOS budget tracking app built with SwiftUI and SwiftData. Migrates Excel-based z
 
 **Files Created/Modified**:
 - CLAUDE.md (created)
+- ZeroBasedBudget/Models/BudgetCategory.swift (created)
+- ZeroBasedBudget/Models/Transaction.swift (created)
+- ZeroBasedBudget/Models/MonthlyBudget.swift (created)
 
 **Git Commits**:
-(Track all commits here with messages and timestamps)
+- 78f5c21 - docs: initialize CLAUDE.md with project roadmap and Phase 1 plan (2025-11-01)
 
 **Critical Requirements for Phase 1**:
 - ❗ Use Decimal type for all monetary fields
