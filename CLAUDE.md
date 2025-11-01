@@ -28,11 +28,11 @@ iOS budget tracking app built with SwiftUI and SwiftData. Migrates Excel-based z
   - [x] Configure ModelContainer with cloudKitDatabase: .none
   - [x] Add proper schema configuration
   - [x] Add .modelContainer modifier
-- [ ] Create Views/ folder and stub view files:
-  - [ ] Update ContentView.swift with TabView (3 tabs)
-  - [ ] BudgetPlanningView.swift (placeholder with NavigationStack)
-  - [ ] TransactionLogView.swift (placeholder with NavigationStack)
-  - [ ] BudgetAnalysisView.swift (placeholder with NavigationStack)
+- [x] Create Views/ folder and stub view files:
+  - [x] Update ContentView.swift with TabView (3 tabs)
+  - [x] BudgetPlanningView.swift (placeholder with NavigationStack)
+  - [x] TransactionLogView.swift (placeholder with NavigationStack)
+  - [x] BudgetAnalysisView.swift (placeholder with NavigationStack)
 - [ ] Verify app builds and runs successfully
 - [ ] Update this section upon completion
 
@@ -42,10 +42,15 @@ iOS budget tracking app built with SwiftUI and SwiftData. Migrates Excel-based z
 - ZeroBasedBudget/Models/Transaction.swift (created)
 - ZeroBasedBudget/Models/MonthlyBudget.swift (created)
 - ZeroBasedBudget/ZeroBasedBudgetApp.swift (modified)
+- ZeroBasedBudget/ContentView.swift (modified)
+- ZeroBasedBudget/Views/BudgetPlanningView.swift (created)
+- ZeroBasedBudget/Views/TransactionLogView.swift (created)
+- ZeroBasedBudget/Views/BudgetAnalysisView.swift (created)
 
 **Git Commits**:
 - 78f5c21 - docs: initialize CLAUDE.md with project roadmap and Phase 1 plan (2025-11-01)
 - 4e411b8 - feat: add SwiftData models (BudgetCategory, Transaction, MonthlyBudget) (2025-11-01)
+- be10d68 - feat: configure SwiftData with local-only storage (no cloud sync) (2025-11-01)
 
 **Critical Requirements for Phase 1**:
 - ❗ Use Decimal type for all monetary fields
