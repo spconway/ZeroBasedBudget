@@ -262,13 +262,13 @@ struct BudgetPlanningView: View {
             }
             .navigationTitle("Budget Planning")
             .sheet(isPresented: $showingAddCategory) {
-                AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount in
-                    saveNewCategory(name: name, amount: amount, type: newCategoryType)
+                AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDate in
+                    saveNewCategory(name: name, amount: amount, type: newCategoryType, dueDate: dueDate)
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, onSave: { updatedAmount in
-                    updateCategory(category, amount: updatedAmount)
+                EditCategorySheet(category: category, onSave: { updatedAmount, updatedDueDate in
+                    updateCategory(category, amount: updatedAmount, dueDate: updatedDueDate)
                 })
             }
         }
@@ -281,20 +281,22 @@ struct BudgetPlanningView: View {
         showingAddCategory = true
     }
 
-    private func saveNewCategory(name: String, amount: Decimal, type: String) {
+    private func saveNewCategory(name: String, amount: Decimal, type: String, dueDate: Date?) {
         let category = BudgetCategory(
             name: name,
             budgetedAmount: amount,
             categoryType: type,
-            colorHex: generateRandomColor()
+            colorHex: generateRandomColor(),
+            dueDate: dueDate
         )
         modelContext.insert(category)
         try? modelContext.save()
         showingAddCategory = false
     }
 
-    private func updateCategory(_ category: BudgetCategory, amount: Decimal) {
+    private func updateCategory(_ category: BudgetCategory, amount: Decimal, dueDate: Date?) {
         category.budgetedAmount = amount
+        category.dueDate = dueDate
         try? modelContext.save()
         editingCategory = nil
     }
@@ -329,6 +331,13 @@ struct CategoryRow: View {
     let category: BudgetCategory
     let onEdit: () -> Void
 
+    private var dueDateText: String? {
+        guard let dueDate = category.dueDate else { return nil }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: dueDate)
+    }
+
     var body: some View {
         Button(action: onEdit) {
             HStack {
@@ -336,8 +345,16 @@ struct CategoryRow: View {
                     .fill(Color(hex: category.colorHex))
                     .frame(width: 12, height: 12)
 
-                Text(category.name)
-                    .foregroundStyle(.primary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(category.name)
+                        .foregroundStyle(.primary)
+
+                    if let dueDateText = dueDateText {
+                        Text(dueDateText)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 Spacer()
 
@@ -356,10 +373,12 @@ struct CategoryRow: View {
 struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let categoryType: String
-    let onSave: (String, Decimal) -> Void
+    let onSave: (String, Decimal, Date?) -> Void
 
     @State private var categoryName: String = ""
     @State private var budgetedAmount: Decimal = 0
+    @State private var hasDueDate: Bool = false
+    @State private var dueDate: Date = Date()
 
     var body: some View {
         NavigationStack {
@@ -371,6 +390,14 @@ struct AddCategorySheet: View {
                         TextField("Amount", value: $budgetedAmount, format: .currency(code: "USD"))
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
+                    }
+                }
+
+                Section(header: Text("Due Date (Optional)")) {
+                    Toggle("Set Due Date", isOn: $hasDueDate)
+
+                    if hasDueDate {
+                        DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
                     }
                 }
 
@@ -390,7 +417,7 @@ struct AddCategorySheet: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(categoryName, budgetedAmount)
+                        onSave(categoryName, budgetedAmount, hasDueDate ? dueDate : nil)
                         dismiss()
                     }
                     .disabled(categoryName.trimmingCharacters(in: .whitespaces).isEmpty || budgetedAmount <= 0)
@@ -404,14 +431,18 @@ struct AddCategorySheet: View {
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let category: BudgetCategory
-    let onSave: (Decimal) -> Void
+    let onSave: (Decimal, Date?) -> Void
 
     @State private var budgetedAmount: Decimal
+    @State private var hasDueDate: Bool
+    @State private var dueDate: Date
 
-    init(category: BudgetCategory, onSave: @escaping (Decimal) -> Void) {
+    init(category: BudgetCategory, onSave: @escaping (Decimal, Date?) -> Void) {
         self.category = category
         self.onSave = onSave
         _budgetedAmount = State(initialValue: category.budgetedAmount)
+        _hasDueDate = State(initialValue: category.dueDate != nil)
+        _dueDate = State(initialValue: category.dueDate ?? Date())
     }
 
     var body: some View {
@@ -434,6 +465,14 @@ struct EditCategorySheet: View {
                             .keyboardType(.decimalPad)
                     }
                 }
+
+                Section(header: Text("Due Date (Optional)")) {
+                    Toggle("Set Due Date", isOn: $hasDueDate)
+
+                    if hasDueDate {
+                        DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                    }
+                }
             }
             .navigationTitle("Edit Category")
             .navigationBarTitleDisplayMode(.inline)
@@ -446,7 +485,7 @@ struct EditCategorySheet: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(budgetedAmount)
+                        onSave(budgetedAmount, hasDueDate ? dueDate : nil)
                     }
                     .disabled(budgetedAmount <= 0)
                 }

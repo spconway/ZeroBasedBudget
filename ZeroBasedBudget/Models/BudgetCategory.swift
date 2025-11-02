@@ -15,14 +15,16 @@ final class BudgetCategory {
     var budgetedAmount: Decimal
     var categoryType: String  // "Fixed", "Variable", "Quarterly", "Income"
     var colorHex: String
+    var dueDate: Date?  // Optional due date for expense tracking
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.category)
     var transactions: [Transaction] = []
 
-    init(name: String, budgetedAmount: Decimal, categoryType: String, colorHex: String) {
+    init(name: String, budgetedAmount: Decimal, categoryType: String, colorHex: String, dueDate: Date? = nil) {
         self.name = name
         self.budgetedAmount = budgetedAmount
         self.categoryType = categoryType
         self.colorHex = colorHex
+        self.dueDate = dueDate
     }
 }
