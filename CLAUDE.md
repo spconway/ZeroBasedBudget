@@ -82,15 +82,15 @@ ZeroBasedBudget/
 - [x] Update "Salary" label to "Annual Salary"
 - [x] Add note explaining this is annual salary for reference
 
-**Enhancement 1.2: Add "Current Available" Section**
-- [ ] Create new section at top of Budget Planning View titled "Current Available"
-- [ ] Add "Accounts" input field (Decimal type)
+**Enhancement 1.2: Add "Current Available" Section** ✅
+- [x] Create new section at top of Budget Planning View titled "Current Available"
+- [x] Add "Accounts" input field (Decimal type)
   - Purpose: Total of all available money ready to be assigned
   - User enters their current checking/savings balance
-- [ ] Add "Total" read-only field
+- [x] Add "Total" read-only field
   - Shows total available money across all accounts
   - Calculate: Sum of all account inputs
-- [ ] This represents the "ready to spend" money that should be allocated
+- [x] This represents the "ready to spend" money that should be allocated
 
 **Enhancement 1.3: Make All Expenses Editable**
 - [ ] Verify BudgetPlanningView supports editing for fixed expenses
@@ -145,19 +145,19 @@ ZeroBasedBudget/
 ## Active Development
 
 **Current Focus**: Priority 1 - Core Budgeting Improvements
-**Status**: Enhancement 1.1 complete, ready to begin Enhancement 1.2
+**Status**: Enhancement 1.2 complete, ready to begin Enhancement 1.3
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-01] ✅ Enhancement 1.1 complete - refactored income section to yearly display
-2. [2025-11-01] ✅ MVP complete - all 6 phases delivered
-3. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
-4. [2025-11-01] ✅ Phase 5 complete - Budget Analysis View with Swift Charts
-5. [2025-11-01] ✅ Phase 4 complete - calculation utilities and verification
+1. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
+2. [2025-11-02] ✅ Enhancement 1.1 complete - refactored income section to yearly display
+3. [2025-11-01] ✅ MVP complete - all 6 phases delivered
+4. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
+5. [2025-11-01] ✅ Phase 5 complete - Budget Analysis View with Swift Charts
 
 **Active Decisions/Blockers**: None currently
 
 **Next Session Start Here**:
-Begin with Enhancement 1.2 - add "Current Available" section to Budget Planning View.
+Begin with Enhancement 1.3 - verify all expense types are editable in Budget Planning View.
 
 ## Git Commit Strategy
 
