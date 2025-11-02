@@ -109,11 +109,19 @@ ZeroBasedBudget/
 
 ### 🔄 Priority 2: Budget Tab Improvements
 
-**Enhancement 2.1: Add Month Indicator**
-- [ ] Add prominent month/year display at top of Budget Planning View
-- [ ] Format: "Budgeting for: [Month Year]" (e.g., "Budgeting for: November 2025")
-- [ ] Consider adding month navigation (prev/next arrows) if needed
-- [ ] Style should be clear and visible (possibly larger font, bold)
+**Enhancement 2.1: Add Month Indicator** ✅
+- [x] Add prominent month/year display at top of Budget Planning View
+- [x] Format: "Budgeting for: [Month Year]" (e.g., "Budgeting for: November 2025")
+- [x] Added month navigation with prev/next arrows
+- [x] Style is clear and visible (title2 font, bold, blue navigation arrows)
+
+**Implementation Notes:**
+- Month indicator displayed in dedicated section at top of form (BudgetPlanningView.swift:82-111)
+- Format: "Budgeting for: [Month Year]" using DateFormatter with "MMMM yyyy"
+- Navigation: Chevron left/right buttons to change months
+- Style: Bold title2 font, clear background for visual separation
+- State management: selectedMonth (Date) defaults to current date
+- Month navigation uses Calendar.current.date for proper date arithmetic
 
 **Enhancement 2.2: Add Due Date to Expenses**
 - [ ] Add optional "Due Date" field to BudgetCategory model
@@ -153,19 +161,19 @@ ZeroBasedBudget/
 ## Active Development
 
 **Current Focus**: Priority 2 - Budget Tab Improvements
-**Status**: Priority 1 complete (all 3 enhancements), ready to begin Enhancement 2.1
+**Status**: Enhancement 2.1 complete, ready to begin Enhancement 2.2
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Priority 1 complete - Core Budgeting Improvements (Enhancements 1.1-1.3)
-2. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
-3. [2025-11-02] ✅ Enhancement 1.1 complete - refactored income section to yearly display
-4. [2025-11-01] ✅ MVP complete - all 6 phases delivered
-5. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
+1. [2025-11-02] ✅ Enhancement 2.1 complete - added month indicator with navigation
+2. [2025-11-02] ✅ Priority 1 complete - Core Budgeting Improvements (Enhancements 1.1-1.3)
+3. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
+4. [2025-11-02] ✅ Enhancement 1.1 complete - refactored income section to yearly display
+5. [2025-11-01] ✅ MVP complete - all 6 phases delivered
 
 **Active Decisions/Blockers**: None currently
 
 **Next Session Start Here**:
-Begin with Enhancement 2.1 - add month/year indicator to Budget Planning View.
+Begin with Enhancement 2.2 - add due date field to BudgetCategory model and display in budget list.
 
 ## Git Commit Strategy
 
