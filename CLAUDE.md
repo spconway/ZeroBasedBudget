@@ -201,23 +201,25 @@ The Budget Planning View must be completely refactored to follow YNAB-style meth
 
 **Rationale**: In YNAB-style budgeting, you don't budget expected income. You only budget money you currently have. Income is logged when received via transactions.
 
-**Enhancement 1.2: Create "Ready to Assign" Section**
-- [ ] Add new section at TOP of BudgetPlanningView titled "Ready to Assign"
-- [ ] Add "Starting Balance" input field (Decimal type)
+**Enhancement 1.2: Create "Ready to Assign" Section** ✅ COMPLETE
+- [x] Add new section at TOP of BudgetPlanningView titled "Ready to Assign"
+- [x] Add "Starting Balance" input field (Decimal type)
   - Purpose: User enters their current checking/savings account balances
-  - Label: "Current Account Balance"
   - This is money that exists RIGHT NOW
-- [ ] Add "Total Income (This Period)" read-only field
-  - Calculate: Sum of all income transactions for selected month
+- [x] Add "Total Income (This Period)" read-only field
+  - Calculate: Sum of all income transactions for selected month using BudgetCalculations
   - Shows money that arrived this period
-- [ ] Add "Total Assigned" read-only field
+- [x] Add "Total Assigned" read-only field
   - Calculate: Sum of all budgeted amounts across all categories
   - Shows how much money has been given jobs
-- [ ] Add "Ready to Assign" read-only field (PROMINENT)
+- [x] Add "Ready to Assign" read-only field (PROMINENT)
   - Calculate: (Starting Balance + Total Income) - Total Assigned
   - This is the money still available to assign to categories
-  - Color: Green if positive, Red if negative, Bold when = $0 ✅
+  - Color: Orange if positive, Green when = $0 ✅, Red if negative
   - Goal: This should be $0 (all money assigned)
+- [x] Add info button (ⓘ) with YNAB methodology explanation alert
+- [x] Add accessibility labels for VoiceOver support
+- [x] Add footer text explaining YNAB principle
 
 **Formula:**
 ```swift
@@ -341,25 +343,25 @@ let readyToAssign: Decimal = (startingBalance + totalIncome) - totalAssigned
 ## Active Development
 
 **Current Focus**: 🔥 CRITICAL - YNAB-Style Budget Refactor (Priority 1)
-**Status**: ✅ Enhancement 1.1 Complete - Ready for Enhancement 1.2 (Ready to Assign Section)
+**Status**: ✅ Enhancements 1.1 & 1.2 Complete - Ready for Enhancement 1.3 (Update Budget Summary)
 
 **Why This Is Critical:**
-The current implementation violates YNAB methodology by having users budget expected income rather than actual available money. This must be fixed before users adopt incorrect budgeting habits.
+The current implementation violated YNAB methodology by having users budget expected income rather than actual available money. Enhancements 1.1 and 1.2 have addressed the core issues. Now we need to add a summary section to help users see their budget status at a glance.
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Completed Enhancement 1.1 - Removed income section from BudgetPlanningView (YNAB refactor)
-2. [2025-11-02] 📚 Added comprehensive YNAB methodology documentation to CLAUDE.md
-3. [2025-11-02] ⚠️ Identified YNAB methodology violation in current implementation
-4. [2025-11-02] ✅ Completed post-MVP enhancements (month indicator, due dates, tap-to-edit)
-5. [2025-11-01] ✅ Completed MVP - all 6 phases delivered
+1. [2025-11-02] ✅ Completed Enhancement 1.2 - Added Ready to Assign section with YNAB calculations
+2. [2025-11-02] ✅ Completed Enhancement 1.1 - Removed income section from BudgetPlanningView (YNAB refactor)
+3. [2025-11-02] 📚 Added comprehensive YNAB methodology documentation to CLAUDE.md
+4. [2025-11-02] ⚠️ Identified YNAB methodology violation in current implementation
+5. [2025-11-02] ✅ Completed post-MVP enhancements (month indicator, due dates, tap-to-edit)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Review Enhancement 1.2 requirements in "Post-MVP Enhancement Backlog"
-2. Begin Enhancement 1.2: Create "Ready to Assign" Section
+1. Review Enhancement 1.3 requirements in "Post-MVP Enhancement Backlog"
+2. Begin Enhancement 1.3: Update Budget Summary
 3. File to modify: Views/BudgetPlanningView.swift
-4. Reference: YNAB methodology section for Ready to Assign calculation formula
+4. Add summary section showing Ready to Assign, Total Assigned, and Goal Status
 
 **Implementation Order:**
 1. Enhancement 1.1 → Remove income section
