@@ -94,21 +94,47 @@ iOS budget tracking app built with SwiftUI and SwiftData. Migrates Excel-based z
 
 **Reference**: See TechnicalSpec.md section "Implementing Sheet 1: Zero-based budget planning"
 
-### 🔄 Phase 3: Transaction Log View (Sheet 2 Replica) - CURRENT PHASE
-**Status**: Ready to Begin
+### ✅ Phase 3: Transaction Log View (Sheet 2 Replica)
+**Status**: ✅ Completed (2025-11-01)
 **Goal**: Transaction list with @Query, entry form with date/category/amount inputs, running balance calculation
 
-**Key Components**:
-- List with @Query sorted by date (descending)
-- Transaction entry form (DatePicker, Picker for category, TextField for amount)
-- Swipe actions (delete/edit)
-- Running balance computation
-- Search functionality
+**Detailed Tasks**:
+- [x] Implement transaction list with @Query sorted by date (descending)
+- [x] Create transaction row component with date, description, category, and amount
+- [x] Add swipe actions for delete and edit transactions
+- [x] Implement AddTransactionSheet with form validation
+- [x] Implement EditTransactionSheet for modifying existing transactions
+- [x] Add running balance calculation (cumulative balance)
+- [x] Implement search functionality for filtering transactions
+- [x] Verify build succeeds
+
+**Files Modified**:
+- ZeroBasedBudget/Views/TransactionLogView.swift (fully implemented - 380+ lines)
+
+**Key Features Implemented**:
+- Transaction list sorted by date (newest first) using @Query
+- TransactionRow component with comprehensive display (date, description, category, amount, type, running balance)
+- Swipe actions (delete with destructive role, edit with blue tint)
+- AddTransactionSheet with 4 sections (Transaction Details, Amount, Category, Notes)
+- EditTransactionSheet with same form structure, pre-populated with transaction data
+- Running balance calculation using computed property (cumulative balance from oldest to newest)
+- Search functionality filtering by description and category name
+- Form validation (non-empty description, positive amount, category required)
+- Empty state using ContentUnavailableView
+- Color-coded amounts (green for income, red for expenses)
+- Color-coded running balance (green if positive, red if negative)
+- Category picker with color indicators
+- Notes field (optional) for additional transaction details
+- All monetary values use Decimal type
+- Currency formatting throughout (.currency(code: "USD"))
 
 **Reference**: See TechnicalSpec.md section "Implementing Sheet 2: Transaction log"
 
-### ⏳ Phase 4: Calculations & Persistence
-**Status**: Not Started
+**Git Commits**:
+- 0393b0d - feat: implement comprehensive Transaction Log View (Phase 3 complete) (2025-11-01)
+
+### 🔄 Phase 4: Calculations & Persistence - CURRENT PHASE
+**Status**: Ready to Begin
 **Goal**: Implement running balance calculation, category aggregation logic, verify data persistence and integrity
 
 **Key Components**:
@@ -242,5 +268,38 @@ All Phase 2 objectives achieved:
 **Code Quality**: Clean separation of concerns with helper views (CategoryRow, AddCategorySheet, EditCategorySheet) and reusable Color extension.
 
 **Next Steps**: Ready to begin Phase 3 - implementing the Transaction Log View with list, entry form, and running balance calculation.
+
+### Phase 3 Completion (2025-11-01)
+**✅ Phase 3 Successfully Completed**
+
+All Phase 3 objectives achieved:
+- ✅ Implemented comprehensive Transaction Log View (380+ lines)
+- ✅ Created transaction list with @Query sorted by date (newest first)
+- ✅ Implemented TransactionRow component showing all key information
+- ✅ Added swipe actions for delete and edit operations
+- ✅ Created AddTransactionSheet with full form validation
+- ✅ Created EditTransactionSheet for modifying existing transactions
+- ✅ Implemented running balance calculation (cumulative balance)
+- ✅ Added search functionality filtering by description and category
+- ✅ Included empty state with ContentUnavailableView
+- ✅ Color-coded amounts (green for income, red for expenses)
+- ✅ All monetary values use Decimal type (never Double/Float)
+- ✅ Build succeeded without errors
+
+**Implementation Highlights**:
+- Transaction list displays newest transactions first (descending date order)
+- Running balance is calculated chronologically and displayed with each transaction
+- Form validation prevents invalid data entry (amount > 0, non-empty description, category required)
+- Category picker includes color indicators matching budget categories
+- Optional notes field for additional transaction context
+- Swipe-to-delete and swipe-to-edit gestures for easy transaction management
+- Search bar filters transactions in real-time
+- Empty state guides users to add their first transaction
+
+**Code Quality**: Clean separation of concerns with dedicated views (TransactionRow, AddTransactionSheet, EditTransactionSheet) and proper SwiftData integration using @Query and @Environment(\.modelContext).
+
+**Build Verification**: Successfully built for iOS Simulator (iPhone 17, iOS 26.0) with no compilation errors.
+
+**Next Steps**: Ready to begin Phase 4 - verify calculations and persistence, implement category aggregation for budget analysis.
 
 ---
