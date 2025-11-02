@@ -13,7 +13,7 @@ struct BudgetPlanningView: View {
     @Query private var allCategories: [BudgetCategory]
 
     // State for income inputs
-    @State private var monthlySalary: Decimal = 0
+    @State private var yearlySalary: Decimal = 0
     @State private var otherIncome: Decimal = 0
 
     // State for showing add category sheet
@@ -36,7 +36,7 @@ struct BudgetPlanningView: View {
 
     // Computed properties for totals (replicating Excel formulas)
     private var totalIncome: Decimal {
-        monthlySalary + otherIncome
+        yearlySalary + otherIncome
     }
 
     private var totalFixedExpenses: Decimal {
@@ -62,10 +62,10 @@ struct BudgetPlanningView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Monthly Income Section
-                Section(header: Text("Monthly Income")) {
-                    LabeledContent("Salary") {
-                        TextField("Amount", value: $monthlySalary, format: .currency(code: "USD"))
+                // Yearly Income Section
+                Section {
+                    LabeledContent("Annual Salary") {
+                        TextField("Amount", value: $yearlySalary, format: .currency(code: "USD"))
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
                     }
@@ -80,6 +80,12 @@ struct BudgetPlanningView: View {
                         Text(totalIncome, format: .currency(code: "USD"))
                             .fontWeight(.semibold)
                     }
+                } header: {
+                    Text("Yearly Income")
+                } footer: {
+                    Text("Enter your annual salary for reference and planning purposes.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 // Fixed Expenses Section
