@@ -265,6 +265,65 @@ struct BudgetPlanningView: View {
                         }
                     }
                 }
+
+                // Budget Summary Section
+                Section {
+                    LabeledContent("Total Assigned") {
+                        Text(totalAssigned, format: .currency(code: "USD"))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    LabeledContent("Ready to Assign") {
+                        Text(readyToAssign, format: .currency(code: "USD"))
+                            .fontWeight(.bold)
+                            .foregroundStyle(readyToAssignColor)
+                    }
+
+                    // Goal Status - Visual celebration when Ready to Assign = $0
+                    if readyToAssign == 0 {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .font(.title2)
+                            Text("Goal Achieved!")
+                                .font(.headline)
+                                .foregroundStyle(.green)
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
+                        .listRowBackground(Color.green.opacity(0.1))
+                    } else if readyToAssign > 0 {
+                        HStack {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundStyle(.orange)
+                                .font(.title3)
+                            Text("Assign \(readyToAssign, format: .currency(code: "USD")) to categories")
+                                .font(.subheadline)
+                                .foregroundStyle(.orange)
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                    } else {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.red)
+                                .font(.title3)
+                            Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: "USD"))")
+                                .font(.subheadline)
+                                .foregroundStyle(.red)
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                    }
+                } header: {
+                    Text("Budget Summary")
+                } footer: {
+                    if readyToAssign == 0 {
+                        Text("Perfect! Every dollar has a job. You've successfully budgeted all available money.")
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    }
+                }
             }
             .navigationTitle("Budget Planning")
             .sheet(isPresented: $showingAddCategory) {
