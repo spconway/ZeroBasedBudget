@@ -12,12 +12,18 @@ struct BudgetPlanningView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allCategories: [BudgetCategory]
     @Query private var allTransactions: [Transaction]
+    @Query private var allMonthlyBudgets: [MonthlyBudget]
 
     // State for selected month/year
     @State private var selectedMonth: Date = Date()
 
     // State for YNAB-style "Ready to Assign" - starting balance (money you have RIGHT NOW)
     @State private var startingBalance: Decimal = 0
+
+    // State for month navigation (Enhancement 3.3)
+    @State private var showingMonthSwitchAlert = false
+    @State private var pendingMonth: Date?
+    @State private var previousMonthReadyToAssign: Decimal?
 
     // State for showing add category sheet
     @State private var showingAddCategory = false
@@ -53,6 +59,62 @@ struct BudgetPlanningView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
         return "Budgeting for: \(formatter.string(from: selectedMonth))"
+    }
+
+    // MARK: - Month Management (Enhancement 3.3)
+
+    /// Get the first day of a given month
+    private func normalizeToFirstOfMonth(_ date: Date) -> Date {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: date)
+        return calendar.date(from: components) ?? date
+    }
+
+    /// Get the MonthlyBudget for the currently selected month
+    private var currentMonthBudget: MonthlyBudget? {
+        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
+        return allMonthlyBudgets.first { normalizeToFirstOfMonth($0.month) == normalizedMonth }
+    }
+
+    /// Get or create a MonthlyBudget for a specific month
+    private func getOrCreateMonthlyBudget(for month: Date) -> MonthlyBudget {
+        let normalizedMonth = normalizeToFirstOfMonth(month)
+
+        if let existing = allMonthlyBudgets.first(where: { normalizeToFirstOfMonth($0.month) == normalizedMonth }) {
+            return existing
+        }
+
+        let newBudget = MonthlyBudget(month: normalizedMonth, startingBalance: 0)
+        modelContext.insert(newBudget)
+        try? modelContext.save()
+        return newBudget
+    }
+
+    /// Calculate Ready to Assign for a specific month
+    private func calculateReadyToAssign(for month: Date) -> Decimal {
+        let budget = getOrCreateMonthlyBudget(for: month)
+        let income = BudgetCalculations.calculateTotalIncome(in: month, from: allTransactions)
+        let assigned = allCategories.reduce(0) { $0 + $1.budgetedAmount }
+        return (budget.startingBalance + income) - assigned
+    }
+
+    /// Get previous month's Ready to Assign for comparison
+    private var previousMonthComparison: (month: String, amount: Decimal)? {
+        guard let prevMonth = Calendar.current.date(byAdding: .month, value: -1, to: selectedMonth) else {
+            return nil
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM yyyy"
+        let monthName = formatter.string(from: prevMonth)
+
+        // Only show if previous month's budget exists
+        guard allMonthlyBudgets.contains(where: { normalizeToFirstOfMonth($0.month) == normalizeToFirstOfMonth(prevMonth) }) else {
+            return nil
+        }
+
+        let prevReadyToAssign = calculateReadyToAssign(for: prevMonth)
+        return (monthName, prevReadyToAssign)
     }
 
     // MARK: - YNAB-Style Computed Properties
@@ -166,6 +228,10 @@ struct BudgetPlanningView: View {
                         TextField("Amount", value: $startingBalance, format: .currency(code: "USD"))
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
+                            .onChange(of: startingBalance) { oldValue, newValue in
+                                // Auto-save starting balance changes (Enhancement 3.3)
+                                saveCurrentMonthBudget()
+                            }
                     }
 
                     LabeledContent("Total Income (This Period)") {
@@ -382,6 +448,38 @@ struct BudgetPlanningView: View {
                             .foregroundStyle(readyToAssignColor)
                     }
 
+                    // Previous month comparison (Enhancement 3.3)
+                    if let comparison = previousMonthComparison {
+                        HStack {
+                            Text("Previous Month (\(comparison.month))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            HStack(spacing: 4) {
+                                Text(comparison.amount, format: .currency(code: "USD"))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                // Show arrow indicator for change
+                                if comparison.amount < readyToAssign {
+                                    Image(systemName: "arrow.up")
+                                        .font(.caption2)
+                                        .foregroundStyle(.green)
+                                } else if comparison.amount > readyToAssign {
+                                    Image(systemName: "arrow.down")
+                                        .font(.caption2)
+                                        .foregroundStyle(.red)
+                                } else {
+                                    Image(systemName: "arrow.right")
+                                        .font(.caption2)
+                                        .foregroundStyle(.gray)
+                                }
+                            }
+                        }
+                    }
+
+                    Divider()
+
                     // Goal Status - Visual celebration when Ready to Assign = $0
                     if readyToAssign == 0 {
                         HStack {
@@ -429,6 +527,11 @@ struct BudgetPlanningView: View {
                 }
             }
             .navigationTitle("Budget Planning")
+            .onAppear {
+                // Load the current month's budget data when view appears (Enhancement 3.3)
+                let budget = getOrCreateMonthlyBudget(for: selectedMonth)
+                startingBalance = budget.startingBalance
+            }
             .sheet(isPresented: $showingAddCategory) {
                 AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDate in
                     saveNewCategory(name: name, amount: amount, type: newCategoryType, dueDate: dueDate)
@@ -451,6 +554,28 @@ struct BudgetPlanningView: View {
 
                 This is the core of YNAB budgeting: Give every dollar a job!
                 """)
+            }
+            .alert("Unassigned Money", isPresented: $showingMonthSwitchAlert) {
+                Button("Carry Forward", role: .none) {
+                    carryForwardToNextMonth()
+                }
+                Button("Leave Behind", role: .destructive) {
+                    switchWithoutCarryForward()
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingMonth = nil
+                    previousMonthReadyToAssign = nil
+                }
+            } message: {
+                if let unassigned = previousMonthReadyToAssign {
+                    Text("""
+                    You have \(unassigned.formatted(.currency(code: "USD"))) unassigned in this month.
+
+                    • Carry Forward: Add this money to next month's starting balance
+                    • Leave Behind: Keep it in this month (you can assign it later)
+                    • Cancel: Stay in this month
+                    """)
+                }
             }
             .overlay(alignment: .bottom) {
                 // Undo banner (Enhancement 3.2)
@@ -616,14 +741,77 @@ struct BudgetPlanningView: View {
 
     private func previousMonth() {
         if let newMonth = Calendar.current.date(byAdding: .month, value: -1, to: selectedMonth) {
-            selectedMonth = newMonth
+            attemptMonthSwitch(to: newMonth)
         }
     }
 
     private func nextMonth() {
         if let newMonth = Calendar.current.date(byAdding: .month, value: 1, to: selectedMonth) {
-            selectedMonth = newMonth
+            attemptMonthSwitch(to: newMonth)
         }
+    }
+
+    /// Attempt to switch to a new month, checking for unassigned money first
+    private func attemptMonthSwitch(to newMonth: Date) {
+        // Save current month's starting balance
+        saveCurrentMonthBudget()
+
+        // Check if current month has unassigned money
+        if readyToAssign > 0 {
+            // Store the pending month and show alert
+            pendingMonth = newMonth
+            previousMonthReadyToAssign = readyToAssign
+            showingMonthSwitchAlert = true
+        } else {
+            // No unassigned money, switch immediately
+            performMonthSwitch(to: newMonth)
+        }
+    }
+
+    /// Save the current month's budget data
+    private func saveCurrentMonthBudget() {
+        let budget = getOrCreateMonthlyBudget(for: selectedMonth)
+        budget.startingBalance = startingBalance
+        try? modelContext.save()
+    }
+
+    /// Perform the actual month switch and load the new month's data
+    private func performMonthSwitch(to newMonth: Date) {
+        selectedMonth = newMonth
+
+        // Load the new month's starting balance
+        let budget = getOrCreateMonthlyBudget(for: newMonth)
+        startingBalance = budget.startingBalance
+    }
+
+    /// Carry forward unassigned money to the next month
+    private func carryForwardToNextMonth() {
+        guard let newMonth = pendingMonth else { return }
+
+        // Get the new month's budget (or create it)
+        let nextMonthBudget = getOrCreateMonthlyBudget(for: newMonth)
+
+        // Add current month's unassigned money to next month's starting balance
+        nextMonthBudget.startingBalance += readyToAssign
+        try? modelContext.save()
+
+        // Now switch to the new month
+        performMonthSwitch(to: newMonth)
+
+        // Clear pending state
+        pendingMonth = nil
+        previousMonthReadyToAssign = nil
+    }
+
+    /// Switch without carrying forward
+    private func switchWithoutCarryForward() {
+        guard let newMonth = pendingMonth else { return }
+
+        performMonthSwitch(to: newMonth)
+
+        // Clear pending state
+        pendingMonth = nil
+        previousMonthReadyToAssign = nil
     }
 }
 
