@@ -177,20 +177,66 @@ iOS budget tracking app built with SwiftUI and SwiftData. Migrates Excel-based z
 **Git Commits**:
 - 217f3e6 - feat: implement budget calculations and category aggregation utilities (Phase 4) (2025-11-01)
 
-### 🔄 Phase 5: Budget Analysis View (Sheet 3 Replica) - CURRENT PHASE
-**Status**: Ready to Begin
+### ✅ Phase 5: Budget Analysis View (Sheet 3 Replica)
+**Status**: ✅ Completed (2025-11-01)
 **Goal**: Budget vs actual comparison with Swift Charts visualization, showing budgeted/actual/difference/percentage for each category
 
-**Key Components**:
-- Swift Charts grouped bar chart (budgeted vs actual)
-- CategoryComparison model with calculations
-- Detailed list view with all metrics
-- Color coding for over/under budget
+**Detailed Tasks**:
+- [x] Read BudgetAnalysisView stub and review Swift Charts requirements
+- [x] Implement month selector for filtering analysis data
+- [x] Create Swift Charts grouped bar chart (budgeted vs actual)
+- [x] Implement detailed list view with category comparisons
+- [x] Add summary section showing total budgeted vs total actual
+- [x] Integrate BudgetCalculations utility for data aggregation
+- [x] Add color coding for over/under budget indicators
+- [x] Test with empty state handling
+- [x] Build and verify no errors
+
+**Files Modified**:
+- ZeroBasedBudget/Views/BudgetAnalysisView.swift (fully implemented - 340+ lines)
+
+**Key Features Implemented**:
+- Month selector with prev/next navigation (MonthPickerSection)
+- Summary section with three cards:
+  - Total Budgeted (blue)
+  - Total Actual (green if under budget, red if over)
+  - Under/Over Budget difference (color-coded)
+- Swift Charts grouped bar chart:
+  - Blue bars for budgeted amounts
+  - Green bars for under budget, red for over budget
+  - Grouped by category with chart legend
+  - 300pt height, Y-axis on leading edge
+- Detailed breakdown list with CategoryComparisonRow components:
+  - Category name with color indicator
+  - Status icon (checkmark or warning)
+  - Four metrics: Budgeted, Actual, Difference, % Used
+  - Color-coded values based on budget status
+- Empty state with ContentUnavailableView
+- All monetary values use Decimal type
+- Currency formatting throughout (.currency(code: "USD"))
+- Integration with BudgetCalculations.generateCategoryComparisons()
+- Month-based transaction filtering
+- Filters out "Income" categories (shows only expenses)
+- ScrollView for long category lists
+- Reusable components: SummaryCard, MetricColumn
+
+**Component Architecture**:
+- BudgetAnalysisView: Main view with computed properties
+- MonthPickerSection: Month navigation with chevrons
+- SummarySection: Overview cards container
+- SummaryCard: Individual summary metric card
+- ChartSection: Swift Charts visualization
+- DetailedListSection: Category comparisons container
+- CategoryComparisonRow: Individual category details
+- MetricColumn: Reusable metric display
 
 **Reference**: See TechnicalSpec.md section "Implementing Sheet 3: Budget vs actual comparison"
 
-### ⏳ Phase 6: Polish & Optimization
-**Status**: Not Started
+**Git Commits**:
+- 9dbb380 - feat: implement comprehensive Budget Analysis View with Swift Charts (Phase 5 complete) (2025-11-01)
+
+### 🔄 Phase 6: Polish & Optimization - CURRENT PHASE
+**Status**: Ready to Begin
 **Goal**: Form validation, error handling, performance profiling, accessibility, final testing
 
 **Key Components**:
@@ -366,5 +412,38 @@ All Phase 4 objectives achieved:
 **Build Verification**: Successfully built for iOS Simulator with all three new utility files.
 
 **Next Steps**: Ready to begin Phase 5 - implement Budget Analysis View with Swift Charts for visualizing budget vs actual comparisons.
+
+### Phase 5 Completion (2025-11-01)
+**✅ Phase 5 Successfully Completed**
+
+All Phase 5 objectives achieved:
+- ✅ Implemented comprehensive Budget Analysis View (340+ lines)
+- ✅ Created month selector with prev/next navigation
+- ✅ Implemented Swift Charts grouped bar chart visualization
+- ✅ Created summary section with total budgeted, actual, and difference cards
+- ✅ Implemented detailed breakdown list with all category comparisons
+- ✅ Added color coding for over/under budget indicators
+- ✅ Integrated BudgetCalculations utility for data aggregation
+- ✅ Added empty state handling
+- ✅ All monetary values use Decimal type (never Double/Float)
+- ✅ Build succeeded without errors
+
+**Implementation Highlights**:
+- Month selector allows users to navigate between different periods
+- Summary cards provide quick overview of budget status
+- Swift Charts grouped bar chart shows visual comparison of budgeted vs actual
+- Detailed list provides comprehensive metrics for each category
+- Color coding throughout: blue for budgeted, green for under budget, red for over budget
+- Status icons (checkmark for on track, warning triangle for over budget)
+- Percentage used calculation with formatted display
+- Reusable component architecture (SummaryCard, MetricColumn, etc.)
+- Integration with Phase 4 BudgetCalculations utility
+- Month-based transaction filtering for accurate period analysis
+
+**Code Quality**: Clean component-based architecture with 8 separate view structs, comprehensive inline documentation, proper separation of concerns, and full Swift Charts integration. All calculations leverage Phase 4 utilities.
+
+**Build Verification**: Successfully built for iOS Simulator with Swift Charts framework integration.
+
+**Next Steps**: Ready to begin Phase 6 - polish and optimization including form validation improvements, error handling, performance profiling, and accessibility features.
 
 ---
