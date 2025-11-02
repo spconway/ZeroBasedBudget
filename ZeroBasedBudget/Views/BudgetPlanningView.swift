@@ -12,6 +12,9 @@ struct BudgetPlanningView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allCategories: [BudgetCategory]
 
+    // State for current available funds
+    @State private var currentAvailableAccounts: Decimal = 0
+
     // State for income inputs
     @State private var yearlySalary: Decimal = 0
     @State private var otherIncome: Decimal = 0
@@ -35,6 +38,10 @@ struct BudgetPlanningView: View {
     }
 
     // Computed properties for totals (replicating Excel formulas)
+    private var totalAvailable: Decimal {
+        currentAvailableAccounts
+    }
+
     private var totalIncome: Decimal {
         yearlySalary + otherIncome
     }
@@ -62,6 +69,26 @@ struct BudgetPlanningView: View {
     var body: some View {
         NavigationStack {
             Form {
+                // Current Available Section
+                Section {
+                    LabeledContent("Accounts") {
+                        TextField("Amount", value: $currentAvailableAccounts, format: .currency(code: "USD"))
+                            .multilineTextAlignment(.trailing)
+                            .keyboardType(.decimalPad)
+                    }
+
+                    LabeledContent("Total") {
+                        Text(totalAvailable, format: .currency(code: "USD"))
+                            .fontWeight(.semibold)
+                    }
+                } header: {
+                    Text("Current Available")
+                } footer: {
+                    Text("Enter the total of all available money ready to be assigned to budget categories.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
                 // Yearly Income Section
                 Section {
                     LabeledContent("Annual Salary") {
