@@ -51,20 +51,16 @@ struct TransactionLogView: View {
                 // Display transactions in reverse chronological order with running balance
                 ForEach(transactionsWithBalance.reversed(), id: \.0.id) { (transaction, balance) in
                     TransactionRow(transaction: transaction, runningBalance: balance)
+                        .onTapGesture {
+                            transactionToEdit = transaction
+                            showingEditSheet = true
+                        }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 deleteTransaction(transaction)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
-
-                            Button {
-                                transactionToEdit = transaction
-                                showingEditSheet = true
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                            .tint(.blue)
                         }
                 }
             }
