@@ -145,13 +145,21 @@ ZeroBasedBudget/
 
 ### 🔄 Priority 3: Transaction Tab Improvements
 
-**Enhancement 3.1: Make Transactions Tap-able**
-- [ ] Remove current swipe-to-edit action
-- [ ] Make entire transaction row tap-able
-- [ ] On tap, present EditTransactionSheet
-- [ ] Keep swipe-to-delete action (but remove swipe-to-edit)
-- [ ] This reduces steps: tap → edit instead of swipe → tap edit button
-- [ ] Update TransactionLogView.swift to implement onTapGesture
+**Enhancement 3.1: Make Transactions Tap-able** ✅
+- [x] Remove current swipe-to-edit action
+- [x] Make entire transaction row tap-able
+- [x] On tap, present EditTransactionSheet
+- [x] Keep swipe-to-delete action (but remove swipe-to-edit)
+- [x] This reduces steps: tap → edit instead of swipe → tap edit button
+- [x] Update TransactionLogView.swift to implement onTapGesture
+
+**Implementation Notes:**
+- Removed swipe-to-edit button (blue pencil icon) from swipeActions (TransactionLogView.swift:58-64)
+- Added onTapGesture to TransactionRow that sets transactionToEdit and showingEditSheet (lines 54-57)
+- Preserved swipe-to-delete action (red trash button, destructive role)
+- User experience improved: tap row for primary action (edit), swipe for destructive action (delete)
+- Follows iOS conventions: tap for primary, swipe for secondary/destructive
+- Interaction steps reduced from 2 (swipe → tap edit) to 1 (tap row)
 
 ### 🔄 Priority 4: Testing & Polish
 
@@ -170,20 +178,20 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: Priority 3 - Transaction Tab Improvements
-**Status**: Priority 2 complete (both enhancements), ready to begin Enhancement 3.1
+**Current Focus**: Priority 4 - Testing & Polish
+**Status**: Priority 3 complete, all core enhancements delivered
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Priority 2 complete - Budget Tab Improvements (Enhancements 2.1-2.2)
-2. [2025-11-02] ✅ Enhancement 2.2 complete - added due date field to expenses
-3. [2025-11-02] ✅ Enhancement 2.1 complete - added month indicator with navigation
-4. [2025-11-02] ✅ Priority 1 complete - Core Budgeting Improvements (Enhancements 1.1-1.3)
-5. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
+1. [2025-11-02] ✅ All core enhancements complete (Priorities 1-3)
+2. [2025-11-02] ✅ Enhancement 3.1 complete - made transactions tap-able for editing
+3. [2025-11-02] ✅ Priority 2 complete - Budget Tab Improvements (Enhancements 2.1-2.2)
+4. [2025-11-02] ✅ Enhancement 2.2 complete - added due date field to expenses
+5. [2025-11-02] ✅ Enhancement 2.1 complete - added month indicator with navigation
 
 **Active Decisions/Blockers**: None currently
 
 **Next Session Start Here**:
-Begin with Enhancement 3.1 - make transactions tap-able in TransactionLogView.
+All core enhancements complete. Priority 4 activities are optional user testing and documentation updates.
 
 ## Git Commit Strategy
 
