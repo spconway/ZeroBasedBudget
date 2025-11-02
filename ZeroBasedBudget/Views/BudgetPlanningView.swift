@@ -18,10 +18,6 @@ struct BudgetPlanningView: View {
     // State for current available funds
     @State private var currentAvailableAccounts: Decimal = 0
 
-    // State for income inputs
-    @State private var yearlySalary: Decimal = 0
-    @State private var otherIncome: Decimal = 0
-
     // State for showing add category sheet
     @State private var showingAddCategory = false
     @State private var newCategoryType: String = "Fixed"
@@ -52,10 +48,6 @@ struct BudgetPlanningView: View {
         currentAvailableAccounts
     }
 
-    private var totalIncome: Decimal {
-        yearlySalary + otherIncome
-    }
-
     private var totalFixedExpenses: Decimal {
         fixedExpenseCategories.reduce(0) { $0 + $1.budgetedAmount }
     }
@@ -70,10 +62,6 @@ struct BudgetPlanningView: View {
 
     private var totalExpenses: Decimal {
         totalFixedExpenses + totalVariableExpenses + totalQuarterlyExpenses
-    }
-
-    private var remainingBalance: Decimal {
-        totalIncome - totalExpenses
     }
 
     var body: some View {
@@ -126,32 +114,6 @@ struct BudgetPlanningView: View {
                     Text("Current Available")
                 } footer: {
                     Text("Enter the total of all available money ready to be assigned to budget categories.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                // Yearly Income Section
-                Section {
-                    LabeledContent("Annual Salary") {
-                        TextField("Amount", value: $yearlySalary, format: .currency(code: "USD"))
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                    }
-
-                    LabeledContent("Other Income") {
-                        TextField("Amount", value: $otherIncome, format: .currency(code: "USD"))
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                    }
-
-                    LabeledContent("Total Income") {
-                        Text(totalIncome, format: .currency(code: "USD"))
-                            .fontWeight(.semibold)
-                    }
-                } header: {
-                    Text("Yearly Income")
-                } footer: {
-                    Text("Enter your annual salary for reference and planning purposes.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -240,23 +202,6 @@ struct BudgetPlanningView: View {
                             Text(totalQuarterlyExpenses, format: .currency(code: "USD"))
                                 .fontWeight(.semibold)
                         }
-                    }
-                }
-
-                // Summary Section
-                Section(header: Text("Summary")) {
-                    LabeledContent("Total Income") {
-                        Text(totalIncome, format: .currency(code: "USD"))
-                    }
-
-                    LabeledContent("Total Expenses") {
-                        Text(totalExpenses, format: .currency(code: "USD"))
-                    }
-
-                    LabeledContent("Remaining Balance") {
-                        Text(remainingBalance, format: .currency(code: "USD"))
-                            .foregroundStyle(remainingBalance >= 0 ? .green : .red)
-                            .fontWeight(.bold)
                     }
                 }
             }
