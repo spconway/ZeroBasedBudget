@@ -174,11 +174,17 @@ ZeroBasedBudget/
 ```
 
 ## Git Commit Strategy
-- **Frequency**: Commit after each logical unit of work (model creation, view setup, feature addition)
+- **Frequency**: Commit frequently so git log becomes a reliable timeline
 - **Format**: Use conventional commits: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`
 - **Quality**: Ensure code builds successfully before every commit
 - **Documentation**: Update this CLAUDE.md after each commit (add to "Git Commits" section)
 - **Phase Transitions**: When completing a phase, update status to ✅ and mark next phase as 🔄 CURRENT PHASE
+
+```bash
+git log --oneline -20
+```
+Should show a clear progression of work. This makes git history a trustworthy verification tool.
+
 
 ## Current Session Notes
 
