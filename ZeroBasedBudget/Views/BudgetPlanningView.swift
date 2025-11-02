@@ -11,17 +11,19 @@ import SwiftData
 struct BudgetPlanningView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allCategories: [BudgetCategory]
+    @Query private var allTransactions: [Transaction]
 
     // State for selected month/year
     @State private var selectedMonth: Date = Date()
 
-    // State for current available funds
-    @State private var currentAvailableAccounts: Decimal = 0
+    // State for YNAB-style "Ready to Assign" - starting balance (money you have RIGHT NOW)
+    @State private var startingBalance: Decimal = 0
 
     // State for showing add category sheet
     @State private var showingAddCategory = false
     @State private var newCategoryType: String = "Fixed"
     @State private var editingCategory: BudgetCategory?
+    @State private var showingReadyToAssignInfo = false
 
     // Computed property to filter categories by type
     private var fixedExpenseCategories: [BudgetCategory] {
@@ -43,10 +45,47 @@ struct BudgetPlanningView: View {
         return "Budgeting for: \(formatter.string(from: selectedMonth))"
     }
 
-    // Computed properties for totals (replicating Excel formulas)
-    private var totalAvailable: Decimal {
-        currentAvailableAccounts
+    // MARK: - YNAB-Style Computed Properties
+
+    // Total income from transactions for the selected month
+    private var totalIncome: Decimal {
+        BudgetCalculations.calculateTotalIncome(in: selectedMonth, from: allTransactions)
     }
+
+    // Total amount assigned to all budget categories
+    private var totalAssigned: Decimal {
+        allCategories.reduce(0) { $0 + $1.budgetedAmount }
+    }
+
+    // Ready to Assign = money available to budget (goal: $0)
+    // Formula: (Starting Balance + Income This Period) - Total Assigned
+    private var readyToAssign: Decimal {
+        (startingBalance + totalIncome) - totalAssigned
+    }
+
+    // Color coding for Ready to Assign
+    private var readyToAssignColor: Color {
+        if readyToAssign == 0 {
+            return .green  // Goal achieved!
+        } else if readyToAssign > 0 {
+            return .orange  // Money needs to be assigned
+        } else {
+            return .red  // Over-assigned, need to reduce categories
+        }
+    }
+
+    // Status message for accessibility
+    private var readyToAssignStatus: String {
+        if readyToAssign == 0 {
+            return "Goal achieved! All money has been assigned."
+        } else if readyToAssign > 0 {
+            return "You still have money to assign to categories."
+        } else {
+            return "Warning: You've over-assigned. Reduce category amounts."
+        }
+    }
+
+    // MARK: - Category Totals
 
     private var totalFixedExpenses: Decimal {
         fixedExpenseCategories.reduce(0) { $0 + $1.budgetedAmount }
@@ -98,22 +137,44 @@ struct BudgetPlanningView: View {
                 }
                 .listRowBackground(Color.clear)
 
-                // Current Available Section
+                // YNAB-Style "Ready to Assign" Section
                 Section {
-                    LabeledContent("Accounts") {
-                        TextField("Amount", value: $currentAvailableAccounts, format: .currency(code: "USD"))
+                    LabeledContent("Starting Balance") {
+                        TextField("Amount", value: $startingBalance, format: .currency(code: "USD"))
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
                     }
 
-                    LabeledContent("Total") {
-                        Text(totalAvailable, format: .currency(code: "USD"))
-                            .fontWeight(.semibold)
+                    LabeledContent("Total Income (This Period)") {
+                        Text(totalIncome, format: .currency(code: "USD"))
+                            .foregroundStyle(.secondary)
                     }
+
+                    LabeledContent("Total Assigned") {
+                        Text(totalAssigned, format: .currency(code: "USD"))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Divider()
+
+                    LabeledContent("Ready to Assign") {
+                        Text(readyToAssign, format: .currency(code: "USD"))
+                            .fontWeight(.bold)
+                            .foregroundStyle(readyToAssignColor)
+                    }
+                    .accessibilityLabel("Ready to Assign: \(readyToAssign, format: .currency(code: "USD")). \(readyToAssignStatus)")
                 } header: {
-                    Text("Current Available")
+                    HStack {
+                        Text("Ready to Assign")
+                        Spacer()
+                        Button(action: { showingReadyToAssignInfo = true }) {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(.blue)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 } footer: {
-                    Text("Enter the total of all available money ready to be assigned to budget categories.")
+                    Text("Budget only money you have RIGHT NOW. Goal: Assign all money until Ready to Assign = $0.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -215,6 +276,19 @@ struct BudgetPlanningView: View {
                 EditCategorySheet(category: category, onSave: { updatedAmount, updatedDueDate in
                     updateCategory(category, amount: updatedAmount, dueDate: updatedDueDate)
                 })
+            }
+            .alert("Ready to Assign - YNAB Methodology", isPresented: $showingReadyToAssignInfo) {
+                Button("Got It", role: .cancel) { }
+            } message: {
+                Text("""
+                Ready to Assign represents money you have RIGHT NOW.
+
+                • Budget only money that exists, not money you expect
+                • When income arrives, log it as a transaction - it will increase your Ready to Assign
+                • Your goal: Assign all money until Ready to Assign = $0
+
+                This is the core of YNAB budgeting: Give every dollar a job!
+                """)
             }
         }
     }
