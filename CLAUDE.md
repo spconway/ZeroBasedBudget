@@ -301,10 +301,18 @@ SwiftData's @Query property wrapper provides automatic reactive updates:
 
 No code changes required - existing implementation already provides correct behavior!
 
-**Enhancement 2.2: Quick Assign from Transactions**
-- [ ] Consider adding "Assign" button when viewing income transactions
-- [ ] Tapping "Assign" navigates to Budget tab with Ready to Assign highlighted
-- [ ] Helps user remember to budget new income immediately
+**Enhancement 2.2: Quick Assign from Transactions** ✅ COMPLETE
+- [x] Add "Assign Your Income" button when viewing income transactions
+  - Button appears at top of transaction list when hasIncomeTransactions = true
+  - Headline: "Assign Your Income"
+  - Subtitle: "Budget your income in the Budget tab"
+  - Blue arrow icon for clear call-to-action
+- [x] Tapping "Assign" navigates to Budget tab (sets selectedTab = 0)
+  - ContentView passes selectedTab binding to TransactionLogView
+  - Navigation is immediate and smooth
+- [x] Helps user remember to budget new income immediately
+  - Reminder appears persistently when income transactions exist
+  - Reinforces YNAB principle: "Give every dollar a job"
 
 ---
 
@@ -370,26 +378,25 @@ No code changes required - existing implementation already provides correct beha
 
 ## Active Development
 
-**Current Focus**: ✅ Priority 2 - Enhancement 2.1 Complete! Ready for Enhancement 2.2 (Optional)
-**Status**: 🎉 Priority 1 Complete + Enhancement 2.1 Verified
+**Current Focus**: ✅ Priority 2 COMPLETE! Ready for Priority 3 (Optional)
+**Status**: 🎉 Priority 1 Complete + Priority 2 Complete (Transaction Integration)
 
 **Achievement Summary:**
-Priority 1 YNAB refactor is complete! Enhancement 2.1 verified that income transactions automatically update Ready to Assign through SwiftData's @Query reactive system. The existing implementation already provides correct behavior - no code changes needed.
+Priority 1 YNAB refactor is complete! Priority 2 (Transaction Integration Improvements) is also complete with Enhancement 2.1 verification and Enhancement 2.2 navigation implementation. The app now has seamless integration between income tracking and budget assignment.
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Verified Enhancement 2.1 - Income transactions automatically update Ready to Assign
-2. [2025-11-02] ✅ Completed Enhancement 1.4 - Refactored MonthlyBudget model for YNAB methodology
-3. [2025-11-02] ✅ Completed Enhancement 1.3 - Added Budget Summary with goal status visualization
-4. [2025-11-02] ✅ Completed Enhancement 1.2 - Added Ready to Assign section with YNAB calculations
-5. [2025-11-02] ✅ Completed Enhancement 1.1 - Removed income section from BudgetPlanningView
+1. [2025-11-02] ✅ Completed Enhancement 2.2 - Added Quick Assign navigation from Transactions to Budget
+2. [2025-11-02] ✅ Verified Enhancement 2.1 - Income transactions automatically update Ready to Assign
+3. [2025-11-02] ✅ Completed Enhancement 1.4 - Refactored MonthlyBudget model for YNAB methodology
+4. [2025-11-02] ✅ Completed Enhancement 1.3 - Added Budget Summary with goal status visualization
+5. [2025-11-02] ✅ Completed Enhancement 1.2 - Added Ready to Assign section with YNAB calculations
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-Optional next steps:
-1. Enhancement 2.2: Quick Assign from Transactions (add navigation button)
-2. Priority 3: Budget Tab Polish (Quick Assign buttons, month navigation context)
-3. Priority 4: Testing & Validation (YNAB methodology testing)
+Priority 1 & 2 complete! Optional next steps:
+1. Priority 3: Budget Tab Polish (Quick Assign buttons next to categories, real-time updates, month navigation)
+2. Priority 4: Testing & Validation (YNAB methodology testing, validation rules)
 Or: Begin new feature development outside the YNAB refactor backlog
 
 **Implementation Order:**
