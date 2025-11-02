@@ -92,12 +92,20 @@ ZeroBasedBudget/
   - Calculate: Sum of all account inputs
 - [x] This represents the "ready to spend" money that should be allocated
 
-**Enhancement 1.3: Make All Expenses Editable**
-- [ ] Verify BudgetPlanningView supports editing for fixed expenses
-- [ ] Verify BudgetPlanningView supports editing for variable expenses
-- [ ] Verify BudgetPlanningView supports editing for quarterly expenses
-- [ ] Ensure edit sheets work for all expense types
-- [ ] Test that edits persist correctly
+**Enhancement 1.3: Make All Expenses Editable** ✅ (Verified - Already Implemented in MVP)
+- [x] Verify BudgetPlanningView supports editing for fixed expenses
+- [x] Verify BudgetPlanningView supports editing for variable expenses
+- [x] Verify BudgetPlanningView supports editing for quarterly expenses
+- [x] Ensure edit sheets work for all expense types
+- [x] Test that edits persist correctly
+
+**Verification Notes:**
+- All three expense types (Fixed, Variable, Quarterly) use identical edit implementation
+- CategoryRow is tap-able button that presents EditCategorySheet
+- EditCategorySheet allows editing budgeted amount (Decimal type)
+- Changes persist via modelContext.save() (BudgetPlanningView.swift:257)
+- Validation ensures amount > 0 before saving
+- Implementation follows all Critical Implementation Rules
 
 ### 🔄 Priority 2: Budget Tab Improvements
 
@@ -144,20 +152,20 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: Priority 1 - Core Budgeting Improvements
-**Status**: Enhancement 1.2 complete, ready to begin Enhancement 1.3
+**Current Focus**: Priority 2 - Budget Tab Improvements
+**Status**: Priority 1 complete (all 3 enhancements), ready to begin Enhancement 2.1
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
-2. [2025-11-02] ✅ Enhancement 1.1 complete - refactored income section to yearly display
-3. [2025-11-01] ✅ MVP complete - all 6 phases delivered
-4. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
-5. [2025-11-01] ✅ Phase 5 complete - Budget Analysis View with Swift Charts
+1. [2025-11-02] ✅ Priority 1 complete - Core Budgeting Improvements (Enhancements 1.1-1.3)
+2. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
+3. [2025-11-02] ✅ Enhancement 1.1 complete - refactored income section to yearly display
+4. [2025-11-01] ✅ MVP complete - all 6 phases delivered
+5. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
 
 **Active Decisions/Blockers**: None currently
 
 **Next Session Start Here**:
-Begin with Enhancement 1.3 - verify all expense types are editable in Budget Planning View.
+Begin with Enhancement 2.1 - add month/year indicator to Budget Planning View.
 
 ## Git Commit Strategy
 
