@@ -353,10 +353,22 @@ No code changes required - existing implementation already provides correct beha
   - Auto-dismisses after 5 seconds
   - Smooth animations with .ultraThinMaterial background
 
-**Enhancement 3.3: Month Navigation Context**
-- [ ] When changing months, show message if previous month has unassigned money
-- [ ] Allow carrying forward unassigned money to next month
-- [ ] Show month-to-month Ready to Assign changes
+**Enhancement 3.3: Month Navigation Context** ✅ COMPLETE
+- [x] When changing months, show message if previous month has unassigned money
+  - Alert shows exact unassigned amount
+  - Three options: Carry Forward, Leave Behind, Cancel
+- [x] Allow carrying forward unassigned money to next month
+  - Carry Forward adds unassigned to next month's starting balance
+  - Leave Behind switches without carrying
+  - Prevents accidental loss of unassigned money
+- [x] Show month-to-month Ready to Assign changes
+  - Budget Summary displays previous month comparison
+  - Arrow indicators (↑ green, ↓ red, → gray)
+  - Only shows if previous month's budget exists
+- [x] Per-month budget persistence with SwiftData
+  - MonthlyBudget auto-created/loaded for each month
+  - Starting Balance auto-saves on changes
+  - Smart month switching with state management
 
 ---
 
@@ -396,25 +408,26 @@ No code changes required - existing implementation already provides correct beha
 
 ## Active Development
 
-**Current Focus**: ✅ Priority 3 Complete! (Enhancement 3.1 + 3.2)
-**Status**: 🎉 Priority 1, 2, and 3 (Enhancements 3.1 + 3.2) Complete
+**Current Focus**: ✅ Priority 3 FULLY Complete! (All Enhancements 3.1, 3.2, 3.3)
+**Status**: 🎉 Priority 1, 2, and ALL of Priority 3 Complete
 
 **Achievement Summary:**
-Major milestone! Category Assignment UX (Enhancement 3.2) complete with Quick Assign buttons, Assign All Remaining, and undo functionality. Budget assignment is now incredibly efficient with one-tap assignment to any category, even distribution across all categories, and full undo support with auto-dismissing banner. Combined with Enhancement 3.1's visual hierarchy, the Budget Planning view is now production-ready!
+MASSIVE MILESTONE! All of Priority 3 complete! Enhancement 3.3 (Month Navigation Context) adds intelligent month switching with unassigned money warnings, carry-forward functionality, and month-to-month comparison. Combined with Enhancement 3.2's Quick Assign/Undo and Enhancement 3.1's visual hierarchy, the Budget Planning view now has production-grade UX with complete budget continuity across months. Users can seamlessly track and manage their budget over time!
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Completed Enhancement 3.2 - Category Assignment UX (Quick Assign, Assign All, Undo)
-2. [2025-11-02] ✅ Completed Enhancement 3.1 - Enhanced Ready to Assign visual hierarchy with large typography
-3. [2025-11-02] ✅ Completed Enhancement 2.2 - Added Quick Assign navigation from Transactions to Budget
-4. [2025-11-02] ✅ Verified Enhancement 2.1 - Income transactions automatically update Ready to Assign
-5. [2025-11-02] ✅ Completed Enhancement 1.4 - Refactored MonthlyBudget model for YNAB methodology
+1. [2025-11-02] ✅ Completed Enhancement 3.3 - Month Navigation Context (carry-forward, month comparison)
+2. [2025-11-02] ✅ Completed Enhancement 3.2 - Category Assignment UX (Quick Assign, Assign All, Undo)
+3. [2025-11-02] ✅ Completed Enhancement 3.1 - Enhanced Ready to Assign visual hierarchy
+4. [2025-11-02] ✅ Completed Enhancement 2.2 - Quick Assign navigation from Transactions to Budget
+5. [2025-11-02] ✅ Verified Enhancement 2.1 - Income transactions automatically update Ready to Assign
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-Priority 1, 2, and 3 (Enhancements 3.1 + 3.2) complete! Optional next steps:
-1. Enhancement 3.3: Month Navigation Context (carry-forward, month-to-month changes)
-2. Priority 4: Testing & Validation (YNAB methodology testing, validation rules)
+🎉 Priority 1, 2, and ALL of Priority 3 complete! The YNAB refactor and Budget Tab polish are DONE!
+
+Next steps:
+1. Priority 4: Testing & Validation (YNAB methodology testing, validation rules, documentation)
 Or: Begin new feature development outside the YNAB refactor backlog
 
 **Implementation Order:**
