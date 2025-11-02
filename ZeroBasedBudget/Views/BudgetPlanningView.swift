@@ -63,6 +63,19 @@ struct BudgetPlanningView: View {
         (startingBalance + totalIncome) - totalAssigned
     }
 
+    // Total available money (for progress indicator)
+    private var totalAvailableMoney: Decimal {
+        startingBalance + totalIncome
+    }
+
+    // Assignment progress (0.0 to 1.0)
+    private var assignmentProgress: Double {
+        guard totalAvailableMoney > 0 else { return 0 }
+        let progress = Double(truncating: totalAssigned as NSDecimalNumber) /
+                      Double(truncating: totalAvailableMoney as NSDecimalNumber)
+        return min(max(progress, 0), 1.0)
+    }
+
     // Color coding for Ready to Assign
     private var readyToAssignColor: Color {
         if readyToAssign == 0 {
@@ -157,11 +170,51 @@ struct BudgetPlanningView: View {
 
                     Divider()
 
-                    LabeledContent("Ready to Assign") {
-                        Text(readyToAssign, format: .currency(code: "USD"))
-                            .fontWeight(.bold)
-                            .foregroundStyle(readyToAssignColor)
+                    // Prominent Ready to Assign Display (Enhancement 3.1)
+                    VStack(spacing: 12) {
+                        // Large amount display
+                        VStack(spacing: 4) {
+                            Text("Ready to Assign")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+
+                            Text(readyToAssign, format: .currency(code: "USD"))
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundStyle(readyToAssignColor)
+                                .minimumScaleFactor(0.5)
+                                .lineLimit(1)
+                        }
+
+                        // Progress bar
+                        VStack(alignment: .leading, spacing: 4) {
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    // Background track
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(height: 16)
+
+                                    // Progress fill
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(readyToAssign == 0 ? Color.green : Color.blue)
+                                        .frame(width: geometry.size.width * assignmentProgress, height: 16)
+                                        .animation(.smooth, value: assignmentProgress)
+                                }
+                            }
+                            .frame(height: 16)
+
+                            HStack {
+                                Text("\(Int(assignmentProgress * 100))% assigned")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text(totalAvailableMoney, format: .currency(code: "USD"))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
+                    .padding(.vertical, 8)
                     .accessibilityLabel("Ready to Assign: \(readyToAssign, format: .currency(code: "USD")). \(readyToAssignStatus)")
                 } header: {
                     HStack {
