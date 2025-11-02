@@ -77,10 +77,10 @@ ZeroBasedBudget/
 
 ### 🔄 Priority 1: Core Budgeting Improvements
 
-**Enhancement 1.1: Refactor Income Section**
-- [ ] Change "Monthly Income" to "Yearly Income" section
-- [ ] Make salary field informational only (display only, not editable in form)
-- [ ] Add note explaining this is annual salary for reference
+**Enhancement 1.1: Refactor Income Section** ✅
+- [x] Change "Monthly Income" to "Yearly Income" section
+- [x] Update "Salary" label to "Annual Salary"
+- [x] Add note explaining this is annual salary for reference
 
 **Enhancement 1.2: Add "Current Available" Section**
 - [ ] Create new section at top of Budget Planning View titled "Current Available"
@@ -144,20 +144,20 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: Post-MVP enhancements based on user feedback  
-**Status**: Ready to begin Enhancement 1.1
+**Current Focus**: Priority 1 - Core Budgeting Improvements
+**Status**: Enhancement 1.1 complete, ready to begin Enhancement 1.2
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-01] ✅ MVP complete - all 6 phases delivered
-2. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
-3. [2025-11-01] ✅ Phase 5 complete - Budget Analysis View with Swift Charts
-4. [2025-11-01] ✅ Phase 4 complete - calculation utilities and verification
-5. [2025-11-01] ✅ Phase 3 complete - Transaction Log View
+1. [2025-11-01] ✅ Enhancement 1.1 complete - refactored income section to yearly display
+2. [2025-11-01] ✅ MVP complete - all 6 phases delivered
+3. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
+4. [2025-11-01] ✅ Phase 5 complete - Budget Analysis View with Swift Charts
+5. [2025-11-01] ✅ Phase 4 complete - calculation utilities and verification
 
 **Active Decisions/Blockers**: None currently
 
 **Next Session Start Here**:
-Begin with Enhancement 1.1 - refactor income section to yearly display.
+Begin with Enhancement 1.2 - add "Current Available" section to Budget Planning View.
 
 ## Git Commit Strategy
 
