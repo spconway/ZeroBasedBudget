@@ -123,15 +123,25 @@ ZeroBasedBudget/
 - State management: selectedMonth (Date) defaults to current date
 - Month navigation uses Calendar.current.date for proper date arithmetic
 
-**Enhancement 2.2: Add Due Date to Expenses**
-- [ ] Add optional "Due Date" field to BudgetCategory model
+**Enhancement 2.2: Add Due Date to Expenses** ✅
+- [x] Add optional "Due Date" field to BudgetCategory model
   - Type: Date?
   - Purpose: Track when expense payment is due
-- [ ] Update Add/Edit Category sheets to include Due Date picker
-- [ ] Display due date in budget list between name and amount
-  - Format: Short date format (e.g., "11/15" or "Nov 15")
+- [x] Update Add/Edit Category sheets to include Due Date picker
+- [x] Display due date in budget list between name and amount
+  - Format: Short date format ("MMM d", e.g., "Nov 15")
   - Show only if due date exists
-- [ ] Consider color coding based on proximity to due date (optional enhancement)
+- [ ] Consider color coding based on proximity to due date (optional enhancement - future)
+
+**Implementation Notes:**
+- BudgetCategory.dueDate property added (Date?, optional) (BudgetCategory.swift:18)
+- AddCategorySheet includes toggle + DatePicker in "Due Date (Optional)" section (BudgetPlanningView.swift:379-385)
+- EditCategorySheet includes toggle + DatePicker, pre-populates from existing value (BudgetPlanningView.swift:453-459)
+- CategoryRow displays due date below category name in caption font (BudgetPlanningView.swift:348-357)
+- Format: "MMM d" (e.g., "Nov 15") for compact display
+- Due date only shown if set (optional field)
+- Toggle control allows easy enable/disable without removing date value
+- SwiftData handles Date? persistence automatically
 
 ### 🔄 Priority 3: Transaction Tab Improvements
 
@@ -160,20 +170,20 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: Priority 2 - Budget Tab Improvements
-**Status**: Enhancement 2.1 complete, ready to begin Enhancement 2.2
+**Current Focus**: Priority 3 - Transaction Tab Improvements
+**Status**: Priority 2 complete (both enhancements), ready to begin Enhancement 3.1
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Enhancement 2.1 complete - added month indicator with navigation
-2. [2025-11-02] ✅ Priority 1 complete - Core Budgeting Improvements (Enhancements 1.1-1.3)
-3. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
-4. [2025-11-02] ✅ Enhancement 1.1 complete - refactored income section to yearly display
-5. [2025-11-01] ✅ MVP complete - all 6 phases delivered
+1. [2025-11-02] ✅ Priority 2 complete - Budget Tab Improvements (Enhancements 2.1-2.2)
+2. [2025-11-02] ✅ Enhancement 2.2 complete - added due date field to expenses
+3. [2025-11-02] ✅ Enhancement 2.1 complete - added month indicator with navigation
+4. [2025-11-02] ✅ Priority 1 complete - Core Budgeting Improvements (Enhancements 1.1-1.3)
+5. [2025-11-02] ✅ Enhancement 1.2 complete - added Current Available section
 
 **Active Decisions/Blockers**: None currently
 
 **Next Session Start Here**:
-Begin with Enhancement 2.2 - add due date field to BudgetCategory model and display in budget list.
+Begin with Enhancement 3.1 - make transactions tap-able in TransactionLogView.
 
 ## Git Commit Strategy
 
