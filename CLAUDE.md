@@ -337,13 +337,21 @@ No code changes required - existing implementation already provides correct beha
   - Shows percentage assigned + total available money
   - Smooth animation on updates
 
-**Enhancement 3.2: Category Assignment UX**
-- [ ] Add "Quick Assign" button next to each category
+**Enhancement 3.2: Category Assignment UX** ✅ COMPLETE
+- [x] Add "Quick Assign" button next to each category
   - On tap, assigns remaining Ready to Assign to that category
   - Useful for "Emergency Fund" or "Next Month's Rent" categories
-- [ ] Add "Assign All Remaining" button that distributes remaining money
-- [ ] Show real-time Ready to Assign calculation as user edits categories
-- [ ] Add undo functionality for assignments
+  - Lightning bolt icon in orange circle, only appears when Ready to Assign > 0
+- [x] Add "Assign All Remaining" button that distributes remaining money
+  - Prominent blue button in Ready to Assign section
+  - Distributes evenly across all categories
+- [x] Show real-time Ready to Assign calculation as user edits categories
+  - Already working via SwiftData @Query reactive updates
+- [x] Add undo functionality for assignments
+  - Undo banner appears after Quick Assign or Assign All Remaining
+  - Shows action description with Undo button
+  - Auto-dismisses after 5 seconds
+  - Smooth animations with .ultraThinMaterial background
 
 **Enhancement 3.3: Month Navigation Context**
 - [ ] When changing months, show message if previous month has unassigned money
@@ -388,26 +396,25 @@ No code changes required - existing implementation already provides correct beha
 
 ## Active Development
 
-**Current Focus**: ✅ Priority 3 - Enhancement 3.1 Complete! Ready for Enhancement 3.2 (Optional)
-**Status**: 🎉 Priority 1 Complete + Priority 2 Complete + Enhancement 3.1 Complete
+**Current Focus**: ✅ Priority 3 Complete! (Enhancement 3.1 + 3.2)
+**Status**: 🎉 Priority 1, 2, and 3 (Enhancements 3.1 + 3.2) Complete
 
 **Achievement Summary:**
-Priority 1 & 2 complete! Enhancement 3.1 adds stunning visual hierarchy to Ready to Assign with 48pt typography and animated progress bar. The most important metric in YNAB budgeting is now impossible to miss!
+Major milestone! Category Assignment UX (Enhancement 3.2) complete with Quick Assign buttons, Assign All Remaining, and undo functionality. Budget assignment is now incredibly efficient with one-tap assignment to any category, even distribution across all categories, and full undo support with auto-dismissing banner. Combined with Enhancement 3.1's visual hierarchy, the Budget Planning view is now production-ready!
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Completed Enhancement 3.1 - Enhanced Ready to Assign visual hierarchy with large typography
-2. [2025-11-02] ✅ Completed Enhancement 2.2 - Added Quick Assign navigation from Transactions to Budget
-3. [2025-11-02] ✅ Verified Enhancement 2.1 - Income transactions automatically update Ready to Assign
-4. [2025-11-02] ✅ Completed Enhancement 1.4 - Refactored MonthlyBudget model for YNAB methodology
-5. [2025-11-02] ✅ Completed Enhancement 1.3 - Added Budget Summary with goal status visualization
+1. [2025-11-02] ✅ Completed Enhancement 3.2 - Category Assignment UX (Quick Assign, Assign All, Undo)
+2. [2025-11-02] ✅ Completed Enhancement 3.1 - Enhanced Ready to Assign visual hierarchy with large typography
+3. [2025-11-02] ✅ Completed Enhancement 2.2 - Added Quick Assign navigation from Transactions to Budget
+4. [2025-11-02] ✅ Verified Enhancement 2.1 - Income transactions automatically update Ready to Assign
+5. [2025-11-02] ✅ Completed Enhancement 1.4 - Refactored MonthlyBudget model for YNAB methodology
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-Priority 1 & 2 complete! Enhancement 3.1 complete! Optional next steps:
-1. Enhancement 3.2: Category Assignment UX (Quick Assign buttons, real-time updates)
-2. Enhancement 3.3: Month Navigation Context (carry-forward, month-to-month changes)
-3. Priority 4: Testing & Validation (YNAB methodology testing, validation rules)
+Priority 1, 2, and 3 (Enhancements 3.1 + 3.2) complete! Optional next steps:
+1. Enhancement 3.3: Month Navigation Context (carry-forward, month-to-month changes)
+2. Priority 4: Testing & Validation (YNAB methodology testing, validation rules)
 Or: Begin new feature development outside the YNAB refactor backlog
 
 **Implementation Order:**
