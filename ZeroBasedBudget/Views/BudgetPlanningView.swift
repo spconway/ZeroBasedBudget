@@ -12,6 +12,9 @@ struct BudgetPlanningView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allCategories: [BudgetCategory]
 
+    // State for selected month/year
+    @State private var selectedMonth: Date = Date()
+
     // State for current available funds
     @State private var currentAvailableAccounts: Decimal = 0
 
@@ -35,6 +38,13 @@ struct BudgetPlanningView: View {
 
     private var quarterlyExpenseCategories: [BudgetCategory] {
         allCategories.filter { $0.categoryType == "Quarterly" }
+    }
+
+    // Computed property for month/year display
+    private var monthYearText: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return "Budgeting for: \(formatter.string(from: selectedMonth))"
     }
 
     // Computed properties for totals (replicating Excel formulas)
@@ -69,6 +79,37 @@ struct BudgetPlanningView: View {
     var body: some View {
         NavigationStack {
             Form {
+                // Month Indicator Section
+                Section {
+                    HStack {
+                        Button(action: previousMonth) {
+                            Image(systemName: "chevron.left")
+                                .font(.title3)
+                                .foregroundStyle(.blue)
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+
+                        Text(monthYearText)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+
+                        Spacer()
+
+                        Button(action: nextMonth) {
+                            Image(systemName: "chevron.right")
+                                .font(.title3)
+                                .foregroundStyle(.blue)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.vertical, 8)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                }
+                .listRowBackground(Color.clear)
+
                 // Current Available Section
                 Section {
                     LabeledContent("Accounts") {
@@ -268,6 +309,18 @@ struct BudgetPlanningView: View {
     private func generateRandomColor() -> String {
         let colors = ["FF6B6B", "4ECDC4", "45B7D1", "FFA07A", "98D8C8", "F7DC6F", "BB8FCE", "85C1E2"]
         return colors.randomElement() ?? "4ECDC4"
+    }
+
+    private func previousMonth() {
+        if let newMonth = Calendar.current.date(byAdding: .month, value: -1, to: selectedMonth) {
+            selectedMonth = newMonth
+        }
+    }
+
+    private func nextMonth() {
+        if let newMonth = Calendar.current.date(byAdding: .month, value: 1, to: selectedMonth) {
+            selectedMonth = newMonth
+        }
     }
 }
 
