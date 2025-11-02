@@ -25,6 +25,16 @@ struct BudgetPlanningView: View {
     @State private var editingCategory: BudgetCategory?
     @State private var showingReadyToAssignInfo = false
 
+    // State for undo functionality (Enhancement 3.2)
+    @State private var undoAction: UndoAction?
+    @State private var showingUndoBanner = false
+
+    // Undo action data structure
+    struct UndoAction {
+        let categoryChanges: [(category: BudgetCategory, previousAmount: Decimal)]
+        let actionDescription: String
+    }
+
     // Computed property to filter categories by type
     private var fixedExpenseCategories: [BudgetCategory] {
         allCategories.filter { $0.categoryType == "Fixed" }
@@ -213,6 +223,25 @@ struct BudgetPlanningView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+
+                        // Assign All Remaining button (Enhancement 3.2)
+                        if readyToAssign > 0 && !allCategories.isEmpty {
+                            Button(action: assignAllRemaining) {
+                                HStack {
+                                    Image(systemName: "arrow.down.circle.fill")
+                                        .font(.body)
+                                    Text("Assign All Remaining Evenly")
+                                        .fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(Color.blue)
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Assign all remaining \(readyToAssign, format: .currency(code: "USD")) evenly across all categories")
+                        }
                     }
                     .padding(.vertical, 8)
                     .accessibilityLabel("Ready to Assign: \(readyToAssign, format: .currency(code: "USD")). \(readyToAssignStatus)")
@@ -246,9 +275,16 @@ struct BudgetPlanningView: View {
                             .italic()
                     } else {
                         ForEach(fixedExpenseCategories) { category in
-                            CategoryRow(category: category, onEdit: {
-                                editingCategory = category
-                            })
+                            CategoryRow(
+                                category: category,
+                                readyToAssign: readyToAssign,
+                                onEdit: {
+                                    editingCategory = category
+                                },
+                                onQuickAssign: {
+                                    quickAssignToCategory(category)
+                                }
+                            )
                         }
                         .onDelete { indexSet in
                             deleteCategories(at: indexSet, from: fixedExpenseCategories)
@@ -275,9 +311,16 @@ struct BudgetPlanningView: View {
                             .italic()
                     } else {
                         ForEach(variableExpenseCategories) { category in
-                            CategoryRow(category: category, onEdit: {
-                                editingCategory = category
-                            })
+                            CategoryRow(
+                                category: category,
+                                readyToAssign: readyToAssign,
+                                onEdit: {
+                                    editingCategory = category
+                                },
+                                onQuickAssign: {
+                                    quickAssignToCategory(category)
+                                }
+                            )
                         }
                         .onDelete { indexSet in
                             deleteCategories(at: indexSet, from: variableExpenseCategories)
@@ -304,9 +347,16 @@ struct BudgetPlanningView: View {
                             .italic()
                     } else {
                         ForEach(quarterlyExpenseCategories) { category in
-                            CategoryRow(category: category, onEdit: {
-                                editingCategory = category
-                            })
+                            CategoryRow(
+                                category: category,
+                                readyToAssign: readyToAssign,
+                                onEdit: {
+                                    editingCategory = category
+                                },
+                                onQuickAssign: {
+                                    quickAssignToCategory(category)
+                                }
+                            )
                         }
                         .onDelete { indexSet in
                             deleteCategories(at: indexSet, from: quarterlyExpenseCategories)
@@ -402,10 +452,130 @@ struct BudgetPlanningView: View {
                 This is the core of YNAB budgeting: Give every dollar a job!
                 """)
             }
+            .overlay(alignment: .bottom) {
+                // Undo banner (Enhancement 3.2)
+                if showingUndoBanner, let action = undoAction {
+                    VStack(spacing: 0) {
+                        Spacer()
+
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .font(.title3)
+
+                            Text(action.actionDescription)
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+
+                            Spacer()
+
+                            Button("Undo") {
+                                performUndo()
+                            }
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.blue)
+
+                            Button(action: {
+                                withAnimation {
+                                    showingUndoBanner = false
+                                    undoAction = nil
+                                }
+                            }) {
+                                Image(systemName: "xmark")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(radius: 10)
+                        .padding()
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
+                }
+            }
         }
     }
 
     // MARK: - Helper Functions
+
+    private func quickAssignToCategory(_ category: BudgetCategory) {
+        guard readyToAssign > 0 else { return }
+
+        // Save undo information
+        let previousAmount = category.budgetedAmount
+        let assignedAmount = readyToAssign
+
+        // Add remaining Ready to Assign to this category
+        category.budgetedAmount += readyToAssign
+        try? modelContext.save()
+
+        // Set up undo
+        let formattedAmount = assignedAmount.formatted(.currency(code: "USD"))
+        undoAction = UndoAction(
+            categoryChanges: [(category, previousAmount)],
+            actionDescription: "Assigned \(formattedAmount) to \(category.name)"
+        )
+        showUndoBanner()
+    }
+
+    private func assignAllRemaining() {
+        guard readyToAssign > 0, !allCategories.isEmpty else { return }
+
+        // Save undo information
+        let previousAmounts = allCategories.map { ($0, $0.budgetedAmount) }
+        let assignedTotal = readyToAssign
+
+        // Distribute remaining money evenly across all categories
+        let amountPerCategory = readyToAssign / Decimal(allCategories.count)
+
+        for category in allCategories {
+            category.budgetedAmount += amountPerCategory
+        }
+
+        try? modelContext.save()
+
+        // Set up undo
+        let formattedAmount = assignedTotal.formatted(.currency(code: "USD"))
+        undoAction = UndoAction(
+            categoryChanges: previousAmounts,
+            actionDescription: "Assigned \(formattedAmount) evenly"
+        )
+        showUndoBanner()
+    }
+
+    private func showUndoBanner() {
+        showingUndoBanner = true
+
+        // Auto-dismiss after 5 seconds
+        Task {
+            try? await Task.sleep(for: .seconds(5))
+            if showingUndoBanner {
+                withAnimation {
+                    showingUndoBanner = false
+                    undoAction = nil
+                }
+            }
+        }
+    }
+
+    private func performUndo() {
+        guard let action = undoAction else { return }
+
+        // Revert all category changes
+        for (category, previousAmount) in action.categoryChanges {
+            category.budgetedAmount = previousAmount
+        }
+
+        try? modelContext.save()
+
+        // Hide undo banner
+        withAnimation {
+            showingUndoBanner = false
+            undoAction = nil
+        }
+    }
 
     private func addCategory(type: String) {
         newCategoryType = type
@@ -460,7 +630,9 @@ struct BudgetPlanningView: View {
 // MARK: - CategoryRow View
 struct CategoryRow: View {
     let category: BudgetCategory
+    let readyToAssign: Decimal
     let onEdit: () -> Void
+    let onQuickAssign: () -> Void
 
     private var dueDateText: String? {
         guard let dueDate = category.dueDate else { return nil }
@@ -470,31 +642,47 @@ struct CategoryRow: View {
     }
 
     var body: some View {
-        Button(action: onEdit) {
-            HStack {
-                Circle()
-                    .fill(Color(hex: category.colorHex))
-                    .frame(width: 12, height: 12)
+        HStack(spacing: 12) {
+            Button(action: onEdit) {
+                HStack {
+                    Circle()
+                        .fill(Color(hex: category.colorHex))
+                        .frame(width: 12, height: 12)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(category.name)
-                        .foregroundStyle(.primary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(category.name)
+                            .foregroundStyle(.primary)
 
-                    if let dueDateText = dueDateText {
-                        Text(dueDateText)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        if let dueDateText = dueDateText {
+                            Text(dueDateText)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+
+                    Spacer()
+
+                    Text(category.budgetedAmount, format: .currency(code: "USD"))
+                        .foregroundStyle(.secondary)
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
                 }
+            }
 
-                Spacer()
-
-                Text(category.budgetedAmount, format: .currency(code: "USD"))
-                    .foregroundStyle(.secondary)
-
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+            // Quick Assign button (only show when there's money to assign)
+            if readyToAssign > 0 {
+                Button(action: onQuickAssign) {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.white)
+                        .frame(width: 28, height: 28)
+                        .background(Color.orange)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Quick assign \(readyToAssign, format: .currency(code: "USD")) to \(category.name)")
             }
         }
     }
