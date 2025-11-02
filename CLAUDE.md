@@ -190,12 +190,14 @@ The Budget Planning View must be completely refactored to follow YNAB-style meth
 
 ### 🔥 Priority 1: YNAB-Style Budget Refactor (CRITICAL)
 
-**Enhancement 1.1: Remove Income Section**
-- [ ] Remove "Yearly Income" section entirely from BudgetPlanningView
-- [ ] Remove "Annual Salary" field
-- [ ] Remove "Other Income" field
-- [ ] Remove any stored income values from MonthlyBudget model (if applicable)
-- [ ] Income should ONLY be tracked through Transaction entries (when money actually arrives)
+**Enhancement 1.1: Remove Income Section** ✅ COMPLETE
+- [x] Remove "Yearly Income" section entirely from BudgetPlanningView
+- [x] Remove "Annual Salary" field
+- [x] Remove "Other Income" field
+- [x] Remove related state variables (yearlySalary, otherIncome)
+- [x] Remove totalIncome computed property from view
+- [x] Remove Summary section (will be rebuilt in Enhancement 1.3)
+- Note: MonthlyBudget.totalIncome property will be addressed in Enhancement 1.4
 
 **Rationale**: In YNAB-style budgeting, you don't budget expected income. You only budget money you currently have. Income is logged when received via transactions.
 
@@ -338,26 +340,26 @@ let readyToAssign: Decimal = (startingBalance + totalIncome) - totalAssigned
 
 ## Active Development
 
-**Current Focus**: 🔥 CRITICAL - YNAB-Style Budget Refactor (Priority 1)  
-**Status**: Ready to begin Enhancement 1.1 - Remove Income Section
+**Current Focus**: 🔥 CRITICAL - YNAB-Style Budget Refactor (Priority 1)
+**Status**: ✅ Enhancement 1.1 Complete - Ready for Enhancement 1.2 (Ready to Assign Section)
 
 **Why This Is Critical:**
 The current implementation violates YNAB methodology by having users budget expected income rather than actual available money. This must be fixed before users adopt incorrect budgeting habits.
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] 📚 Added comprehensive YNAB methodology documentation to CLAUDE.md
-2. [2025-11-02] ⚠️ Identified YNAB methodology violation in current implementation
-3. [2025-11-02] ✅ Completed post-MVP enhancements (month indicator, due dates, tap-to-edit)
-4. [2025-11-01] ✅ Completed MVP - all 6 phases delivered
-5. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
+1. [2025-11-02] ✅ Completed Enhancement 1.1 - Removed income section from BudgetPlanningView (YNAB refactor)
+2. [2025-11-02] 📚 Added comprehensive YNAB methodology documentation to CLAUDE.md
+3. [2025-11-02] ⚠️ Identified YNAB methodology violation in current implementation
+4. [2025-11-02] ✅ Completed post-MVP enhancements (month indicator, due dates, tap-to-edit)
+5. [2025-11-01] ✅ Completed MVP - all 6 phases delivered
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read "YNAB-Style Budgeting Methodology" section thoroughly
-2. Understand why current "Yearly Income" section violates YNAB principles
-3. Begin Enhancement 1.1: Remove Income Section from BudgetPlanningView
-4. File to modify: Views/BudgetPlanningView.swift
+1. Review Enhancement 1.2 requirements in "Post-MVP Enhancement Backlog"
+2. Begin Enhancement 1.2: Create "Ready to Assign" Section
+3. File to modify: Views/BudgetPlanningView.swift
+4. Reference: YNAB methodology section for Ready to Assign calculation formula
 
 **Implementation Order:**
 1. Enhancement 1.1 → Remove income section
