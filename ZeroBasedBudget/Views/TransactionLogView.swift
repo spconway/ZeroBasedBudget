@@ -13,6 +13,8 @@ struct TransactionLogView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
 
+    @Binding var selectedTab: Int
+
     @State private var searchText = ""
     @State private var showingAddSheet = false
     @State private var showingEditSheet = false
@@ -45,9 +47,39 @@ struct TransactionLogView: View {
         }
     }
 
+    // Check if there are any income transactions to show budget reminder
+    private var hasIncomeTransactions: Bool {
+        allTransactions.contains { $0.type == .income }
+    }
+
     var body: some View {
         NavigationStack {
             List {
+                // Quick Assign reminder section (YNAB Enhancement 2.2)
+                if hasIncomeTransactions {
+                    Section {
+                        Button(action: {
+                            selectedTab = 0 // Navigate to Budget tab
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Assign Your Income")
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                    Text("Budget your income in the Budget tab")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
                 // Display transactions in reverse chronological order with running balance
                 ForEach(transactionsWithBalance.reversed(), id: \.0.id) { (transaction, balance) in
                     TransactionRow(transaction: transaction, runningBalance: balance)
@@ -382,6 +414,7 @@ struct EditTransactionSheet: View {
 }
 
 #Preview {
-    TransactionLogView()
+    @Previewable @State var selectedTab = 1
+    TransactionLogView(selectedTab: $selectedTab)
         .modelContainer(for: [Transaction.self, BudgetCategory.self])
 }

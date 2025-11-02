@@ -19,7 +19,7 @@ struct ContentView: View {
                 }
                 .tag(0)
 
-            TransactionLogView()
+            TransactionLogView(selectedTab: $selectedTab)
                 .tabItem {
                     Label("Transactions", systemImage: "list.bullet")
                 }
