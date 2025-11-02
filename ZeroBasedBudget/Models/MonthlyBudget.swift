@@ -3,29 +3,42 @@
 //  ZeroBasedBudget
 //
 //  Created by Claude Code on 2025-11-01.
+//  Updated for YNAB methodology on 2025-11-02.
 //
 
 import Foundation
 import SwiftData
 
+/// YNAB-Style Monthly Budget Model
+///
+/// This model stores the user's starting balance for each month.
+/// Following YNAB methodology, this represents the money the user has RIGHT NOW
+/// at the beginning of the month, not expected future income.
+///
+/// Budget calculations (totalIncome, totalAssigned, readyToAssign) are performed
+/// in the view layer where access to transactions and categories is available.
+///
+/// Key YNAB Principles:
+/// - startingBalance: Money available at the start of the month (actual, not projected)
+/// - Income is tracked through Transaction entries (not stored here)
+/// - Category assignments are tracked through BudgetCategory models
+/// - Ready to Assign = (startingBalance + income from transactions) - total assigned
 @Model
 final class MonthlyBudget {
-    var month: Date  // Store first day of month
-    var totalIncome: Decimal
-    var fixedExpensesTotal: Decimal
-    var variableExpensesTotal: Decimal
-    var savingsGoal: Decimal
+    /// First day of the month this budget represents
+    var month: Date
 
-    @Transient
-    var totalBudget: Decimal {
-        totalIncome - fixedExpensesTotal - variableExpensesTotal - savingsGoal
-    }
+    /// Starting balance - the money available at the beginning of this month
+    /// This represents actual money in accounts RIGHT NOW, following YNAB's principle
+    /// of "budget only money you currently have"
+    var startingBalance: Decimal
 
-    init(month: Date, totalIncome: Decimal) {
+    /// Optional notes about this month's budget
+    var notes: String?
+
+    init(month: Date, startingBalance: Decimal = 0) {
         self.month = month
-        self.totalIncome = totalIncome
-        self.fixedExpensesTotal = 0
-        self.variableExpensesTotal = 0
-        self.savingsGoal = 0
+        self.startingBalance = startingBalance
+        self.notes = nil
     }
 }
