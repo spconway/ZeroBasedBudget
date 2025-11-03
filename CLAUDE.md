@@ -1,15 +1,17 @@
 # Zero-Based Budget Tracker - iOS App
 
-## Project Status: ✅ MVP COMPLETE
+## Project Status: ✅ Production Ready
 
-**Version**: 1.1.0  
-**Completion Date**: November 2, 2025  
-**Budgeting Methodology**: YNAB-Style Zero-Based Budgeting  
+**Version**: 1.2.0  
+**Last Updated**: November 2, 2025  
+**Methodology**: YNAB-Style Zero-Based Budgeting  
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
 ## Project Overview
 
-iOS budget tracking app implementing **YNAB-style zero-based budgeting methodology** where you budget only the money you currently have, giving every dollar a specific job. Built with SwiftUI and SwiftData, provides three main views for budget planning, transaction tracking, and budget analysis.
+iOS budget tracking app implementing **YNAB-style zero-based budgeting** where you budget only money you currently have, giving every dollar a specific job. Built with SwiftUI and SwiftData.
+
+**Core YNAB Principle**: Budget only money that exists TODAY, not money you expect to receive.
 
 ## YNAB-Style Budgeting Methodology
 
@@ -20,15 +22,14 @@ iOS budget tracking app implementing **YNAB-style zero-based budgeting methodolo
 #### Rule 1: Give Every Dollar a Job
 **Budget only money you have RIGHT NOW, not money you expect to receive.**
 
-- You start with your current account balances (money that exists today)
-- You assign ALL of that money to categories until you have $0 unassigned
+- Start with current account balances (money that exists today)
+- Assign ALL of that money to categories until "Ready to Assign" = $0
 - Each category represents a "job" for your dollars (rent, groceries, savings, etc.)
-- When "Ready to Assign" reaches $0, you've successfully budgeted
 
 #### Rule 2: Income Increases Ready to Assign
 **Future income is NOT budgeted until it arrives.**
 
-- When you receive a paycheck (transaction logged as Income)
+- When you receive a paycheck → log it as Income transaction
 - It increases your "Ready to Assign" amount
 - THEN you assign that new money to categories
 - You're always working with money you HAVE, never money you EXPECT
@@ -36,82 +37,25 @@ iOS budget tracking app implementing **YNAB-style zero-based budgeting methodolo
 #### Rule 3: The Budget Flow
 
 ```
-Current Account Balance
+Current Account Balance ($2,500)
     ↓
-Ready to Assign (money available to budget)
+Ready to Assign: $2,500 (money available to budget)
     ↓
 Assign to Categories (give each dollar a job)
     ↓
-Ready to Assign = $0 (all money assigned)
+Ready to Assign: $0 ✅ (Goal achieved - all money assigned)
     ↓
-Income Arrives → Increases Ready to Assign
+Income Arrives → Log transaction → Increases Ready to Assign
     ↓
 Assign new money to categories → Back to $0
 ```
 
-### What This Means for the App
+### Key Implementation Rule
 
-**❌ WRONG Approach (Traditional Budgeting):**
-- Have "Monthly Income" section where user enters expected salary
-- Budget based on money you WILL receive
-- Hope the money arrives as expected
+**❌ NEVER have "Monthly Income" or "Expected Income" sections**  
+**✅ ONLY have "Ready to Assign" showing actual available money**
 
-**✅ CORRECT Approach (YNAB-Style):**
-- Have "Ready to Assign" section showing current available money
-- User manually enters their actual account balances RIGHT NOW
-- Assign all available money to categories
-- When income arrives, log it as a transaction → increases Ready to Assign → assign that money
-
-**Key Distinction:**
-- Traditional: "I expect $5,000 next month, so I'll budget $5,000"
-- YNAB-Style: "I have $2,000 today, so I'll budget $2,000. When my paycheck arrives, I'll budget that too."
-
-### Example Budget Cycle
-
-**Starting Position:**
-```
-Checking Account: $2,500
-Ready to Assign: $2,500
-```
-
-**Assign Money to Categories:**
-```
-Rent: $1,155
-Groceries: $600
-Gas: $200
-Entertainment: $300
-Emergency Fund: $245
----
-Total Assigned: $2,500
-Ready to Assign: $0 ✅ (Goal achieved!)
-```
-
-**Paycheck Arrives (Logged as Income Transaction: $2,812):**
-```
-Checking Account: $5,312
-Ready to Assign: $2,812 (new money to assign!)
-```
-
-**Assign New Money:**
-```
-Add to Rent for next month: $1,155
-Add to Groceries: $600
-Add to Utilities: $500
-Add to Savings: $557
----
-Ready to Assign: $0 ✅ (All new money assigned!)
-```
-
-### Critical Implementation Note
-
-**Any section labeled "Monthly Income", "Yearly Income", or "Expected Income" is WRONG for YNAB-style budgeting.**
-
-These sections imply budgeting money you don't have yet, which violates the core principle.
-
-The app must ONLY show:
-1. **Ready to Assign**: Money available RIGHT NOW
-2. **Categories**: Where money is assigned
-3. **Income Transactions**: Log income when it arrives (not before)
+Income is logged when it ARRIVES via transactions, not pre-budgeted.
 
 ## Architecture
 
@@ -120,346 +64,236 @@ The app must ONLY show:
 - **Pattern**: MVVM (Model-View-ViewModel)
 - **Data Type**: Decimal for ALL monetary values (never Double/Float)
 - **Charts**: Swift Charts for budget visualization
-- **Methodology**: YNAB-Style Zero-Based Budgeting
-
-## MVP Completion Summary
-
-**All Six Implementation Phases Complete:**
-- ✅ Phase 1: SwiftData models, ModelContainer, TabView navigation
-- ✅ Phase 2: Budget Planning View with income/expense management
-- ✅ Phase 3: Transaction Log with running balance
-- ✅ Phase 4: Calculation utilities and persistence verification
-- ✅ Phase 5: Budget Analysis View with Swift Charts
-- ✅ Phase 6: Validation, accessibility, performance documentation
-
-**Key Deliverables**:
-- 3 SwiftData models (BudgetCategory, Transaction, MonthlyBudget)
-- 3 complete views (BudgetPlanningView, TransactionLogView, BudgetAnalysisView)
-- 7 utility files (calculations, validation, accessibility, documentation)
-- 2,500+ lines of production Swift code
-- Comprehensive testing and performance guidelines
-
-**Critical Requirements Met**:
-- ✅ Decimal type for all monetary values (no floating-point errors)
-- ✅ Local-only storage (cloudKitDatabase: .none verified)
-- ✅ Cascade delete relationships on BudgetCategory → Transaction
-- ✅ Indexed queries (#Index on Transaction.date and category)
-- ✅ Currency formatting throughout (.currency(code: "USD"))
-- ✅ Accessibility support (VoiceOver labels)
-- ✅ Form validation and error handling
 
 ## Current Project Structure
 
 ```
 ZeroBasedBudget/
-├── ZeroBasedBudgetApp.swift         # App entry, ModelContainer config
-├── ContentView.swift                 # TabView navigation
 ├── Models/
-│   ├── BudgetCategory.swift         # Expense/income categories
-│   ├── Transaction.swift            # Financial transactions
-│   └── MonthlyBudget.swift          # Monthly budget parameters
+│   ├── BudgetCategory.swift         # Categories with budgeted amounts, due dates
+│   ├── Transaction.swift            # Financial transactions (income/expense)
+│   └── MonthlyBudget.swift          # Monthly budget with startingBalance
 ├── Views/
-│   ├── BudgetPlanningView.swift     # Budget planning (Sheet 1)
-│   ├── TransactionLogView.swift     # Transaction log (Sheet 2)
-│   └── BudgetAnalysisView.swift     # Budget analysis (Sheet 3)
+│   ├── BudgetPlanningView.swift     # Ready to Assign, category assignment
+│   ├── TransactionLogView.swift     # Transaction log with running balance
+│   └── BudgetAnalysisView.swift     # Budget vs actual with Swift Charts
 ├── Utilities/
-│   ├── CategoryComparison.swift     # Budget vs actual model
 │   ├── BudgetCalculations.swift     # Financial aggregation functions
 │   ├── ValidationHelpers.swift      # Input validation utilities
-│   ├── AccessibilityHelpers.swift   # VoiceOver support
-│   ├── CalculationVerification.swift # Calculation documentation
-│   ├── PerformanceGuidelines.swift  # Performance optimization docs
-│   └── TestingGuidelines.swift      # Test case specifications
+│   └── [Other utility files...]
 └── Docs/
     ├── TechnicalSpec.md              # Complete technical specification
-    ├── ClaudeCodeResumption.md       # Session interruption guide
-    └── UserTestingGuide.md           # Comprehensive testing scenarios
+    └── ClaudeCodeResumption.md       # Session interruption guide
 ```
 
-## Post-MVP Enhancement Backlog
+## Completed Features Summary
 
-### ⚠️ CRITICAL: YNAB-Style Refactor Required
+**MVP (v1.0.0):**
+- ✅ SwiftData models with proper relationships and indexes
+- ✅ Budget Planning, Transaction Log, and Budget Analysis views
+- ✅ Local-only storage (no cloud sync)
+- ✅ Decimal type for all monetary calculations
+- ✅ Currency formatting throughout
 
-**Current State Problem:**
-The app currently has "Yearly Income" and "Current Available" sections that were built before understanding true YNAB methodology. These sections imply budgeting future income, which violates YNAB principles.
+**YNAB Refactor (v1.1.0):**
+- ✅ Removed "Income" section (violates YNAB principles)
+- ✅ Added "Ready to Assign" section with YNAB calculations
+- ✅ Income tracked via transactions only
+- ✅ Educational helper text explaining YNAB methodology
 
-**Required Changes:**
-The Budget Planning View must be completely refactored to follow YNAB-style methodology.
+**Post-MVP Enhancements (v1.1.0):**
+- ✅ Month indicator with navigation
+- ✅ Due date field for categories (optional)
+- ✅ Tap-to-edit transactions (reduced steps)
+- ✅ Enhanced Ready to Assign visual hierarchy
+- ✅ Quick Assign and Undo functionality
+- ✅ Month navigation with carry-forward warnings
 
----
+## Active Issues & Enhancement Backlog
 
-### 🔥 Priority 1: YNAB-Style Budget Refactor (CRITICAL)
+### 🔴 Priority 1: Critical Bugs (Fix First)
 
-**Enhancement 1.1: Remove Income Section** ✅ COMPLETE
-- [x] Remove "Yearly Income" section entirely from BudgetPlanningView
-- [x] Remove "Annual Salary" field
-- [x] Remove "Other Income" field
-- [x] Remove related state variables (yearlySalary, otherIncome)
-- [x] Remove totalIncome computed property from view
-- [x] Remove Summary section (will be rebuilt in Enhancement 1.3)
-- Note: MonthlyBudget.totalIncome property will be addressed in Enhancement 1.4
+**Bug 1.1: Budget Category Validation - $0 Amount Not Allowed**
+- [ ] Current behavior: Categories require amount > $0 to save
+- [ ] Expected behavior: Should allow $0 amounts
+- [ ] Rationale: YNAB principle - users should track ALL expenses (even unfunded ones)
+  - User should be aware of all expenses
+  - Should only budget when money becomes available
+  - $0 means "I know about this expense but haven't funded it yet"
+- [ ] Files to modify:
+  - Views/BudgetPlanningView.swift (AddCategorySheet validation)
+  - Views/BudgetPlanningView.swift (EditCategorySheet validation)
+  - Utilities/ValidationHelpers.swift (if validation is centralized)
+- [ ] Test cases:
+  - Create new category with $0 amount → Should save successfully
+  - Edit existing category to $0 → Should save successfully
+  - Display $0 categories correctly in budget list
+  - Verify $0 categories included in "Total Assigned" calculation
 
-**Rationale**: In YNAB-style budgeting, you don't budget expected income. You only budget money you currently have. Income is logged when received via transactions.
-
-**Enhancement 1.2: Create "Ready to Assign" Section** ✅ COMPLETE
-- [x] Add new section at TOP of BudgetPlanningView titled "Ready to Assign"
-- [x] Add "Starting Balance" input field (Decimal type)
-  - Purpose: User enters their current checking/savings account balances
-  - This is money that exists RIGHT NOW
-- [x] Add "Total Income (This Period)" read-only field
-  - Calculate: Sum of all income transactions for selected month using BudgetCalculations
-  - Shows money that arrived this period
-- [x] Add "Total Assigned" read-only field
-  - Calculate: Sum of all budgeted amounts across all categories
-  - Shows how much money has been given jobs
-- [x] Add "Ready to Assign" read-only field (PROMINENT)
-  - Calculate: (Starting Balance + Total Income) - Total Assigned
-  - This is the money still available to assign to categories
-  - Color: Orange if positive, Green when = $0 ✅, Red if negative
-  - Goal: This should be $0 (all money assigned)
-- [x] Add info button (ⓘ) with YNAB methodology explanation alert
-- [x] Add accessibility labels for VoiceOver support
-- [x] Add footer text explaining YNAB principle
-
-**Formula:**
-```swift
-let startingBalance: Decimal = // User input
-let totalIncome: Decimal = // Sum of income transactions for month
-let totalAssigned: Decimal = // Sum of all category budgets
-let readyToAssign: Decimal = (startingBalance + totalIncome) - totalAssigned
-```
-
-**Enhancement 1.3: Update Budget Summary** ✅ COMPLETE
-- [x] Remove "Monthly Income" from summary section (already removed in 1.1)
-- [x] Update summary to show:
-  - "Ready to Assign": Calculated value (from Enhancement 1.2)
-  - "Total Assigned": Sum of all category budgets
-  - "Goal Status": Three-state visual indicator based on Ready to Assign
-- [x] Add visual celebration when Ready to Assign reaches $0
-  - Green checkmark icon + "Goal Achieved!" message
-  - Green background tint (opacity 0.1)
-  - Celebratory footer text: "Perfect! Every dollar has a job."
-- [x] Add orange warning when Ready to Assign > $0 (money needs assigning)
-- [x] Add red warning when Ready to Assign < $0 (over-assigned)
-
-**Enhancement 1.4: Update MonthlyBudget Model** ✅ COMPLETE
-- [x] Add `startingBalance` property (Decimal)
-- [x] Remove `totalIncome` stored property - income comes from transactions only
-- [x] Remove old non-YNAB properties (fixedExpensesTotal, variableExpensesTotal, savingsGoal)
-- [x] Add comprehensive documentation explaining YNAB methodology
-- [x] Update initializer to accept startingBalance
-- [x] Add optional notes property
-
-**Architecture Decision:**
-Computed properties (totalIncome, totalAssigned, readyToAssign) are intentionally
-kept in the view layer (BudgetPlanningView) where @Query access to transactions
-and categories is available. SwiftData models cannot directly query other models
-without complex relationships. The current architecture with calculations in the
-view layer is the correct pattern and already implemented in Enhancement 1.2.
-
-MonthlyBudget is now a lightweight settings model that stores user input
-(startingBalance) per month, following YNAB principles.
-
-**Enhancement 1.5: Add Educational Helper Text** ✅ COMPLETE (Implemented in 1.2)
-- [x] Add info button (ⓘ) next to "Ready to Assign" section title
-- [x] On tap, show alert/popover explaining YNAB methodology:
-  - "Ready to Assign represents money you have RIGHT NOW"
-  - "Budget only money that exists, not money you expect"
-  - "When income arrives, log it as a transaction - it will increase your Ready to Assign"
-  - "Your goal: Assign all money until Ready to Assign = $0"
-- [x] Budget Summary provides tips/guidance based on Ready to Assign status (orange/green/red)
+**Bug 1.2: Transaction Detail Sheet - Blank After App Restart**
+- [ ] Current behavior: After adding transaction and restarting app, tapping transaction shows blank sheet
+- [ ] Expected behavior: Should display transaction details correctly
+- [ ] Investigation needed:
+  - Check if transaction data persists correctly (verify in database)
+  - Check if EditTransactionSheet properly loads transaction from context
+  - Check if SwiftData relationships are loading correctly after restart
+  - Review console logs (user reports no errors shown)
+  - Test: Add transaction → Close app → Reopen → Tap transaction → Should show details
+- [ ] Files to investigate:
+  - Views/TransactionLogView.swift (sheet presentation logic)
+  - Views/TransactionLogView.swift (EditTransactionSheet)
+  - Models/Transaction.swift (verify relationships persist)
+- [ ] Possible causes:
+  - Transaction not being fetched correctly from persistent store
+  - Category relationship not loading (if using @Relationship)
+  - Sheet state not properly bound to transaction
+  - SwiftData context issue after app restart
 
 ---
 
-### 🔄 Priority 2: Transaction Integration Improvements
+### 🟡 Priority 2: New Feature Enhancements
 
-**Enhancement 2.1: Income Transaction Impact** ✅ VERIFIED & COMPLETE
-- [x] Verify income transactions automatically update "Total Income (This Period)"
-  - **Verified**: BudgetPlanningView uses @Query for allTransactions (line 14)
-  - totalIncome computed property calls BudgetCalculations.calculateTotalIncome()
-  - SwiftData @Query automatically observes changes and triggers view updates
-- [x] Verify "Ready to Assign" updates when income transaction is added
-  - **Verified**: readyToAssign depends on totalIncome via computed property chain
-  - When transaction inserted (TransactionLogView:260), SwiftData notifies all @Query observers
-  - View automatically refreshes, recomputing totalIncome → readyToAssign
-- [x] Visual feedback when income increases Ready to Assign
-  - **Already implemented**: Color-coded Ready to Assign (orange/green/red)
-  - Budget Summary provides contextual status messages
-  - Additional banners deemed unnecessary - automatic updates are clear and immediate
-- [x] Banner "You received income! Assign this money to categories."
-  - **Not needed**: Budget Summary already shows orange warning with specific amount
-  - Message: "Assign $X.XX to categories" provides same guidance
+**Enhancement 2.1: Due Date Push Notifications**
+- [ ] Implement local push notifications for categories with due dates
+- [ ] Notifications should work when app is closed (use UNUserNotificationCenter)
+- [ ] Requirements:
+  - Request notification permissions from user
+  - Schedule notifications based on due date
+  - User-configurable notification timing (see Enhancement 2.2)
+  - Notification should display: category name, due date, budgeted amount
+  - Tapping notification should open app to Budget tab with that category highlighted
+- [ ] Implementation approach:
+  - Use UNUserNotificationCenter for local notifications
+  - Schedule notifications when due date is set/updated on category
+  - Cancel/reschedule when due date changes or category deleted
+  - Store notification identifiers with categories for management
+- [ ] Files to create/modify:
+  - Create Utilities/NotificationManager.swift for centralized notification handling
+  - Modify Models/BudgetCategory.swift (may need notification identifier)
+  - Modify Views/BudgetPlanningView.swift (schedule on category save)
+  - Update ZeroBasedBudgetApp.swift (request permissions on first launch)
+- [ ] Testing:
+  - Test notification scheduling for categories with due dates
+  - Test notification display when app is closed
+  - Test deep link to category from notification
+  - Test notification cancellation when category deleted/updated
 
-**Technical Verification:**
-SwiftData's @Query property wrapper provides automatic reactive updates:
-1. Transaction inserted via modelContext.insert() in TransactionLogView
-2. @Query in BudgetPlanningView detects change
-3. View body re-evaluated
-4. totalIncome recomputed from updated allTransactions
-5. readyToAssign recomputed from updated totalIncome
-6. Color coding and Budget Summary update to reflect new state
+**Enhancement 2.2: Notification Frequency Settings**
+- [ ] Allow user to configure when notifications are sent for each category
+- [ ] Frequency options:
+  - 7 days before due date
+  - 2 days before due date  
+  - On day of due date
+  - Custom (user-specified number of days)
+- [ ] Default: All options enabled (3 notifications per due date)
+- [ ] Implementation approach:
+  - Add notification frequency settings to BudgetCategory model
+  - Or create separate NotificationSettings model/utility
+  - Create settings UI (possibly in category edit sheet or separate settings view)
+  - Update NotificationManager to schedule multiple notifications per category
+- [ ] Files to create/modify:
+  - Update Models/BudgetCategory.swift or create NotificationSettings model
+  - Update Views/BudgetPlanningView.swift (EditCategorySheet with notification settings)
+  - Update Utilities/NotificationManager.swift (schedule multiple notifications)
+- [ ] UI Considerations:
+  - Toggle switches for each frequency option
+  - Clear labels: "Notify 7 days before", "Notify 2 days before", "Notify on due date"
+  - Preview of when notifications will be sent
+  - Option to test notification immediately
 
-No code changes required - existing implementation already provides correct behavior!
-
-**Enhancement 2.2: Quick Assign from Transactions** ✅ COMPLETE
-- [x] Add "Assign Your Income" button when viewing income transactions
-  - Button appears at top of transaction list when hasIncomeTransactions = true
-  - Headline: "Assign Your Income"
-  - Subtitle: "Budget your income in the Budget tab"
-  - Blue arrow icon for clear call-to-action
-- [x] Tapping "Assign" navigates to Budget tab (sets selectedTab = 0)
-  - ContentView passes selectedTab binding to TransactionLogView
-  - Navigation is immediate and smooth
-- [x] Helps user remember to budget new income immediately
-  - Reminder appears persistently when income transactions exist
-  - Reinforces YNAB principle: "Give every dollar a job"
-
----
-
-### 🔄 Priority 3: Budget Tab Polish
-
-**Enhancement 3.1: Visual Hierarchy** ✅ COMPLETE
-- [x] Make "Ready to Assign" section most prominent (top of view, distinct styling)
-  - Ready to Assign now displayed in 48pt bold rounded font
-  - Dedicated VStack with prominent spacing
-  - Cannot be missed - largest element in the view
-- [x] Use color coding (already implemented in Enhancement 1.2):
-  - Orange: Ready to Assign > 0 (money needs to be assigned)
-  - Green: Ready to Assign = $0 (goal achieved!)
-  - Red: Ready to Assign < 0 (over-assigned, need to reduce categories)
-- [x] Add large, clear typography for Ready to Assign amount
-  - 48pt bold rounded system font
-  - Color-coded (orange/green/red)
-  - Responsive scaling with minimumScaleFactor
-- [x] Add progress indicator showing assigned vs total available
-  - Animated progress bar (16pt height, rounded corners)
-  - Blue fill during assignment, green when goal achieved
-  - Shows percentage assigned + total available money
-  - Smooth animation on updates
-
-**Enhancement 3.2: Category Assignment UX** ✅ COMPLETE
-- [x] Add "Quick Assign" button next to each category
-  - On tap, assigns remaining Ready to Assign to that category
-  - Useful for "Emergency Fund" or "Next Month's Rent" categories
-  - Lightning bolt icon in orange circle, only appears when Ready to Assign > 0
-- [x] Add "Assign All Remaining" button that distributes remaining money
-  - Prominent blue button in Ready to Assign section
-  - Distributes evenly across all categories
-- [x] Show real-time Ready to Assign calculation as user edits categories
-  - Already working via SwiftData @Query reactive updates
-- [x] Add undo functionality for assignments
-  - Undo banner appears after Quick Assign or Assign All Remaining
-  - Shows action description with Undo button
-  - Auto-dismisses after 5 seconds
-  - Smooth animations with .ultraThinMaterial background
-
-**Enhancement 3.3: Month Navigation Context** ✅ COMPLETE
-- [x] When changing months, show message if previous month has unassigned money
-  - Alert shows exact unassigned amount
-  - Three options: Carry Forward, Leave Behind, Cancel
-- [x] Allow carrying forward unassigned money to next month
-  - Carry Forward adds unassigned to next month's starting balance
-  - Leave Behind switches without carrying
-  - Prevents accidental loss of unassigned money
-- [x] Show month-to-month Ready to Assign changes
-  - Budget Summary displays previous month comparison
-  - Arrow indicators (↑ green, ↓ red, → gray)
-  - Only shows if previous month's budget exists
-- [x] Per-month budget persistence with SwiftData
-  - MonthlyBudget auto-created/loaded for each month
-  - Starting Balance auto-saves on changes
-  - Smart month switching with state management
-
----
-
-### 🔄 Priority 4: Testing & Validation
-
-**Enhancement 4.1: YNAB Methodology Testing**
-- [ ] Add validation preventing negative Ready to Assign
-- [ ] Add alerts/warnings when user tries to over-assign
-
-**Enhancement 4.2: Documentation Updates**
-- [ ] Update TechnicalSpec.md with YNAB methodology section
-- [ ] Document "Ready to Assign" calculation formulas
-- [ ] Create user guide explaining YNAB budgeting flow
-- [ ] Add inline code comments explaining YNAB principles
-
----
-
-### ✅ Completed Enhancements (Keep for Reference)
-
-**Enhancement 2.1: Add Month Indicator** ✅ (Completed 2025-11-02)
-- Month display with navigation implemented
-
-**Enhancement 2.2: Add Due Date to Expenses** ✅ (Completed 2025-11-02)
-- Due date field added to categories with optional display
-
-**Enhancement 3.1: Make Transactions Tap-able** ✅ (Completed 2025-11-02)
-- Tap-to-edit transaction flow implemented
+**Enhancement 2.3: "Last Day of Month" Due Date Option**
+- [ ] Add ability to set due date as "Last Day of Month" (variable based on month)
+- [ ] Challenges:
+  - Date varies by month (28/29/30/31 days)
+  - Need to handle leap years (February 29 vs 28)
+  - Need to calculate actual date when scheduling notifications
+  - Need to display correctly in UI ("Last day of month" vs "Nov 30")
+- [ ] Implementation approach:
+  - Add boolean flag `isLastDayOfMonth` to BudgetCategory
+  - Add computed property that calculates actual date based on current month
+  - Update due date picker UI with "Last Day of Month" toggle
+  - Update notification scheduling to use computed date
+  - Update month navigation to recalculate dates for new month
+- [ ] Files to modify:
+  - Models/BudgetCategory.swift (add isLastDayOfMonth property, computed date)
+  - Views/BudgetPlanningView.swift (due date picker UI)
+  - Utilities/BudgetCalculations.swift (add date calculation utilities)
+  - Utilities/NotificationManager.swift (use computed date for notifications)
+- [ ] UI Design:
+  - Toggle: "Set as last day of month"
+  - When toggled on, disable specific date picker
+  - Show calculated date as read-only: "Will be: November 30, 2025"
+  - Update when month navigation changes
+- [ ] Test Cases:
+  - Test with 30-day month (November)
+  - Test with 31-day month (December)
+  - Test with 28-day month (February non-leap)
+  - Test with 29-day month (February leap year)
+  - Test notification scheduling with variable dates
+  - Test month navigation updates the displayed date
 
 ---
 
 ## Active Development
 
-**Current Focus**: ✅ Priority 3 FULLY Complete! (All Enhancements 3.1, 3.2, 3.3)
-**Status**: 🎉 Priority 1, 2, and ALL of Priority 3 Complete
+**Current Focus**: 🔴 Fix Critical Bugs (Priority 1)  
+**Status**: Ready to begin Bug 1.1 - Budget category $0 validation
 
-**Achievement Summary:**
-MASSIVE MILESTONE! All of Priority 3 complete! Enhancement 3.3 (Month Navigation Context) adds intelligent month switching with unassigned money warnings, carry-forward functionality, and month-to-month comparison. Combined with Enhancement 3.2's Quick Assign/Undo and Enhancement 3.1's visual hierarchy, the Budget Planning view now has production-grade UX with complete budget continuity across months. Users can seamlessly track and manage their budget over time!
+**Why Priority 1 Bugs Are Critical:**
+1. **Bug 1.1** violates YNAB principle of tracking all expenses
+2. **Bug 1.2** breaks core transaction editing functionality after app restart
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Completed Enhancement 3.3 - Month Navigation Context (carry-forward, month comparison)
-2. [2025-11-02] ✅ Completed Enhancement 3.2 - Category Assignment UX (Quick Assign, Assign All, Undo)
-3. [2025-11-02] ✅ Completed Enhancement 3.1 - Enhanced Ready to Assign visual hierarchy
-4. [2025-11-02] ✅ Completed Enhancement 2.2 - Quick Assign navigation from Transactions to Budget
-5. [2025-11-02] ✅ Verified Enhancement 2.1 - Income transactions automatically update Ready to Assign
+1. [2025-11-02] ✅ Completed Priority 3 - Month Navigation Context (carry-forward, month comparison)
+2. [2025-11-02] ✅ Completed Priority 2 - Transaction Integration & Quick Assign
+3. [2025-11-02] ✅ Completed Priority 1 - Full YNAB methodology refactor
+4. [2025-11-01] ✅ Completed MVP - all 6 phases delivered
+5. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-🎉 Priority 1, 2, and ALL of Priority 3 complete! The YNAB refactor and Budget Tab polish are DONE!
+1. Read this CLAUDE.md file (especially YNAB Methodology section)
+2. Begin Bug 1.1: Allow $0 amounts for budget categories
+3. File to modify: Views/BudgetPlanningView.swift (validation in AddCategorySheet and EditCategorySheet)
 
-Next steps:
-1. Priority 4: Testing & Validation (YNAB methodology testing, validation rules, documentation)
-Or: Begin new feature development outside the YNAB refactor backlog
-
-**Implementation Order:**
-1. Enhancement 1.1 → Remove income section
-2. Enhancement 1.2 → Add "Ready to Assign" section
-3. Enhancement 1.3 → Update budget summary
-4. Enhancement 1.4 → Update MonthlyBudget model
-5. Enhancement 1.5 → Add educational helper text
+**Implementation Priority Order:**
+1. Bug 1.1 → Allow $0 category amounts
+2. Bug 1.2 → Fix transaction detail sheet after restart
+3. Enhancement 2.1 → Due date push notifications
+4. Enhancement 2.2 → Notification frequency settings
+5. Enhancement 2.3 → Last day of month due date option
 
 ## Git Commit Strategy
 
-**Commit Frequency**: After each logical unit of work (feature addition, bug fix, refactor)
+**Commit Frequency**: After each logical unit of work (bug fix, feature addition, refactor)
 
 **Commit Message Format**: Conventional Commits
 ```
 <type>: <description>
 
 Examples:
-refactor: remove income section from budget view (YNAB methodology)
-feat: add Ready to Assign section with YNAB calculations
-fix: correct Ready to Assign formula to include starting balance
-docs: add YNAB methodology section to CLAUDE.md
-test: add YNAB principle validation tests
+fix: allow $0 amounts for budget categories (YNAB principle)
+fix: resolve blank transaction detail sheet after app restart
+feat: add push notifications for category due dates
+feat: add notification frequency settings for due dates
+feat: add last day of month option for due dates
+docs: update CLAUDE.md with new bugs and enhancements
 ```
 
 **Commit Types**:
-- `feat:` - New feature
-- `fix:` - Bug fix
+- `fix:` - Bug fix (use for Priority 1 bugs)
+- `feat:` - New feature (use for Priority 2 enhancements)
 - `refactor:` - Code restructuring without behavior change
 - `docs:` - Documentation updates
 - `test:` - Test additions/modifications
 - `perf:` - Performance improvements
-- `style:` - Code style/formatting changes
 
 **Requirements**:
 - Code must build successfully before committing
+- Test the fix/feature manually before committing
 - Update CLAUDE.md "Recent Significant Changes" after important commits
 - Keep commit messages clear and descriptive
-- Reference "YNAB methodology" in commits related to budgeting refactor
 
 ## Session Continuity Guide
 
@@ -470,18 +304,17 @@ test: add YNAB principle validation tests
 Read CLAUDE.md "Active Development" section and continue with current focus.
 ```
 
-**Standard Start** (after gap or new enhancement):
+**Standard Start** (after gap or new work):
 ```
 1. Read CLAUDE.md "Active Development" section
-2. Review "YNAB-Style Budgeting Methodology" section
-3. Check "Post-MVP Enhancement Backlog" for current priority
-4. Review git log --oneline -5 to see recent work
-5. Continue with next unchecked task
+2. Review "Active Issues & Enhancement Backlog" for current priority
+3. Review git log --oneline -5 to see recent work
+4. Continue with next unchecked task
 ```
 
 **Full Start** (after interruption or uncertainty):
 ```
-1. Read CLAUDE.md completely (especially YNAB methodology section)
+1. Read CLAUDE.md completely (especially YNAB methodology)
 2. Run: git log --oneline -10
 3. Run: git status (check for uncommitted work)
 4. Build project to verify working state
@@ -491,20 +324,20 @@ Read CLAUDE.md "Active Development" section and continue with current focus.
 ### During Development
 
 **Update "Active Development" section**:
-- Change "Current Focus" when starting new enhancement
+- Change "Current Focus" when starting new bug/enhancement
 - Add to "Recent Significant Changes" (keep last 5 only) when:
-  - Completing an enhancement
-  - Major refactoring (especially YNAB refactor)
-  - Significant bug fix
+  - Fixing critical bugs
+  - Completing enhancements
+  - Major refactoring
   - Model schema changes
 - Update "Active Decisions/Blockers" if blocked or decision needed
 - Update "Next Session Start Here" at end of session
 
 **Do NOT**:
-- Add blow-by-blow task details to session notes
+- Add blow-by-blow implementation details to session notes
 - List every file changed (git handles that)
-- Create session logs with timestamps (git log handles that)
-- Keep old session notes (archive or delete after work is complete)
+- Create detailed session logs with timestamps (git log handles that)
+- Keep old session notes (delete after work complete)
 
 ### After Interruption
 
@@ -554,34 +387,46 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
    var total: Decimal { categories.reduce(0) { $0 + $1.amount } }  // ✅
    ```
 
-8. **Income Tracking**: Income should ONLY come from transactions, never pre-budgeted
+8. **Income Tracking**: Income ONLY from transactions, never pre-budgeted
    ```swift
    // ✅ CORRECT - Calculate from actual transactions
    var totalIncome: Decimal {
        transactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
    }
-   
-   // ❌ WRONG - Storing expected income
-   var monthlyIncome: Decimal = 5000
    ```
 
-## Feature Request Management
+9. **Zero Amounts Allowed**: Categories can have $0 budgeted (YNAB principle)
+   ```swift
+   // ✅ CORRECT - Allow $0 for unfunded but tracked expenses
+   if amount >= 0 { /* Valid */ }
+   
+   // ❌ WRONG - Requiring amount > 0
+   if amount > 0 { /* Valid */ }
+   ```
 
-**Adding New Feature Requests**:
-1. Add to "Post-MVP Enhancement Backlog" with appropriate priority
-2. Create subsections for related features
+10. **Notifications**: Use UNUserNotificationCenter for local notifications
+    ```swift
+    // ✅ CORRECT - Local notifications that work when app closed
+    UNUserNotificationCenter.current().add(request)
+    ```
+
+## Issue & Enhancement Management
+
+**Adding New Issues**:
+1. Add to "Active Issues & Enhancement Backlog" with appropriate priority
+2. Use 🔴 for critical bugs (Priority 1), 🟡 for features (Priority 2)
 3. Use task checkboxes [ ] for tracking
-4. Include clear acceptance criteria
-5. Reference related models/views if applicable
-6. **Verify it aligns with YNAB methodology** (critical!)
+4. Include clear acceptance criteria and test cases
+5. Reference files to modify
+6. **Verify it aligns with YNAB methodology**
 
-**Completing Enhancements**:
+**Completing Issues/Enhancements**:
 1. Check off all related tasks [x]
-2. Commit with descriptive feat: message
+2. Commit with descriptive fix:/feat: message
 3. Add entry to "Recent Significant Changes"
 4. Update "Next Session Start Here" if needed
-5. Move to next priority enhancement
-6. Test that YNAB principles are maintained
+5. Test thoroughly before marking complete
+6. Verify YNAB principles maintained (if applicable)
 
 ## Quick Reference
 
@@ -590,12 +435,13 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
 **Check Git Status**: `git status`, `git log --oneline -10`
 
 **Key Files to Review When Starting**:
-- This file (CLAUDE.md) - current state, YNAB methodology, next tasks
+- This file (CLAUDE.md) - current state, YNAB methodology, active issues
 - Docs/TechnicalSpec.md - implementation patterns and best practices
 - Docs/ClaudeCodeResumption.md - recovery from interruptions
 
 **YNAB Methodology Quick Check**:
-- ✅ Are we budgeting only money that exists today?
-- ✅ Does income arrive via transactions (not pre-budgeted)?
-- ✅ Is "Ready to Assign" prominently displayed?
-- ✅ Is the goal to reach Ready to Assign = $0?
+- ✅ Budgeting only money that exists today (not future income)?
+- ✅ Income arrives via transactions (not pre-budgeted)?
+- ✅ "Ready to Assign" prominently displayed?
+- ✅ Goal to reach Ready to Assign = $0?
+- ✅ Categories can be $0 (tracked but unfunded)?
