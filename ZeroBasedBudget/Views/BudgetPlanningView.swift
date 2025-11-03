@@ -58,7 +58,7 @@ struct BudgetPlanningView: View {
     private var monthYearText: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
-        return "Budgeting for: \(formatter.string(from: selectedMonth))"
+        return "\(formatter.string(from: selectedMonth))"
     }
 
     // MARK: - Month Management (Enhancement 3.3)
