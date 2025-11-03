@@ -375,12 +375,6 @@ No code changes required - existing implementation already provides correct beha
 ### 🔄 Priority 4: Testing & Validation
 
 **Enhancement 4.1: YNAB Methodology Testing**
-- [ ] Create test scenarios validating YNAB principles:
-  - [ ] Test: Starting balance + income - assigned = Ready to Assign
-  - [ ] Test: Ready to Assign updates when income transaction added
-  - [ ] Test: Cannot assign more than available (Ready to Assign >= 0)
-  - [ ] Test: Visual indicators when Ready to Assign = $0
-  - [ ] Test: Over-assignment warning when Ready to Assign < 0
 - [ ] Add validation preventing negative Ready to Assign
 - [ ] Add alerts/warnings when user tries to over-assign
 
@@ -388,7 +382,6 @@ No code changes required - existing implementation already provides correct beha
 - [ ] Update TechnicalSpec.md with YNAB methodology section
 - [ ] Document "Ready to Assign" calculation formulas
 - [ ] Create user guide explaining YNAB budgeting flow
-- [ ] Update UserTestingGuide.md with YNAB-specific test cases
 - [ ] Add inline code comments explaining YNAB principles
 
 ---
