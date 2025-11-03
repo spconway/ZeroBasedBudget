@@ -178,28 +178,41 @@ ZeroBasedBudget/
   - Delete category → Should cancel notification
   - Verify notification appears at 9:00 AM on due date (when app is closed)
 
-**Enhancement 2.2: Notification Frequency Settings**
-- [ ] Allow user to configure when notifications are sent for each category
-- [ ] Frequency options:
-  - 7 days before due date
-  - 2 days before due date  
-  - On day of due date
-  - Custom (user-specified number of days)
-- [ ] Default: All options enabled (3 notifications per due date)
-- [ ] Implementation approach:
-  - Add notification frequency settings to BudgetCategory model
-  - Or create separate NotificationSettings model/utility
-  - Create settings UI (possibly in category edit sheet or separate settings view)
-  - Update NotificationManager to schedule multiple notifications per category
-- [ ] Files to create/modify:
-  - Update Models/BudgetCategory.swift or create NotificationSettings model
-  - Update Views/BudgetPlanningView.swift (EditCategorySheet with notification settings)
-  - Update Utilities/NotificationManager.swift (schedule multiple notifications)
-- [ ] UI Considerations:
-  - Toggle switches for each frequency option
-  - Clear labels: "Notify 7 days before", "Notify 2 days before", "Notify on due date"
-  - Preview of when notifications will be sent
-  - Option to test notification immediately
+**Enhancement 2.2: Notification Frequency Settings** ✅ IMPLEMENTED
+- [x] Allow user to configure when notifications are sent for each category
+- [x] Frequency options implemented:
+  - ✅ 7 days before due date
+  - ✅ 2 days before due date
+  - ✅ On day of due date
+  - ✅ Custom (user-specified 1-30 days before)
+- [x] Default: notifyOnDueDate only (backward compatible with Enhancement 2.1)
+- [x] Implementation:
+  - ✅ Added notification frequency fields to BudgetCategory model (5 new fields)
+  - ✅ Enhanced NotificationManager to schedule multiple notifications per category
+  - ✅ Updated EditCategorySheet with notification settings UI
+  - ✅ Notification section only visible when due date is set
+- [x] Files modified:
+  - ✅ Models/BudgetCategory.swift (added notify7DaysBefore, notify2DaysBefore, notifyOnDueDate, notifyCustomDays, customDaysCount)
+  - ✅ Views/BudgetPlanningView.swift (added notification settings section with toggles + stepper)
+  - ✅ Utilities/NotificationManager.swift (scheduleNotifications now supports multiple timings)
+- [x] UI Features:
+  - ✅ Toggle switches for each frequency option
+  - ✅ Clear labels: "Notify 7 days before", "Notify 2 days before", "Notify on due date"
+  - ✅ Stepper for custom days (1-30 range)
+  - ✅ Section footer explaining notification settings
+  - ⏸️ Preview of scheduled notifications → Future enhancement (debugging feature exists)
+  - ⏸️ Test notification immediately → Future enhancement
+- [x] Features:
+  - Multiple simultaneous notifications per category
+  - Custom notification messages per timing ("due in 7 days", "due in 2 days", "due today", "due in X days")
+  - Unique identifiers per notification type (prevents conflicts)
+  - Cancels all notification types when category deleted or due date removed
+- [x] Test cases (ready for manual testing):
+  - Enable multiple notification options → Should schedule all enabled notifications
+  - Toggle custom days → Should show/hide stepper
+  - Change custom days count → Should update notification timing
+  - Remove due date → Should cancel all notifications
+  - Edit category → Settings should persist from previous values
 
 **Enhancement 2.3: "Last Day of Month" Due Date Option**
 - [ ] Add ability to set due date as "Last Day of Month" (variable based on month)
@@ -236,34 +249,36 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: 🟡 Priority 2 Enhancements
-**Status**: ✅ Enhancement 2.1 Complete - Ready to begin Enhancement 2.2 (Notification Frequency Settings)
+**Current Focus**: 🟡 Priority 2 Enhancements Complete
+**Status**: ✅ All Priority 1 & 2 Complete - Ready for Enhancement 2.3 or new features
 
 **Completed Work:**
 1. ✅ **Bug 1.1** - Allow $0 amounts for budget categories (YNAB principle)
 2. ✅ **Bug 1.2** - Transaction detail sheet blank after app restart (sheet presentation pattern)
 3. ✅ **Enhancement 2.1** - Due date push notifications (basic implementation, 9:00 AM on due date)
+4. ✅ **Enhancement 2.2** - Configurable notification frequency settings (7 days, 2 days, on date, custom)
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Enhancement 2.1 - Due date push notifications implemented
-2. [2025-11-02] ✅ Bug 1.2 Fixed - Transaction detail sheet after app restart (sheet pattern)
-3. [2025-11-02] ✅ Bug 1.1 Fixed - Allow $0 amounts for budget categories (YNAB principle)
-4. [2025-11-02] ✅ Completed Priority 3 - Month Navigation Context (carry-forward, month comparison)
-5. [2025-11-02] ✅ Completed Priority 2 - Transaction Integration & Quick Assign
+1. [2025-11-02] ✅ Enhancement 2.2 - Notification frequency settings (multiple notifications per category)
+2. [2025-11-02] ✅ Enhancement 2.1 - Due date push notifications implemented
+3. [2025-11-02] ✅ Bug 1.2 Fixed - Transaction detail sheet after app restart (sheet pattern)
+4. [2025-11-02] ✅ Bug 1.1 Fixed - Allow $0 amounts for budget categories (YNAB principle)
+5. [2025-11-02] ✅ Completed Priority 3 - Month Navigation Context (carry-forward, month comparison)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file (especially Enhancement 2.2 section)
-2. Test Enhancement 2.1 notifications work correctly
-3. Optional: Begin Enhancement 2.2 - Notification Frequency Settings (7 days, 2 days, on date, custom)
+1. Read this CLAUDE.md file
+2. Test notification frequency settings work correctly (set 7 days, 2 days, on date, custom)
+3. Optional: Begin Enhancement 2.3 - Last day of month due date option
+4. Or: Test and iterate on existing enhancements
 
 **Implementation Priority Order:**
 1. ✅ Bug 1.1 → Allow $0 category amounts
 2. ✅ Bug 1.2 → Fix transaction detail sheet after restart
 3. ✅ Enhancement 2.1 → Due date push notifications (basic)
-4. Enhancement 2.2 → Notification frequency settings
-5. Enhancement 2.3 → Last day of month due date option
+4. ✅ Enhancement 2.2 → Notification frequency settings
+5. Enhancement 2.3 → Last day of month due date option (optional)
 
 ## Git Commit Strategy
 

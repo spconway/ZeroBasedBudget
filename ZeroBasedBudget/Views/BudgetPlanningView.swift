@@ -538,11 +538,12 @@ struct BudgetPlanningView: View {
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, onSave: { updatedAmount, updatedDueDate, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                EditCategorySheet(category: category, onSave: { updatedAmount, updatedDueDate, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     updateCategory(
                         category,
                         amount: updatedAmount,
                         dueDate: updatedDueDate,
+                        isLastDayOfMonth: isLastDayOfMonth,
                         notify7DaysBefore: notify7Days,
                         notify2DaysBefore: notify2Days,
                         notifyOnDueDate: notifyOnDate,
@@ -729,13 +730,13 @@ struct BudgetPlanningView: View {
         showingAddCategory = false
 
         // Schedule notifications if due date is set
-        if let dueDate = dueDate {
+        if let effectiveDate = category.effectiveDueDate {
             Task {
                 await NotificationManager.shared.scheduleNotifications(
                     for: category.notificationID,
                     categoryName: category.name,
                     budgetedAmount: category.budgetedAmount,
-                    dueDate: dueDate,
+                    dueDate: effectiveDate,
                     notify7DaysBefore: category.notify7DaysBefore,
                     notify2DaysBefore: category.notify2DaysBefore,
                     notifyOnDueDate: category.notifyOnDueDate,
@@ -750,6 +751,7 @@ struct BudgetPlanningView: View {
         _ category: BudgetCategory,
         amount: Decimal,
         dueDate: Date?,
+        isLastDayOfMonth: Bool,
         notify7DaysBefore: Bool,
         notify2DaysBefore: Bool,
         notifyOnDueDate: Bool,
@@ -758,6 +760,7 @@ struct BudgetPlanningView: View {
     ) {
         category.budgetedAmount = amount
         category.dueDate = dueDate
+        category.isLastDayOfMonth = isLastDayOfMonth
         category.notify7DaysBefore = notify7DaysBefore
         category.notify2DaysBefore = notify2DaysBefore
         category.notifyOnDueDate = notifyOnDueDate
@@ -768,13 +771,13 @@ struct BudgetPlanningView: View {
 
         // Schedule or cancel notifications based on due date
         Task {
-            if let dueDate = dueDate {
+            if let effectiveDate = category.effectiveDueDate {
                 // Schedule notifications (this will cancel any existing ones first)
                 await NotificationManager.shared.scheduleNotifications(
                     for: category.notificationID,
                     categoryName: category.name,
                     budgetedAmount: category.budgetedAmount,
-                    dueDate: dueDate,
+                    dueDate: effectiveDate,
                     notify7DaysBefore: notify7DaysBefore,
                     notify2DaysBefore: notify2DaysBefore,
                     notifyOnDueDate: notifyOnDueDate,
@@ -891,10 +894,16 @@ struct CategoryRow: View {
     let onQuickAssign: () -> Void
 
     private var dueDateText: String? {
-        guard let dueDate = category.dueDate else { return nil }
+        guard let effectiveDate = category.effectiveDueDate else { return nil }
+
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
-        return formatter.string(from: dueDate)
+
+        if category.isLastDayOfMonth {
+            return "Last day of month (\(formatter.string(from: effectiveDate)))"
+        } else {
+            return formatter.string(from: effectiveDate)
+        }
     }
 
     var body: some View {
@@ -1006,28 +1015,39 @@ struct AddCategorySheet: View {
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let category: BudgetCategory
-    let onSave: (Decimal, Date?, Bool, Bool, Bool, Bool, Int) -> Void
+    let onSave: (Decimal, Date?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
 
     @State private var budgetedAmount: Decimal
     @State private var hasDueDate: Bool
     @State private var dueDate: Date
+    @State private var isLastDayOfMonth: Bool
     @State private var notify7DaysBefore: Bool
     @State private var notify2DaysBefore: Bool
     @State private var notifyOnDueDate: Bool
     @State private var notifyCustomDays: Bool
     @State private var customDaysCount: Int
 
-    init(category: BudgetCategory, onSave: @escaping (Decimal, Date?, Bool, Bool, Bool, Bool, Int) -> Void) {
+    init(category: BudgetCategory, onSave: @escaping (Decimal, Date?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
         self.category = category
         self.onSave = onSave
         _budgetedAmount = State(initialValue: category.budgetedAmount)
         _hasDueDate = State(initialValue: category.dueDate != nil)
         _dueDate = State(initialValue: category.dueDate ?? Date())
+        _isLastDayOfMonth = State(initialValue: category.isLastDayOfMonth)
         _notify7DaysBefore = State(initialValue: category.notify7DaysBefore)
         _notify2DaysBefore = State(initialValue: category.notify2DaysBefore)
         _notifyOnDueDate = State(initialValue: category.notifyOnDueDate)
         _notifyCustomDays = State(initialValue: category.notifyCustomDays)
         _customDaysCount = State(initialValue: category.customDaysCount)
+    }
+
+    // Helper computed property to show the effective date
+    private var displayDate: Date {
+        if isLastDayOfMonth {
+            return category.lastDayOfCurrentMonth()
+        } else {
+            return dueDate
+        }
     }
 
     var body: some View {
@@ -1055,7 +1075,16 @@ struct EditCategorySheet: View {
                     Toggle("Set Due Date", isOn: $hasDueDate)
 
                     if hasDueDate {
-                        DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                        Toggle("Last day of month", isOn: $isLastDayOfMonth)
+
+                        if !isLastDayOfMonth {
+                            DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                        } else {
+                            LabeledContent("Effective Date") {
+                                Text(displayDate, style: .date)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
 
@@ -1087,6 +1116,7 @@ struct EditCategorySheet: View {
                         onSave(
                             budgetedAmount,
                             hasDueDate ? dueDate : nil,
+                            isLastDayOfMonth,
                             notify7DaysBefore,
                             notify2DaysBefore,
                             notifyOnDueDate,
