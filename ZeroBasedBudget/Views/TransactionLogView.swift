@@ -17,7 +17,6 @@ struct TransactionLogView: View {
 
     @State private var searchText = ""
     @State private var showingAddSheet = false
-    @State private var showingEditSheet = false
     @State private var transactionToEdit: Transaction?
 
     // Filtered transactions based on search
@@ -85,7 +84,6 @@ struct TransactionLogView: View {
                     TransactionRow(transaction: transaction, runningBalance: balance)
                         .onTapGesture {
                             transactionToEdit = transaction
-                            showingEditSheet = true
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
@@ -110,10 +108,8 @@ struct TransactionLogView: View {
             .sheet(isPresented: $showingAddSheet) {
                 AddTransactionSheet(categories: categories)
             }
-            .sheet(isPresented: $showingEditSheet) {
-                if let transaction = transactionToEdit {
-                    EditTransactionSheet(transaction: transaction, categories: categories)
-                }
+            .sheet(item: $transactionToEdit) { transaction in
+                EditTransactionSheet(transaction: transaction, categories: categories)
             }
             .overlay {
                 if allTransactions.isEmpty {
