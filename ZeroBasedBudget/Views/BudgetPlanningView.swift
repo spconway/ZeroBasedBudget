@@ -927,7 +927,7 @@ struct AddCategorySheet: View {
                         onSave(categoryName, budgetedAmount, hasDueDate ? dueDate : nil)
                         dismiss()
                     }
-                    .disabled(categoryName.trimmingCharacters(in: .whitespaces).isEmpty || budgetedAmount <= 0)
+                    .disabled(categoryName.trimmingCharacters(in: .whitespaces).isEmpty || budgetedAmount < 0)
                 }
             }
         }
@@ -994,7 +994,7 @@ struct EditCategorySheet: View {
                     Button("Save") {
                         onSave(budgetedAmount, hasDueDate ? dueDate : nil)
                     }
-                    .disabled(budgetedAmount <= 0)
+                    .disabled(budgetedAmount < 0)
                 }
             }
         }
