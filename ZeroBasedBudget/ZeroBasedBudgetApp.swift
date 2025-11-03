@@ -40,7 +40,23 @@ struct ZeroBasedBudgetApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .task {
+                    // Request notification permissions on app launch
+                    await requestNotificationPermissions()
+                }
         }
         .modelContainer(container)
+    }
+
+    // MARK: - Notification Permissions
+
+    /// Request notification permissions on app launch
+    private func requestNotificationPermissions() async {
+        let granted = await NotificationManager.shared.requestAuthorization()
+        if granted {
+            print("✅ Notification permissions granted")
+        } else {
+            print("⚠️ Notification permissions denied")
+        }
     }
 }

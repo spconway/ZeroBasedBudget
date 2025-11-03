@@ -113,41 +113,40 @@ ZeroBasedBudget/
 
 ### 🔴 Priority 1: Critical Bugs (Fix First)
 
-**Bug 1.1: Budget Category Validation - $0 Amount Not Allowed**
-- [ ] Current behavior: Categories require amount > $0 to save
-- [ ] Expected behavior: Should allow $0 amounts
-- [ ] Rationale: YNAB principle - users should track ALL expenses (even unfunded ones)
+**Bug 1.1: Budget Category Validation - $0 Amount Not Allowed** ✅ FIXED
+- [x] Current behavior: Categories require amount > $0 to save
+- [x] Expected behavior: Should allow $0 amounts
+- [x] Rationale: YNAB principle - users should track ALL expenses (even unfunded ones)
   - User should be aware of all expenses
   - Should only budget when money becomes available
   - $0 means "I know about this expense but haven't funded it yet"
-- [ ] Files to modify:
-  - Views/BudgetPlanningView.swift (AddCategorySheet validation)
-  - Views/BudgetPlanningView.swift (EditCategorySheet validation)
-  - Utilities/ValidationHelpers.swift (if validation is centralized)
-- [ ] Test cases:
+- [x] Files modified:
+  - Views/BudgetPlanningView.swift (AddCategorySheet validation) - Changed `<= 0` to `< 0`
+  - Views/BudgetPlanningView.swift (EditCategorySheet validation) - Changed `<= 0` to `< 0`
+- [x] Test cases (ready for manual testing):
   - Create new category with $0 amount → Should save successfully
   - Edit existing category to $0 → Should save successfully
   - Display $0 categories correctly in budget list
   - Verify $0 categories included in "Total Assigned" calculation
 
-**Bug 1.2: Transaction Detail Sheet - Blank After App Restart**
-- [ ] Current behavior: After adding transaction and restarting app, tapping transaction shows blank sheet
-- [ ] Expected behavior: Should display transaction details correctly
-- [ ] Investigation needed:
-  - Check if transaction data persists correctly (verify in database)
-  - Check if EditTransactionSheet properly loads transaction from context
-  - Check if SwiftData relationships are loading correctly after restart
-  - Review console logs (user reports no errors shown)
-  - Test: Add transaction → Close app → Reopen → Tap transaction → Should show details
-- [ ] Files to investigate:
-  - Views/TransactionLogView.swift (sheet presentation logic)
-  - Views/TransactionLogView.swift (EditTransactionSheet)
-  - Models/Transaction.swift (verify relationships persist)
-- [ ] Possible causes:
-  - Transaction not being fetched correctly from persistent store
-  - Category relationship not loading (if using @Relationship)
-  - Sheet state not properly bound to transaction
-  - SwiftData context issue after app restart
+**Bug 1.2: Transaction Detail Sheet - Blank After App Restart** ✅ FIXED
+- [x] Current behavior: After adding transaction and restarting app, tapping transaction shows blank sheet
+- [x] Expected behavior: Should display transaction details correctly
+- [x] Root cause identified:
+  - Sheet presentation pattern using `.sheet(isPresented:)` with separate boolean and optional transaction
+  - Timing issue where sheet content evaluated before transaction properly loaded from SwiftData
+- [x] Files modified:
+  - Views/TransactionLogView.swift (changed to `.sheet(item:)` pattern)
+  - Removed `showingEditSheet` boolean state variable
+  - Simplified tap gesture to only set `transactionToEdit`
+- [x] Solution:
+  - Changed from `.sheet(isPresented:)` to `.sheet(item:)` pattern
+  - Sheet now tied directly to optional transaction object
+  - Recommended SwiftUI pattern for item-based sheet presentation
+- [x] Test cases (ready for manual testing):
+  - Add transaction → Close app → Reopen → Tap transaction → Should show details correctly
+  - Verify all transaction fields load properly (date, description, amount, category, type, notes)
+  - Verify can edit and save changes after restart
 
 ---
 
@@ -236,30 +235,31 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: 🔴 Fix Critical Bugs (Priority 1)  
-**Status**: Ready to begin Bug 1.1 - Budget category $0 validation
+**Current Focus**: ✅ Priority 1 Critical Bugs Complete - Ready for Priority 2 Enhancements
+**Status**: All critical bugs fixed - Ready to begin Enhancement 2.1 (Due Date Push Notifications)
 
-**Why Priority 1 Bugs Are Critical:**
-1. **Bug 1.1** violates YNAB principle of tracking all expenses
-2. **Bug 1.2** breaks core transaction editing functionality after app restart
+**Priority 1 Critical Bugs:**
+1. **Bug 1.1** ✅ FIXED - Allow $0 amounts for budget categories (YNAB principle)
+2. **Bug 1.2** ✅ FIXED - Transaction detail sheet blank after app restart (sheet presentation pattern)
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Completed Priority 3 - Month Navigation Context (carry-forward, month comparison)
-2. [2025-11-02] ✅ Completed Priority 2 - Transaction Integration & Quick Assign
-3. [2025-11-02] ✅ Completed Priority 1 - Full YNAB methodology refactor
-4. [2025-11-01] ✅ Completed MVP - all 6 phases delivered
-5. [2025-11-01] ✅ Phase 6 complete - validation, accessibility, testing docs
+1. [2025-11-02] ✅ Bug 1.2 Fixed - Transaction detail sheet after app restart (sheet pattern)
+2. [2025-11-02] ✅ Bug 1.1 Fixed - Allow $0 amounts for budget categories (YNAB principle)
+3. [2025-11-02] ✅ Completed Priority 3 - Month Navigation Context (carry-forward, month comparison)
+4. [2025-11-02] ✅ Completed Priority 2 - Transaction Integration & Quick Assign
+5. [2025-11-02] ✅ Completed Priority 1 - Full YNAB methodology refactor
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file (especially YNAB Methodology section)
-2. Begin Bug 1.1: Allow $0 amounts for budget categories
-3. File to modify: Views/BudgetPlanningView.swift (validation in AddCategorySheet and EditCategorySheet)
+1. Read this CLAUDE.md file (especially Enhancement 2.1 section)
+2. Begin Enhancement 2.1: Due Date Push Notifications
+3. Files to create: Utilities/NotificationManager.swift
+4. Files to modify: Models/BudgetCategory.swift, Views/BudgetPlanningView.swift, ZeroBasedBudgetApp.swift
 
 **Implementation Priority Order:**
-1. Bug 1.1 → Allow $0 category amounts
-2. Bug 1.2 → Fix transaction detail sheet after restart
+1. ✅ Bug 1.1 → Allow $0 category amounts
+2. ✅ Bug 1.2 → Fix transaction detail sheet after restart
 3. Enhancement 2.1 → Due date push notifications
 4. Enhancement 2.2 → Notification frequency settings
 5. Enhancement 2.3 → Last day of month due date option

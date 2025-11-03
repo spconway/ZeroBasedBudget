@@ -718,6 +718,18 @@ struct BudgetPlanningView: View {
         modelContext.insert(category)
         try? modelContext.save()
         showingAddCategory = false
+
+        // Schedule notification if due date is set
+        if let dueDate = dueDate {
+            Task {
+                await NotificationManager.shared.scheduleNotification(
+                    for: category.notificationID,
+                    categoryName: category.name,
+                    budgetedAmount: category.budgetedAmount,
+                    dueDate: dueDate
+                )
+            }
+        }
     }
 
     private func updateCategory(_ category: BudgetCategory, amount: Decimal, dueDate: Date?) {
@@ -725,11 +737,34 @@ struct BudgetPlanningView: View {
         category.dueDate = dueDate
         try? modelContext.save()
         editingCategory = nil
+
+        // Schedule or cancel notification based on due date
+        Task {
+            if let dueDate = dueDate {
+                // Schedule notification (this will cancel any existing one first)
+                await NotificationManager.shared.scheduleNotification(
+                    for: category.notificationID,
+                    categoryName: category.name,
+                    budgetedAmount: category.budgetedAmount,
+                    dueDate: dueDate
+                )
+            } else {
+                // Cancel notification if due date was removed
+                await NotificationManager.shared.cancelNotification(for: category.notificationID)
+            }
+        }
     }
 
     private func deleteCategories(at offsets: IndexSet, from categories: [BudgetCategory]) {
         for index in offsets {
-            modelContext.delete(categories[index])
+            let category = categories[index]
+
+            // Cancel notification before deleting category
+            Task {
+                await NotificationManager.shared.cancelNotification(for: category.notificationID)
+            }
+
+            modelContext.delete(category)
         }
         try? modelContext.save()
     }

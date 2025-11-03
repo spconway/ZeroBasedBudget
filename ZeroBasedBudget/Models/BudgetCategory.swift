@@ -16,6 +16,7 @@ final class BudgetCategory {
     var categoryType: String  // "Fixed", "Variable", "Quarterly", "Income"
     var colorHex: String
     var dueDate: Date?  // Optional due date for expense tracking
+    var notificationID: UUID  // UUID for notification tracking
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.category)
     var transactions: [Transaction] = []
@@ -26,5 +27,6 @@ final class BudgetCategory {
         self.categoryType = categoryType
         self.colorHex = colorHex
         self.dueDate = dueDate
+        self.notificationID = UUID()
     }
 }
