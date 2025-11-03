@@ -538,8 +538,17 @@ struct BudgetPlanningView: View {
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, onSave: { updatedAmount, updatedDueDate in
-                    updateCategory(category, amount: updatedAmount, dueDate: updatedDueDate)
+                EditCategorySheet(category: category, onSave: { updatedAmount, updatedDueDate, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                    updateCategory(
+                        category,
+                        amount: updatedAmount,
+                        dueDate: updatedDueDate,
+                        notify7DaysBefore: notify7Days,
+                        notify2DaysBefore: notify2Days,
+                        notifyOnDueDate: notifyOnDate,
+                        notifyCustomDays: notifyCustom,
+                        customDaysCount: customDays
+                    )
                 })
             }
             .alert("Ready to Assign - YNAB Methodology", isPresented: $showingReadyToAssignInfo) {
@@ -719,37 +728,61 @@ struct BudgetPlanningView: View {
         try? modelContext.save()
         showingAddCategory = false
 
-        // Schedule notification if due date is set
+        // Schedule notifications if due date is set
         if let dueDate = dueDate {
             Task {
-                await NotificationManager.shared.scheduleNotification(
+                await NotificationManager.shared.scheduleNotifications(
                     for: category.notificationID,
                     categoryName: category.name,
                     budgetedAmount: category.budgetedAmount,
-                    dueDate: dueDate
+                    dueDate: dueDate,
+                    notify7DaysBefore: category.notify7DaysBefore,
+                    notify2DaysBefore: category.notify2DaysBefore,
+                    notifyOnDueDate: category.notifyOnDueDate,
+                    notifyCustomDays: category.notifyCustomDays,
+                    customDaysCount: category.customDaysCount
                 )
             }
         }
     }
 
-    private func updateCategory(_ category: BudgetCategory, amount: Decimal, dueDate: Date?) {
+    private func updateCategory(
+        _ category: BudgetCategory,
+        amount: Decimal,
+        dueDate: Date?,
+        notify7DaysBefore: Bool,
+        notify2DaysBefore: Bool,
+        notifyOnDueDate: Bool,
+        notifyCustomDays: Bool,
+        customDaysCount: Int
+    ) {
         category.budgetedAmount = amount
         category.dueDate = dueDate
+        category.notify7DaysBefore = notify7DaysBefore
+        category.notify2DaysBefore = notify2DaysBefore
+        category.notifyOnDueDate = notifyOnDueDate
+        category.notifyCustomDays = notifyCustomDays
+        category.customDaysCount = customDaysCount
         try? modelContext.save()
         editingCategory = nil
 
-        // Schedule or cancel notification based on due date
+        // Schedule or cancel notifications based on due date
         Task {
             if let dueDate = dueDate {
-                // Schedule notification (this will cancel any existing one first)
-                await NotificationManager.shared.scheduleNotification(
+                // Schedule notifications (this will cancel any existing ones first)
+                await NotificationManager.shared.scheduleNotifications(
                     for: category.notificationID,
                     categoryName: category.name,
                     budgetedAmount: category.budgetedAmount,
-                    dueDate: dueDate
+                    dueDate: dueDate,
+                    notify7DaysBefore: notify7DaysBefore,
+                    notify2DaysBefore: notify2DaysBefore,
+                    notifyOnDueDate: notifyOnDueDate,
+                    notifyCustomDays: notifyCustomDays,
+                    customDaysCount: customDaysCount
                 )
             } else {
-                // Cancel notification if due date was removed
+                // Cancel notifications if due date was removed
                 await NotificationManager.shared.cancelNotification(for: category.notificationID)
             }
         }
@@ -973,18 +1006,28 @@ struct AddCategorySheet: View {
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let category: BudgetCategory
-    let onSave: (Decimal, Date?) -> Void
+    let onSave: (Decimal, Date?, Bool, Bool, Bool, Bool, Int) -> Void
 
     @State private var budgetedAmount: Decimal
     @State private var hasDueDate: Bool
     @State private var dueDate: Date
+    @State private var notify7DaysBefore: Bool
+    @State private var notify2DaysBefore: Bool
+    @State private var notifyOnDueDate: Bool
+    @State private var notifyCustomDays: Bool
+    @State private var customDaysCount: Int
 
-    init(category: BudgetCategory, onSave: @escaping (Decimal, Date?) -> Void) {
+    init(category: BudgetCategory, onSave: @escaping (Decimal, Date?, Bool, Bool, Bool, Bool, Int) -> Void) {
         self.category = category
         self.onSave = onSave
         _budgetedAmount = State(initialValue: category.budgetedAmount)
         _hasDueDate = State(initialValue: category.dueDate != nil)
         _dueDate = State(initialValue: category.dueDate ?? Date())
+        _notify7DaysBefore = State(initialValue: category.notify7DaysBefore)
+        _notify2DaysBefore = State(initialValue: category.notify2DaysBefore)
+        _notifyOnDueDate = State(initialValue: category.notifyOnDueDate)
+        _notifyCustomDays = State(initialValue: category.notifyCustomDays)
+        _customDaysCount = State(initialValue: category.customDaysCount)
     }
 
     var body: some View {
@@ -1015,6 +1058,20 @@ struct EditCategorySheet: View {
                         DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
                     }
                 }
+
+                if hasDueDate {
+                    Section(header: Text("Notification Settings"), footer: Text("Choose when to be notified about this budget due date")) {
+                        Toggle("Notify 7 days before", isOn: $notify7DaysBefore)
+                        Toggle("Notify 2 days before", isOn: $notify2DaysBefore)
+                        Toggle("Notify on due date", isOn: $notifyOnDueDate)
+
+                        Toggle("Notify custom days before", isOn: $notifyCustomDays)
+
+                        if notifyCustomDays {
+                            Stepper("Notify \(customDaysCount) day\(customDaysCount == 1 ? "" : "s") before", value: $customDaysCount, in: 1...30)
+                        }
+                    }
+                }
             }
             .navigationTitle("Edit Category")
             .navigationBarTitleDisplayMode(.inline)
@@ -1027,7 +1084,15 @@ struct EditCategorySheet: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(budgetedAmount, hasDueDate ? dueDate : nil)
+                        onSave(
+                            budgetedAmount,
+                            hasDueDate ? dueDate : nil,
+                            notify7DaysBefore,
+                            notify2DaysBefore,
+                            notifyOnDueDate,
+                            notifyCustomDays,
+                            customDaysCount
+                        )
                     }
                     .disabled(budgetedAmount < 0)
                 }

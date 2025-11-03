@@ -37,31 +37,129 @@ class NotificationManager {
 
     // MARK: - Notification Scheduling
 
-    /// Schedule a notification for a budget category's due date
+    /// Schedule notifications for a budget category based on frequency settings
     /// - Parameters:
-    ///   - category: The budget category
-    ///   - dueDate: The due date for the notification
-    func scheduleNotification(for categoryID: UUID, categoryName: String, budgetedAmount: Decimal, dueDate: Date) async {
-        // Cancel any existing notification for this category
+    ///   - categoryID: The category's UUID
+    ///   - categoryName: The category name
+    ///   - budgetedAmount: The budgeted amount
+    ///   - dueDate: The due date
+    ///   - notify7DaysBefore: Schedule notification 7 days before
+    ///   - notify2DaysBefore: Schedule notification 2 days before
+    ///   - notifyOnDueDate: Schedule notification on due date
+    ///   - notifyCustomDays: Schedule notification custom days before
+    ///   - customDaysCount: Number of days before for custom notification
+    func scheduleNotifications(
+        for categoryID: UUID,
+        categoryName: String,
+        budgetedAmount: Decimal,
+        dueDate: Date,
+        notify7DaysBefore: Bool,
+        notify2DaysBefore: Bool,
+        notifyOnDueDate: Bool,
+        notifyCustomDays: Bool,
+        customDaysCount: Int
+    ) async {
+        // Cancel any existing notifications for this category
         await cancelNotification(for: categoryID)
 
+        let calendar = Calendar.current
+        var notificationCount = 0
+
+        // Schedule 7 days before notification
+        if notify7DaysBefore, let notificationDate = calendar.date(byAdding: .day, value: -7, to: dueDate) {
+            await scheduleNotification(
+                categoryID: categoryID,
+                categoryName: categoryName,
+                budgetedAmount: budgetedAmount,
+                notificationDate: notificationDate,
+                dueDate: dueDate,
+                type: .sevenDaysBefore
+            )
+            notificationCount += 1
+        }
+
+        // Schedule 2 days before notification
+        if notify2DaysBefore, let notificationDate = calendar.date(byAdding: .day, value: -2, to: dueDate) {
+            await scheduleNotification(
+                categoryID: categoryID,
+                categoryName: categoryName,
+                budgetedAmount: budgetedAmount,
+                notificationDate: notificationDate,
+                dueDate: dueDate,
+                type: .twoDaysBefore
+            )
+            notificationCount += 1
+        }
+
+        // Schedule on due date notification
+        if notifyOnDueDate {
+            await scheduleNotification(
+                categoryID: categoryID,
+                categoryName: categoryName,
+                budgetedAmount: budgetedAmount,
+                notificationDate: dueDate,
+                dueDate: dueDate,
+                type: .onDueDate
+            )
+            notificationCount += 1
+        }
+
+        // Schedule custom days before notification
+        if notifyCustomDays, customDaysCount > 0, let notificationDate = calendar.date(byAdding: .day, value: -customDaysCount, to: dueDate) {
+            await scheduleNotification(
+                categoryID: categoryID,
+                categoryName: categoryName,
+                budgetedAmount: budgetedAmount,
+                notificationDate: notificationDate,
+                dueDate: dueDate,
+                type: .customDays(customDaysCount)
+            )
+            notificationCount += 1
+        }
+
+        print("✅ Scheduled \(notificationCount) notification(s) for \(categoryName)")
+    }
+
+    /// Schedule a single notification with specific timing
+    private func scheduleNotification(
+        categoryID: UUID,
+        categoryName: String,
+        budgetedAmount: Decimal,
+        notificationDate: Date,
+        dueDate: Date,
+        type: NotificationType
+    ) async {
         // Create notification identifier
-        let identifier = notificationIdentifier(for: categoryID)
+        let identifier = notificationIdentifier(for: categoryID, type: type)
 
         // Create notification content
         let content = UNMutableNotificationContent()
-        content.title = "Budget Due: \(categoryName)"
-        content.body = "Your \(categoryName) budget of \(budgetedAmount.formatted(.currency(code: "USD"))) is due today."
+        let formattedAmount = budgetedAmount.formatted(.currency(code: "USD"))
+
+        switch type {
+        case .sevenDaysBefore:
+            content.title = "Budget Reminder: \(categoryName)"
+            content.body = "Your \(categoryName) budget of \(formattedAmount) is due in 7 days."
+        case .twoDaysBefore:
+            content.title = "Budget Reminder: \(categoryName)"
+            content.body = "Your \(categoryName) budget of \(formattedAmount) is due in 2 days."
+        case .onDueDate:
+            content.title = "Budget Due: \(categoryName)"
+            content.body = "Your \(categoryName) budget of \(formattedAmount) is due today."
+        case .customDays(let days):
+            content.title = "Budget Reminder: \(categoryName)"
+            content.body = "Your \(categoryName) budget of \(formattedAmount) is due in \(days) day\(days == 1 ? "" : "s")."
+        }
+
         content.sound = .default
         content.badge = 1
 
         // Add category ID to userInfo for deep linking
         content.userInfo = ["categoryID": categoryID.uuidString]
 
-        // Create trigger based on due date
-        // Set notification for 9:00 AM on the due date
+        // Create trigger - Set notification for 9:00 AM
         let calendar = Calendar.current
-        var dateComponents = calendar.dateComponents([.year, .month, .day], from: dueDate)
+        var dateComponents = calendar.dateComponents([.year, .month, .day], from: notificationDate)
         dateComponents.hour = 9
         dateComponents.minute = 0
 
@@ -73,18 +171,32 @@ class NotificationManager {
         // Schedule notification
         do {
             try await UNUserNotificationCenter.current().add(request)
-            print("✅ Scheduled notification for \(categoryName) on \(dueDate)")
         } catch {
-            print("❌ Error scheduling notification: \(error)")
+            print("❌ Error scheduling \(type) notification: \(error)")
         }
     }
 
-    /// Cancel notification for a specific category
+    /// Cancel all notifications for a specific category
     /// - Parameter categoryID: The category's UUID
     func cancelNotification(for categoryID: UUID) async {
-        let identifier = notificationIdentifier(for: categoryID)
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
-        print("🗑️ Cancelled notification for category: \(categoryID)")
+        // Cancel all notification types for this category
+        let identifiers = [
+            notificationIdentifier(for: categoryID, type: .sevenDaysBefore),
+            notificationIdentifier(for: categoryID, type: .twoDaysBefore),
+            notificationIdentifier(for: categoryID, type: .onDueDate),
+            notificationIdentifier(for: categoryID, type: .customDays(0)) // Base identifier for custom
+        ]
+
+        // Also need to cancel any custom days notifications with different counts
+        // Get all pending notifications and filter by category ID prefix
+        let pendingRequests = await UNUserNotificationCenter.current().pendingNotificationRequests()
+        let categoryPrefix = "category-\(categoryID.uuidString)"
+        let categoryIdentifiers = pendingRequests
+            .map { $0.identifier }
+            .filter { $0.hasPrefix(categoryPrefix) }
+
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: categoryIdentifiers)
+        print("🗑️ Cancelled \(categoryIdentifiers.count) notification(s) for category: \(categoryID)")
     }
 
     /// Cancel all pending notifications
@@ -95,11 +207,31 @@ class NotificationManager {
 
     // MARK: - Notification Identifiers
 
-    /// Generate notification identifier for a category
-    /// - Parameter categoryID: The category's UUID
+    /// Notification type for different timing options
+    private enum NotificationType {
+        case sevenDaysBefore
+        case twoDaysBefore
+        case onDueDate
+        case customDays(Int)
+    }
+
+    /// Generate notification identifier for a category and type
+    /// - Parameters:
+    ///   - categoryID: The category's UUID
+    ///   - type: The notification type
     /// - Returns: Notification identifier string
-    private func notificationIdentifier(for categoryID: UUID) -> String {
-        return "category-due-date-\(categoryID.uuidString)"
+    private func notificationIdentifier(for categoryID: UUID, type: NotificationType) -> String {
+        let baseIdentifier = "category-\(categoryID.uuidString)"
+        switch type {
+        case .sevenDaysBefore:
+            return "\(baseIdentifier)-7days"
+        case .twoDaysBefore:
+            return "\(baseIdentifier)-2days"
+        case .onDueDate:
+            return "\(baseIdentifier)-duedate"
+        case .customDays(let days):
+            return "\(baseIdentifier)-custom\(days)days"
+        }
     }
 
     // MARK: - Debugging Helpers

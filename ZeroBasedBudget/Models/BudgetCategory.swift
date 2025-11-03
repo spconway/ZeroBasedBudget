@@ -18,6 +18,13 @@ final class BudgetCategory {
     var dueDate: Date?  // Optional due date for expense tracking
     var notificationID: UUID  // UUID for notification tracking
 
+    // Notification frequency settings
+    var notify7DaysBefore: Bool
+    var notify2DaysBefore: Bool
+    var notifyOnDueDate: Bool
+    var notifyCustomDays: Bool
+    var customDaysCount: Int  // Number of days before due date for custom notification
+
     @Relationship(deleteRule: .cascade, inverse: \Transaction.category)
     var transactions: [Transaction] = []
 
@@ -28,5 +35,12 @@ final class BudgetCategory {
         self.colorHex = colorHex
         self.dueDate = dueDate
         self.notificationID = UUID()
+
+        // Default notification settings: notify on due date only
+        self.notify7DaysBefore = false
+        self.notify2DaysBefore = false
+        self.notifyOnDueDate = true
+        self.notifyCustomDays = false
+        self.customDaysCount = 1
     }
 }

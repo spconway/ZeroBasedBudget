@@ -152,30 +152,31 @@ ZeroBasedBudget/
 
 ### 🟡 Priority 2: New Feature Enhancements
 
-**Enhancement 2.1: Due Date Push Notifications**
-- [ ] Implement local push notifications for categories with due dates
-- [ ] Notifications should work when app is closed (use UNUserNotificationCenter)
-- [ ] Requirements:
-  - Request notification permissions from user
-  - Schedule notifications based on due date
-  - User-configurable notification timing (see Enhancement 2.2)
-  - Notification should display: category name, due date, budgeted amount
-  - Tapping notification should open app to Budget tab with that category highlighted
-- [ ] Implementation approach:
-  - Use UNUserNotificationCenter for local notifications
-  - Schedule notifications when due date is set/updated on category
-  - Cancel/reschedule when due date changes or category deleted
-  - Store notification identifiers with categories for management
-- [ ] Files to create/modify:
-  - Create Utilities/NotificationManager.swift for centralized notification handling
-  - Modify Models/BudgetCategory.swift (may need notification identifier)
-  - Modify Views/BudgetPlanningView.swift (schedule on category save)
-  - Update ZeroBasedBudgetApp.swift (request permissions on first launch)
-- [ ] Testing:
-  - Test notification scheduling for categories with due dates
-  - Test notification display when app is closed
-  - Test deep link to category from notification
-  - Test notification cancellation when category deleted/updated
+**Enhancement 2.1: Due Date Push Notifications** ✅ IMPLEMENTED
+- [x] Implement local push notifications for categories with due dates
+- [x] Notifications work when app is closed (using UNUserNotificationCenter)
+- [x] Requirements implemented:
+  - ✅ Request notification permissions from user (on app launch)
+  - ✅ Schedule notifications based on due date (9:00 AM on due date)
+  - ⏸️ User-configurable notification timing → See Enhancement 2.2
+  - ✅ Notification displays: category name, due date, budgeted amount
+  - ⏸️ Tapping notification opens app → Not yet implemented (future enhancement)
+- [x] Implementation:
+  - ✅ Created Utilities/NotificationManager.swift for centralized notification handling
+  - ✅ Added notificationID (UUID) to Models/BudgetCategory.swift
+  - ✅ Modified Views/BudgetPlanningView.swift (schedule on save/update, cancel on delete)
+  - ✅ Updated ZeroBasedBudgetApp.swift (request permissions using .task modifier)
+- [x] Features:
+  - Notifications scheduled for 9:00 AM on due date
+  - Automatically managed (scheduled/canceled) as categories change
+  - Uses UUID for reliable notification identification
+  - Separate from SwiftData PersistentIdentifier for cleaner implementation
+- [x] Test cases (ready for manual testing):
+  - Create category with due date → Should schedule notification
+  - Edit category due date → Should reschedule notification
+  - Remove due date from category → Should cancel notification
+  - Delete category → Should cancel notification
+  - Verify notification appears at 9:00 AM on due date (when app is closed)
 
 **Enhancement 2.2: Notification Frequency Settings**
 - [ ] Allow user to configure when notifications are sent for each category
@@ -235,32 +236,32 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: ✅ Priority 1 Critical Bugs Complete - Ready for Priority 2 Enhancements
-**Status**: All critical bugs fixed - Ready to begin Enhancement 2.1 (Due Date Push Notifications)
+**Current Focus**: 🟡 Priority 2 Enhancements
+**Status**: ✅ Enhancement 2.1 Complete - Ready to begin Enhancement 2.2 (Notification Frequency Settings)
 
-**Priority 1 Critical Bugs:**
-1. **Bug 1.1** ✅ FIXED - Allow $0 amounts for budget categories (YNAB principle)
-2. **Bug 1.2** ✅ FIXED - Transaction detail sheet blank after app restart (sheet presentation pattern)
+**Completed Work:**
+1. ✅ **Bug 1.1** - Allow $0 amounts for budget categories (YNAB principle)
+2. ✅ **Bug 1.2** - Transaction detail sheet blank after app restart (sheet presentation pattern)
+3. ✅ **Enhancement 2.1** - Due date push notifications (basic implementation, 9:00 AM on due date)
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Bug 1.2 Fixed - Transaction detail sheet after app restart (sheet pattern)
-2. [2025-11-02] ✅ Bug 1.1 Fixed - Allow $0 amounts for budget categories (YNAB principle)
-3. [2025-11-02] ✅ Completed Priority 3 - Month Navigation Context (carry-forward, month comparison)
-4. [2025-11-02] ✅ Completed Priority 2 - Transaction Integration & Quick Assign
-5. [2025-11-02] ✅ Completed Priority 1 - Full YNAB methodology refactor
+1. [2025-11-02] ✅ Enhancement 2.1 - Due date push notifications implemented
+2. [2025-11-02] ✅ Bug 1.2 Fixed - Transaction detail sheet after app restart (sheet pattern)
+3. [2025-11-02] ✅ Bug 1.1 Fixed - Allow $0 amounts for budget categories (YNAB principle)
+4. [2025-11-02] ✅ Completed Priority 3 - Month Navigation Context (carry-forward, month comparison)
+5. [2025-11-02] ✅ Completed Priority 2 - Transaction Integration & Quick Assign
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file (especially Enhancement 2.1 section)
-2. Begin Enhancement 2.1: Due Date Push Notifications
-3. Files to create: Utilities/NotificationManager.swift
-4. Files to modify: Models/BudgetCategory.swift, Views/BudgetPlanningView.swift, ZeroBasedBudgetApp.swift
+1. Read this CLAUDE.md file (especially Enhancement 2.2 section)
+2. Test Enhancement 2.1 notifications work correctly
+3. Optional: Begin Enhancement 2.2 - Notification Frequency Settings (7 days, 2 days, on date, custom)
 
 **Implementation Priority Order:**
 1. ✅ Bug 1.1 → Allow $0 category amounts
 2. ✅ Bug 1.2 → Fix transaction detail sheet after restart
-3. Enhancement 2.1 → Due date push notifications
+3. ✅ Enhancement 2.1 → Due date push notifications (basic)
 4. Enhancement 2.2 → Notification frequency settings
 5. Enhancement 2.3 → Last day of month due date option
 
