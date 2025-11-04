@@ -114,46 +114,6 @@ ZeroBasedBudget/
 
 ### 🟡 Priority 2: UX Improvements
 
-**Enhancement 2.1: YNAB-Style Day-of-Month Due Date Picker**
-- [ ] **Current behavior**: Due date uses standard iOS DatePicker (full calendar)
-- [ ] **Desired behavior**: Show day-of-month picker (1st, 2nd, 3rd... 31st)
-- [ ] **Rationale**: 
-  - More YNAB-like approach (bills repeat monthly on same day)
-  - User thinks "rent is due on the 15th" not "rent is due November 15, 2025"
-  - Reduces cognitive overhead (just pick day number)
-  - Aligns with monthly budgeting cycle
-- [ ] **Implementation approach**:
-  - Replace DatePicker with day-of-month selector
-  - Consider using Picker with 1-31 range styled as "1st", "2nd", "3rd", etc.
-  - Store as day number (Int) + "isLastDayOfMonth" (Bool)
-  - Calculate actual Date based on current month when needed
-  - Maintain backward compatibility with existing date-based due dates
-- [ ] **UI/UX Design Considerations**:
-  - Use ordinal format: "1st", "2nd", "3rd", "4th", "5th", etc.
-  - Picker style options:
-    - **Option A**: Wheel picker (iOS standard, compact)
-    - **Option B**: Segmented grid (easier to scan, but takes space)
-    - **Option C**: Dropdown menu with search
-  - **Recommendation**: Wheel picker with ordinal formatting (native feel, compact)
-  - Add "Last day of month" as special option at end of list
-- [ ] **Model changes needed**:
-  - Option 1: Add `dueDayOfMonth: Int?` field (1-31), deprecate `dueDate: Date?`
-  - Option 2: Keep `dueDate: Date?` but calculate from day-of-month when needed
-  - **Recommendation**: Option 1 (cleaner, more explicit)
-- [ ] **Migration strategy** (if changing model)**:
-  - Keep existing `dueDate` for backward compatibility initially
-  - Extract day from existing dates: `Calendar.current.component(.day, from: dueDate)`
-  - Phase out old field in future version
-- [ ] **Files to modify**:
-  - Models/BudgetCategory.swift (add dueDayOfMonth or refactor dueDate)
-  - Views/BudgetPlanningView.swift (replace DatePicker with day-of-month picker)
-  - Utilities/NotificationManager.swift (calculate notification dates from day-of-month)
-- [ ] **Test cases**:
-  - Select various days (1st, 15th, 31st, last day)
-  - Test in different months (30-day, 31-day, February)
-  - Verify notifications still schedule correctly
-  - Test month navigation updates due dates properly
-
 **Enhancement 2.2: Remove Excessive Top Whitespace**
 - [ ] **Current behavior**: Budget/Transactions/Analysis tabs have too much whitespace at top
 - [ ] **Expected behavior**: More compact, efficient use of screen space
@@ -223,28 +183,27 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: 🟡 UX Improvements (Enhancement backlog)
-**Status**: All Priority 1 bugs fixed! Ready for UX enhancements
+**Current Focus**: 🟡 UX Improvements (Enhancement 2.2 - whitespace)
+**Status**: Enhancement 2.1 complete! Continuing with UX enhancements
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
-2. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
-3. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
-4. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
-5. [2025-11-02] ✅ Push notifications for due dates implemented
+1. [2025-11-03] ✅ Implemented YNAB-style day-of-month picker (1st-31st with ordinals)
+2. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
+3. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
+4. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
+5. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file (especially Enhancement backlog)
-2. All Priority 1 critical bugs are now fixed
-3. Ready to work on Priority 2 UX improvements
-4. Recommended next: Enhancement 2.1 (YNAB-style day-of-month picker)
+1. Read this CLAUDE.md file (especially Enhancement 2.2 details)
+2. Enhancement 2.1 (day-of-month picker) complete
+3. Ready to work on Enhancement 2.2 (remove excessive top whitespace)
+4. Or Enhancement 2.3 (pie chart in Analysis view)
 
 **Implementation Priority Order:**
-1. Enhancement 2.1 → YNAB-style day-of-month due date picker
-2. Enhancement 2.2 → Remove excessive top whitespace
-3. Enhancement 2.3 → Add pie chart to Analysis view
+1. Enhancement 2.2 → Remove excessive top whitespace
+2. Enhancement 2.3 → Add pie chart to Analysis view
 
 ## Git Commit Strategy
 
