@@ -114,38 +114,6 @@ ZeroBasedBudget/
 
 ### 🔴 Priority 1: Critical Bugs
 
-**Bug 1.1: CoreData Errors on App Startup**
-- [ ] **Symptoms**: Console errors on app launch (but app still starts successfully):
-  ```
-  CoreData: error: URL: file:///.../default.store
-  CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription> was successful!
-  ```
-- [ ] **Current behavior**: 
-  - App displays CoreData file creation errors
-  - Error messages mention "Failed to create file; code = 2"
-  - Recovery is reported as successful
-  - App functions normally despite errors
-- [ ] **Impact**: Console noise, potential underlying persistence issue
-- [ ] **Investigation needed**:
-  - Check if SwiftData ModelContainer configuration is causing CoreData fallback
-  - Verify application support directory permissions
-  - Check if old CoreData store files exist from previous versions
-  - Review ZeroBasedBudgetApp.swift ModelContainer setup
-  - Verify cloudKitDatabase: .none is properly configured
-- [ ] **Possible causes**:
-  - SwiftData attempting to migrate from or create CoreData store
-  - Application Support directory not existing on first launch
-  - Permissions issue with simulator/device file system
-  - Conflict between SwiftData and CoreData (SwiftData uses CoreData under the hood)
-- [ ] **Files to investigate**:
-  - ZeroBasedBudgetApp.swift (ModelContainer configuration)
-  - Check if any CoreData code exists in project (should only be SwiftData)
-- [ ] **Resolution approach**:
-  - Ensure ModelContainer is configured correctly with explicit schema
-  - May need to add error handling for container initialization
-  - Consider clearing app data/simulator to test fresh install
-  - Verify SwiftData best practices for iOS 26
-
 **Bug 1.2: Notification Settings Not Visible on New Expense Creation**
 - [ ] **Current behavior**: 
   - Create new expense → toggle "Set due date" ON
@@ -286,34 +254,32 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: 🔴 Fix CoreData errors on startup (Bug 1.1)  
-**Status**: Ready to investigate and fix Priority 1 bugs
+**Current Focus**: 🔴 Fix notification settings UI on expense creation (Bug 1.2)
+**Status**: Bug 1.1 fixed, ready to work on Bug 1.2
 
-**Why These Are Priority:**
-1. **Bug 1.1** (CoreData errors) may indicate underlying persistence issue
-2. **Bug 1.2** (notification settings UI) impacts user experience for new feature
+**Why This Is Priority:**
+1. **Bug 1.2** (notification settings UI) impacts user experience for new notification feature
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
-2. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
-3. [2025-11-02] ✅ Push notifications for due dates implemented
-4. [2025-11-02] ✅ Fixed transaction detail sheet blank issue
-5. [2025-11-02] ✅ Allow $0 category amounts (YNAB principle)
+1. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
+2. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
+3. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
+4. [2025-11-02] ✅ Push notifications for due dates implemented
+5. [2025-11-02] ✅ Fixed transaction detail sheet blank issue
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file (especially YNAB Methodology and new bugs)
-2. Begin Bug 1.1: Investigate CoreData errors on app startup
-3. Files to check: ZeroBasedBudgetApp.swift (ModelContainer configuration)
-4. Run app and capture full error output for analysis
+1. Read this CLAUDE.md file (especially Bug 1.2 details)
+2. Begin Bug 1.2: Show notification settings immediately when toggling due date
+3. Files to check: Views/BudgetPlanningView.swift (AddCategorySheet)
+4. Compare AddCategorySheet vs EditCategorySheet conditional logic
 
 **Implementation Priority Order:**
-1. Bug 1.1 → Fix CoreData errors on startup
-2. Bug 1.2 → Show notification settings immediately when toggling due date
-3. Enhancement 2.1 → YNAB-style day-of-month due date picker
-4. Enhancement 2.2 → Remove excessive top whitespace
-5. Enhancement 2.3 → Add pie chart to Analysis view
+1. Bug 1.2 → Show notification settings immediately when toggling due date
+2. Enhancement 2.1 → YNAB-style day-of-month due date picker
+3. Enhancement 2.2 → Remove excessive top whitespace
+4. Enhancement 2.3 → Add pie chart to Analysis view
 
 ## Git Commit Strategy
 
