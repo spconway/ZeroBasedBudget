@@ -526,6 +526,8 @@ struct BudgetPlanningView: View {
                     }
                 }
             }
+            .listStyle(.plain)
+            .listSectionSpacing(0)
             .navigationTitle("Budget Planning")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
@@ -642,6 +644,8 @@ struct BudgetPlanningView: View {
                     }
                 }
             }
+			.toolbarBackground(Color.blue, for: .navigationBar) // Sets the navigation bar background color
+			.toolbarBackground(.visible, for: .navigationBar) // Ensures the background is visible
         }
     }
 
