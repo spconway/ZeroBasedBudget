@@ -533,12 +533,12 @@ struct BudgetPlanningView: View {
                 startingBalance = budget.startingBalance
             }
             .sheet(isPresented: $showingAddCategory) {
-                AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDate, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     saveNewCategory(
                         name: name,
                         amount: amount,
                         type: newCategoryType,
-                        dueDate: dueDate,
+                        dueDayOfMonth: dueDayOfMonth,
                         isLastDayOfMonth: isLastDayOfMonth,
                         notify7DaysBefore: notify7Days,
                         notify2DaysBefore: notify2Days,
@@ -549,11 +549,11 @@ struct BudgetPlanningView: View {
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, onSave: { updatedAmount, updatedDueDate, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                EditCategorySheet(category: category, onSave: { updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     updateCategory(
                         category,
                         amount: updatedAmount,
-                        dueDate: updatedDueDate,
+                        dueDayOfMonth: dueDayOfMonth,
                         isLastDayOfMonth: isLastDayOfMonth,
                         notify7DaysBefore: notify7Days,
                         notify2DaysBefore: notify2Days,
@@ -728,16 +728,16 @@ struct BudgetPlanningView: View {
         showingAddCategory = true
     }
 
-    private func saveNewCategory(name: String, amount: Decimal, type: String, dueDate: Date?, isLastDayOfMonth: Bool, notify7DaysBefore: Bool, notify2DaysBefore: Bool, notifyOnDueDate: Bool, notifyCustomDays: Bool, customDaysCount: Int) {
+    private func saveNewCategory(name: String, amount: Decimal, type: String, dueDayOfMonth: Int?, isLastDayOfMonth: Bool, notify7DaysBefore: Bool, notify2DaysBefore: Bool, notifyOnDueDate: Bool, notifyCustomDays: Bool, customDaysCount: Int) {
         let category = BudgetCategory(
             name: name,
             budgetedAmount: amount,
             categoryType: type,
-            colorHex: generateRandomColor(),
-            dueDate: dueDate
+            colorHex: generateRandomColor()
         )
 
-        // Set notification preferences from user input
+        // Set day-of-month and notification preferences from user input
+        category.dueDayOfMonth = dueDayOfMonth
         category.isLastDayOfMonth = isLastDayOfMonth
         category.notify7DaysBefore = notify7DaysBefore
         category.notify2DaysBefore = notify2DaysBefore
@@ -770,7 +770,7 @@ struct BudgetPlanningView: View {
     private func updateCategory(
         _ category: BudgetCategory,
         amount: Decimal,
-        dueDate: Date?,
+        dueDayOfMonth: Int?,
         isLastDayOfMonth: Bool,
         notify7DaysBefore: Bool,
         notify2DaysBefore: Bool,
@@ -779,7 +779,7 @@ struct BudgetPlanningView: View {
         customDaysCount: Int
     ) {
         category.budgetedAmount = amount
-        category.dueDate = dueDate
+        category.dueDayOfMonth = dueDayOfMonth
         category.isLastDayOfMonth = isLastDayOfMonth
         category.notify7DaysBefore = notify7DaysBefore
         category.notify2DaysBefore = notify2DaysBefore
@@ -977,12 +977,12 @@ struct CategoryRow: View {
 struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let categoryType: String
-    let onSave: (String, Decimal, Date?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
+    let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
 
     @State private var categoryName: String = ""
     @State private var budgetedAmount: Decimal = 0
     @State private var hasDueDate: Bool = false
-    @State private var dueDate: Date = Date()
+    @State private var selectedDay: Int = 15  // Default to 15th of month
     @State private var isLastDayOfMonth: Bool = false
     @State private var notify7DaysBefore: Bool = false
     @State private var notify2DaysBefore: Bool = false
@@ -990,12 +990,12 @@ struct AddCategorySheet: View {
     @State private var notifyCustomDays: Bool = false
     @State private var customDaysCount: Int = 1
 
-    // Helper to calculate last day of month for preview
+    // Helper to calculate display date for preview
     private var displayDate: Date {
         if isLastDayOfMonth {
             return lastDayOfCurrentMonth()
         } else {
-            return dueDate
+            return dateFromDayOfMonth(selectedDay)
         }
     }
 
@@ -1019,6 +1019,23 @@ struct AddCategorySheet: View {
         return calendar.date(from: lastDayComponents) ?? now
     }
 
+    // Calculate a Date for the given day-of-month in the current month
+    private func dateFromDayOfMonth(_ day: Int) -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        var components = calendar.dateComponents([.year, .month], from: now)
+        components.day = day
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+
+        if let date = calendar.date(from: components) {
+            return date
+        } else {
+            return lastDayOfCurrentMonth()
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -1039,12 +1056,18 @@ struct AddCategorySheet: View {
                         Toggle("Last day of month", isOn: $isLastDayOfMonth)
 
                         if !isLastDayOfMonth {
-                            DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
-                        } else {
-                            LabeledContent("Effective Date") {
-                                Text(displayDate, style: .date)
-                                    .foregroundStyle(.secondary)
+                            Picker("Day of Month", selection: $selectedDay) {
+                                ForEach(1...31, id: \.self) { day in
+                                    Text(ordinalDay(day)).tag(day)
+                                }
                             }
+                            .pickerStyle(.wheel)
+                        }
+
+                        // Show effective date preview
+                        LabeledContent("Effective Date") {
+                            Text(displayDate, style: .date)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -1082,7 +1105,7 @@ struct AddCategorySheet: View {
                         onSave(
                             categoryName,
                             budgetedAmount,
-                            hasDueDate ? dueDate : nil,
+                            hasDueDate ? selectedDay : nil,
                             isLastDayOfMonth,
                             notify7DaysBefore,
                             notify2DaysBefore,
@@ -1103,11 +1126,11 @@ struct AddCategorySheet: View {
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let category: BudgetCategory
-    let onSave: (Decimal, Date?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
+    let onSave: (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
 
     @State private var budgetedAmount: Decimal
     @State private var hasDueDate: Bool
-    @State private var dueDate: Date
+    @State private var selectedDay: Int
     @State private var isLastDayOfMonth: Bool
     @State private var notify7DaysBefore: Bool
     @State private var notify2DaysBefore: Bool
@@ -1115,12 +1138,24 @@ struct EditCategorySheet: View {
     @State private var notifyCustomDays: Bool
     @State private var customDaysCount: Int
 
-    init(category: BudgetCategory, onSave: @escaping (Decimal, Date?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
+    init(category: BudgetCategory, onSave: @escaping (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
         self.category = category
         self.onSave = onSave
         _budgetedAmount = State(initialValue: category.budgetedAmount)
-        _hasDueDate = State(initialValue: category.dueDate != nil)
-        _dueDate = State(initialValue: category.dueDate ?? Date())
+
+        // Extract day from dueDayOfMonth or legacy dueDate
+        let hasDate = category.dueDayOfMonth != nil || category.dueDate != nil
+        _hasDueDate = State(initialValue: hasDate)
+
+        if let dayOfMonth = category.dueDayOfMonth {
+            _selectedDay = State(initialValue: dayOfMonth)
+        } else if let legacyDate = category.dueDate {
+            let day = Calendar.current.component(.day, from: legacyDate)
+            _selectedDay = State(initialValue: day)
+        } else {
+            _selectedDay = State(initialValue: 15)  // Default
+        }
+
         _isLastDayOfMonth = State(initialValue: category.isLastDayOfMonth)
         _notify7DaysBefore = State(initialValue: category.notify7DaysBefore)
         _notify2DaysBefore = State(initialValue: category.notify2DaysBefore)
@@ -1132,9 +1167,46 @@ struct EditCategorySheet: View {
     // Helper computed property to show the effective date
     private var displayDate: Date {
         if isLastDayOfMonth {
-            return category.lastDayOfCurrentMonth()
+            return lastDayOfCurrentMonth()
         } else {
-            return dueDate
+            return dateFromDayOfMonth(selectedDay)
+        }
+    }
+
+    // Calculate the last day of the current month
+    private func lastDayOfCurrentMonth() -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.year, .month], from: now)
+
+        guard let firstDayOfMonth = calendar.date(from: components),
+              let range = calendar.range(of: .day, in: .month, for: firstDayOfMonth) else {
+            return now
+        }
+
+        var lastDayComponents = components
+        lastDayComponents.day = range.count
+        lastDayComponents.hour = 0
+        lastDayComponents.minute = 0
+        lastDayComponents.second = 0
+
+        return calendar.date(from: lastDayComponents) ?? now
+    }
+
+    // Calculate a Date for the given day-of-month in the current month
+    private func dateFromDayOfMonth(_ day: Int) -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        var components = calendar.dateComponents([.year, .month], from: now)
+        components.day = day
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+
+        if let date = calendar.date(from: components) {
+            return date
+        } else {
+            return lastDayOfCurrentMonth()
         }
     }
 
@@ -1166,12 +1238,18 @@ struct EditCategorySheet: View {
                         Toggle("Last day of month", isOn: $isLastDayOfMonth)
 
                         if !isLastDayOfMonth {
-                            DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
-                        } else {
-                            LabeledContent("Effective Date") {
-                                Text(displayDate, style: .date)
-                                    .foregroundStyle(.secondary)
+                            Picker("Day of Month", selection: $selectedDay) {
+                                ForEach(1...31, id: \.self) { day in
+                                    Text(ordinalDay(day)).tag(day)
+                                }
                             }
+                            .pickerStyle(.wheel)
+                        }
+
+                        // Show effective date preview
+                        LabeledContent("Effective Date") {
+                            Text(displayDate, style: .date)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -1203,7 +1281,7 @@ struct EditCategorySheet: View {
                     Button("Save") {
                         onSave(
                             budgetedAmount,
-                            hasDueDate ? dueDate : nil,
+                            hasDueDate ? selectedDay : nil,
                             isLastDayOfMonth,
                             notify7DaysBefore,
                             notify2DaysBefore,
@@ -1217,6 +1295,15 @@ struct EditCategorySheet: View {
             }
         }
     }
+}
+
+// MARK: - Ordinal Formatter Helper
+
+/// Formats a day number as an ordinal string (1 → "1st", 2 → "2nd", etc.)
+func ordinalDay(_ day: Int) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .ordinal
+    return formatter.string(from: NSNumber(value: day)) ?? "\(day)"
 }
 
 // MARK: - Color Extension

@@ -15,7 +15,8 @@ final class BudgetCategory {
     var budgetedAmount: Decimal
     var categoryType: String  // "Fixed", "Variable", "Quarterly", "Income"
     var colorHex: String
-    var dueDate: Date?  // Optional due date for expense tracking
+    var dueDate: Date?  // DEPRECATED: Kept for backward compatibility. Use dueDayOfMonth instead.
+    var dueDayOfMonth: Int?  // Day of month (1-31) for YNAB-style recurring due dates
     var notificationID: UUID  // UUID for notification tracking
     var isLastDayOfMonth: Bool  // If true, due date is always last day of current month
 
@@ -35,6 +36,7 @@ final class BudgetCategory {
         self.categoryType = categoryType
         self.colorHex = colorHex
         self.dueDate = dueDate
+        self.dueDayOfMonth = nil  // Will be set by UI for new categories
         self.notificationID = UUID()
         self.isLastDayOfMonth = false
 
@@ -48,18 +50,56 @@ final class BudgetCategory {
 
     // MARK: - Computed Properties
 
-    /// Returns the effective due date - either the stored date or the last day of the current month
+    /// Returns the effective due date calculated from dueDayOfMonth or legacy dueDate
+    /// Priority order:
+    /// 1. If isLastDayOfMonth = true → last day of current month
+    /// 2. If dueDayOfMonth is set → that day in current month
+    /// 3. If dueDate is set (legacy) → extract day and use in current month
+    /// 4. Otherwise → nil
     var effectiveDueDate: Date? {
-        guard dueDate != nil else { return nil }
-
+        // Special case: last day of month
         if isLastDayOfMonth {
             return lastDayOfCurrentMonth()
-        } else {
-            return dueDate
         }
+
+        // Prefer new dueDayOfMonth field
+        if let dayOfMonth = dueDayOfMonth {
+            return dateFromDayOfMonth(dayOfMonth)
+        }
+
+        // Backward compatibility: extract day from legacy dueDate
+        if let legacyDate = dueDate {
+            let calendar = Calendar.current
+            let day = calendar.component(.day, from: legacyDate)
+            return dateFromDayOfMonth(day)
+        }
+
+        return nil
     }
 
     // MARK: - Helper Methods
+
+    /// Calculate a Date for the given day-of-month in the current month
+    /// Handles edge cases (e.g., 31st day in 30-day month)
+    private func dateFromDayOfMonth(_ day: Int) -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Get current month and year
+        var components = calendar.dateComponents([.year, .month], from: now)
+        components.day = day
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+
+        // Create date, clamping to valid days (e.g., Feb 31 → Feb 28/29)
+        if let date = calendar.date(from: components) {
+            return date
+        } else {
+            // If day doesn't exist in month (e.g., Feb 30), use last day of month
+            return lastDayOfCurrentMonth()
+        }
+    }
 
     /// Calculate the last day of the current month
     func lastDayOfCurrentMonth() -> Date {
