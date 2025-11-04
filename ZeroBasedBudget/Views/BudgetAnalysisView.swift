@@ -9,12 +9,18 @@ import SwiftUI
 import SwiftData
 import Charts
 
+enum ChartType: String, CaseIterable {
+    case bar = "Bar"
+    case donut = "Donut"
+}
+
 struct BudgetAnalysisView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
 
     @State private var selectedMonth = Date()
+    @State private var selectedChartType: ChartType = .bar
 
     // Generate category comparisons for selected month
     private var categoryComparisons: [CategoryComparison] {
@@ -61,8 +67,21 @@ struct BudgetAnalysisView: View {
                             totalDifference: totalDifference
                         )
 
-                        // Chart Section
-                        ChartSection(categoryComparisons: categoryComparisons)
+                        // Chart Type Picker
+                        Picker("Chart Type", selection: $selectedChartType) {
+                            ForEach(ChartType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal)
+
+                        // Chart Section (conditional based on chart type)
+                        if selectedChartType == .bar {
+                            BarChartSection(categoryComparisons: categoryComparisons)
+                        } else {
+                            DonutChartSection(categoryComparisons: categoryComparisons)
+                        }
 
                         // Detailed List Section
                         DetailedListSection(categoryComparisons: categoryComparisons)
@@ -193,9 +212,9 @@ struct SummaryCard: View {
     }
 }
 
-// MARK: - Chart Section
+// MARK: - Bar Chart Section
 
-struct ChartSection: View {
+struct BarChartSection: View {
     let categoryComparisons: [CategoryComparison]
 
     var body: some View {
@@ -233,6 +252,151 @@ struct ChartSection: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
+}
+
+// MARK: - Donut Chart Section
+
+struct DonutChartSection: View {
+    let categoryComparisons: [CategoryComparison]
+
+    private let maxCategories = 10
+
+    // Prepare data for donut chart, grouping smallest categories into "Other" if needed
+    private var chartData: [DonutChartData] {
+        // Filter out categories with no actual spending
+        let categoriesWithSpending = categoryComparisons.filter { $0.actual > 0 }
+
+        // If we have 10 or fewer categories, show them all
+        if categoriesWithSpending.count <= maxCategories {
+            return categoriesWithSpending.map { comparison in
+                DonutChartData(
+                    name: comparison.categoryName,
+                    amount: comparison.actual,
+                    color: comparison.categoryColor
+                )
+            }
+        }
+
+        // Otherwise, show top 9 categories and group the rest as "Other"
+        let sortedByAmount = categoriesWithSpending.sorted { $0.actual > $1.actual }
+        let topCategories = Array(sortedByAmount.prefix(maxCategories - 1))
+        let otherCategories = Array(sortedByAmount.dropFirst(maxCategories - 1))
+        let otherTotal = otherCategories.reduce(Decimal.zero) { $0 + $1.actual }
+
+        var result = topCategories.map { comparison in
+            DonutChartData(
+                name: comparison.categoryName,
+                amount: comparison.actual,
+                color: comparison.categoryColor
+            )
+        }
+
+        if otherTotal > 0 {
+            result.append(DonutChartData(
+                name: "Other",
+                amount: otherTotal,
+                color: "999999" // Gray color for "Other"
+            ))
+        }
+
+        return result
+    }
+
+    private var totalSpending: Decimal {
+        chartData.reduce(Decimal.zero) { $0 + $1.amount }
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("Spending Distribution")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if chartData.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "chart.pie")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.secondary)
+                    Text("No spending recorded")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(height: 300)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                VStack(spacing: 16) {
+                    // Donut Chart
+                    Chart(chartData) { data in
+                        SectorMark(
+                            angle: .value("Amount", Double(truncating: data.amount as NSDecimalNumber)),
+                            innerRadius: .ratio(0.618), // Golden ratio for aesthetics
+                            angularInset: 1.5
+                        )
+                        .foregroundStyle(Color(hex: data.color))
+                        .annotation(position: .overlay) {
+                            // Only show label if segment is large enough
+                            if data.amount / totalSpending > 0.08 {
+                                Text(data.name)
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                    }
+                    .chartBackground { chartProxy in
+                        GeometryReader { geometry in
+                            let frame = geometry[chartProxy.plotFrame!]
+                            VStack(spacing: 4) {
+                                Text("Total")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Text(totalSpending, format: .currency(code: "USD"))
+                                    .font(.title2.bold())
+                            }
+                            .position(x: frame.midX, y: frame.midY)
+                        }
+                    }
+                    .frame(height: 300)
+
+                    // Legend
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150))], spacing: 12) {
+                        ForEach(chartData) { data in
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(Color(hex: data.color))
+                                    .frame(width: 12, height: 12)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(data.name)
+                                        .font(.caption)
+                                        .lineLimit(1)
+
+                                    Text(data.amount, format: .currency(code: "USD"))
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+    }
+}
+
+// Data structure for donut chart
+struct DonutChartData: Identifiable {
+    let id = UUID()
+    let name: String
+    let amount: Decimal
+    let color: String
 }
 
 // MARK: - Detailed List Section
