@@ -71,6 +71,7 @@ struct BudgetAnalysisView: View {
                 .padding()
             }
             .navigationTitle("Budget Analysis")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

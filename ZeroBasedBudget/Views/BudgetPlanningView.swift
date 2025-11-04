@@ -527,6 +527,7 @@ struct BudgetPlanningView: View {
                 }
             }
             .navigationTitle("Budget Planning")
+            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 // Load the current month's budget data when view appears (Enhancement 3.3)
                 let budget = getOrCreateMonthlyBudget(for: selectedMonth)

@@ -95,6 +95,7 @@ struct TransactionLogView: View {
                 }
             }
             .navigationTitle("Transactions")
+            .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Search transactions")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
