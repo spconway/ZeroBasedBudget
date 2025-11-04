@@ -112,37 +112,6 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🔴 Priority 1: Critical Bugs
-
-**Bug 1.2: Notification Settings Not Visible on New Expense Creation**
-- [ ] **Current behavior**: 
-  - Create new expense → toggle "Set due date" ON
-  - "Notification Settings" section does NOT appear
-  - Must save expense, then reopen expense
-  - Only then does "Notification Settings" section appear
-- [ ] **Expected behavior**: 
-  - Toggle "Set due date" ON → "Notification Settings" should appear immediately
-  - User should be able to configure notifications during creation (not just editing)
-- [ ] **Impact**: Poor UX, requires extra steps to configure notifications
-- [ ] **Files to investigate**:
-  - Views/BudgetPlanningView.swift (AddCategorySheet)
-  - Check conditional logic showing notification settings section
-  - Likely comparing against category.dueDate instead of local state
-- [ ] **Root cause hypothesis**:
-  - Notification section visibility likely checking `if category.dueDate != nil`
-  - During creation, category is new/unsaved, so dueDate is nil even if toggle is on
-  - Need to check toggle state directly: `if hasDueDate` (local @State variable)
-- [ ] **Solution approach**:
-  - AddCategorySheet: Check toggle state (`hasDueDate`) not model property (`category.dueDate`)
-  - Ensure notification settings section appears/disappears based on toggle
-  - Similar pattern should already work in EditCategorySheet (use that as reference)
-- [ ] **Test cases**:
-  - Create expense → toggle due date ON → Notification section should appear immediately
-  - Toggle due date OFF → Notification section should disappear
-  - Save with notification settings → Should persist correctly
-
----
-
 ### 🟡 Priority 2: UX Improvements
 
 **Enhancement 2.1: YNAB-Style Day-of-Month Due Date Picker**
@@ -254,32 +223,28 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: 🔴 Fix notification settings UI on expense creation (Bug 1.2)
-**Status**: Bug 1.1 fixed, ready to work on Bug 1.2
-
-**Why This Is Priority:**
-1. **Bug 1.2** (notification settings UI) impacts user experience for new notification feature
+**Current Focus**: 🟡 UX Improvements (Enhancement backlog)
+**Status**: All Priority 1 bugs fixed! Ready for UX enhancements
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
-2. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
-3. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
-4. [2025-11-02] ✅ Push notifications for due dates implemented
-5. [2025-11-02] ✅ Fixed transaction detail sheet blank issue
+1. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
+2. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
+3. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
+4. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
+5. [2025-11-02] ✅ Push notifications for due dates implemented
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file (especially Bug 1.2 details)
-2. Begin Bug 1.2: Show notification settings immediately when toggling due date
-3. Files to check: Views/BudgetPlanningView.swift (AddCategorySheet)
-4. Compare AddCategorySheet vs EditCategorySheet conditional logic
+1. Read this CLAUDE.md file (especially Enhancement backlog)
+2. All Priority 1 critical bugs are now fixed
+3. Ready to work on Priority 2 UX improvements
+4. Recommended next: Enhancement 2.1 (YNAB-style day-of-month picker)
 
 **Implementation Priority Order:**
-1. Bug 1.2 → Show notification settings immediately when toggling due date
-2. Enhancement 2.1 → YNAB-style day-of-month due date picker
-3. Enhancement 2.2 → Remove excessive top whitespace
-4. Enhancement 2.3 → Add pie chart to Analysis view
+1. Enhancement 2.1 → YNAB-style day-of-month due date picker
+2. Enhancement 2.2 → Remove excessive top whitespace
+3. Enhancement 2.3 → Add pie chart to Analysis view
 
 ## Git Commit Strategy
 
