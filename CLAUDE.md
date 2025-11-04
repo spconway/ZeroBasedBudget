@@ -114,35 +114,6 @@ ZeroBasedBudget/
 
 ### 🟡 Priority 2: UX Improvements
 
-**Enhancement 2.2: Remove Excessive Top Whitespace**
-- [ ] **Current behavior**: Budget/Transactions/Analysis tabs have too much whitespace at top
-- [ ] **Expected behavior**: More compact, efficient use of screen space
-- [ ] **Investigation needed**:
-  - Check navigation bar configuration in each view
-  - Check if navigationTitle is using large display mode unnecessarily
-  - Look for extra padding or spacing modifiers
-  - Review iOS 26 SwiftUI navigation best practices
-- [ ] **Files to investigate**:
-  - Views/BudgetPlanningView.swift
-  - Views/TransactionLogView.swift
-  - Views/BudgetAnalysisView.swift
-  - ContentView.swift (TabView configuration)
-- [ ] **Possible solutions**:
-  - Use `.navigationBarTitleDisplayMode(.inline)` instead of `.large`
-  - Remove unnecessary top padding
-  - Adjust Form/List inset behavior
-  - Use `listStyle(.plain)` if lists have extra insets
-- [ ] **Implementation approach**:
-  - Test different navigationBarTitleDisplayMode options
-  - Remove any explicit spacers or padding at top of views
-  - Consider custom toolbar/header if needed for compact display
-  - Ensure consistent across all three tabs
-- [ ] **Test cases**:
-  - Visual comparison before/after on various device sizes
-  - Ensure scrolling behavior still works correctly
-  - Verify content is still accessible (not cut off)
-  - Test on iPhone SE (small screen) and iPhone Pro Max (large screen)
-
 **Enhancement 2.3: Improve Analysis View with Pie Chart**
 - [ ] **Current behavior**: 
   - Analysis view uses grouped bar chart (budgeted vs actual)
@@ -183,27 +154,27 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: 🟡 UX Improvements (Enhancement 2.2 - whitespace)
-**Status**: Enhancement 2.1 complete! Continuing with UX enhancements
+**Current Focus**: 🟡 UX Improvements (Enhancement 2.3 - pie chart)
+**Status**: Enhancements 2.1 and 2.2 complete! Ready for Enhancement 2.3
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-03] ✅ Implemented YNAB-style day-of-month picker (1st-31st with ordinals)
-2. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
-3. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
-4. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
-5. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
+1. [2025-11-03] ✅ Removed excessive top whitespace (inline navigation mode)
+2. [2025-11-03] ✅ Implemented YNAB-style day-of-month picker (1st-31st with ordinals)
+3. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
+4. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
+5. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file (especially Enhancement 2.2 details)
-2. Enhancement 2.1 (day-of-month picker) complete
-3. Ready to work on Enhancement 2.2 (remove excessive top whitespace)
-4. Or Enhancement 2.3 (pie chart in Analysis view)
+1. Read this CLAUDE.md file (especially Enhancement 2.3 details)
+2. Enhancements 2.1 (day-of-month picker) and 2.2 (whitespace) complete
+3. Ready to work on Enhancement 2.3 (add pie chart to Analysis view)
+4. Or consider other improvements/features
 
 **Implementation Priority Order:**
-1. Enhancement 2.2 → Remove excessive top whitespace
-2. Enhancement 2.3 → Add pie chart to Analysis view
+1. Enhancement 2.3 → Add pie chart to Analysis view
+2. Future enhancements TBD
 
 ## Git Commit Strategy
 
