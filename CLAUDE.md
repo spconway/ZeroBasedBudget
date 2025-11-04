@@ -2,7 +2,7 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.2.0  
+**Version**: 1.3.0  
 **Last Updated**: November 2, 2025  
 **Methodology**: YNAB-Style Zero-Based Budgeting  
 **Technical Specification**: `Docs/TechnicalSpec.md`
@@ -64,21 +64,23 @@ Income is logged when it ARRIVES via transactions, not pre-budgeted.
 - **Pattern**: MVVM (Model-View-ViewModel)
 - **Data Type**: Decimal for ALL monetary values (never Double/Float)
 - **Charts**: Swift Charts for budget visualization
+- **Notifications**: UNUserNotificationCenter for local push notifications
 
 ## Current Project Structure
 
 ```
 ZeroBasedBudget/
 ├── Models/
-│   ├── BudgetCategory.swift         # Categories with budgeted amounts, due dates
+│   ├── BudgetCategory.swift         # Categories with amounts, due dates, notifications
 │   ├── Transaction.swift            # Financial transactions (income/expense)
-│   └── MonthlyBudget.swift          # Monthly budget with startingBalance
+│   └── MonthlyBudget.swift          # Monthly budget with startingBalance, YNAB calcs
 ├── Views/
-│   ├── BudgetPlanningView.swift     # Ready to Assign, category assignment
-│   ├── TransactionLogView.swift     # Transaction log with running balance
+│   ├── BudgetPlanningView.swift     # Ready to Assign, category assignment, Quick Assign
+│   ├── TransactionLogView.swift     # Transaction log with running balance, tap-to-edit
 │   └── BudgetAnalysisView.swift     # Budget vs actual with Swift Charts
 ├── Utilities/
 │   ├── BudgetCalculations.swift     # Financial aggregation functions
+│   ├── NotificationManager.swift    # Local push notification scheduling
 │   ├── ValidationHelpers.swift      # Input validation utilities
 │   └── [Other utility files...]
 └── Docs/
@@ -86,214 +88,232 @@ ZeroBasedBudget/
     └── ClaudeCodeResumption.md       # Session interruption guide
 ```
 
-## Completed Features Summary
+## Recent Version History
 
-**MVP (v1.0.0):**
-- ✅ SwiftData models with proper relationships and indexes
-- ✅ Budget Planning, Transaction Log, and Budget Analysis views
-- ✅ Local-only storage (no cloud sync)
-- ✅ Decimal type for all monetary calculations
-- ✅ Currency formatting throughout
+**v1.3.0 (Current):**
+- ✅ Fixed: $0 category amounts now allowed (YNAB principle)
+- ✅ Fixed: Transaction detail sheet works after app restart
+- ✅ Added: Push notifications for category due dates
+- ✅ Added: Notification frequency settings (7-day, 2-day, on-date, custom)
+- ✅ Added: "Last day of month" due date option with smart date calculation
 
-**YNAB Refactor (v1.1.0):**
-- ✅ Removed "Income" section (violates YNAB principles)
-- ✅ Added "Ready to Assign" section with YNAB calculations
-- ✅ Income tracked via transactions only
-- ✅ Educational helper text explaining YNAB methodology
-
-**Post-MVP Enhancements (v1.1.0):**
-- ✅ Month indicator with navigation
-- ✅ Due date field for categories (optional)
-- ✅ Tap-to-edit transactions (reduced steps)
-- ✅ Enhanced Ready to Assign visual hierarchy
+**v1.2.0:**
 - ✅ Quick Assign and Undo functionality
 - ✅ Month navigation with carry-forward warnings
+- ✅ Enhanced Ready to Assign visual hierarchy
+
+**v1.1.0:**
+- ✅ Full YNAB methodology refactor (Ready to Assign section)
+- ✅ Removed income section (YNAB violation)
+- ✅ Income tracked via transactions only
+
+**v1.0.0:**
+- ✅ MVP: SwiftData models, three main views, local-only storage
 
 ## Active Issues & Enhancement Backlog
 
-### 🔴 Priority 1: Critical Bugs (Fix First)
+### 🔴 Priority 1: Critical Bugs
 
-**Bug 1.1: Budget Category Validation - $0 Amount Not Allowed** ✅ FIXED
-- [x] Current behavior: Categories require amount > $0 to save
-- [x] Expected behavior: Should allow $0 amounts
-- [x] Rationale: YNAB principle - users should track ALL expenses (even unfunded ones)
-  - User should be aware of all expenses
-  - Should only budget when money becomes available
-  - $0 means "I know about this expense but haven't funded it yet"
-- [x] Files modified:
-  - Views/BudgetPlanningView.swift (AddCategorySheet validation) - Changed `<= 0` to `< 0`
-  - Views/BudgetPlanningView.swift (EditCategorySheet validation) - Changed `<= 0` to `< 0`
-- [x] Test cases (ready for manual testing):
-  - Create new category with $0 amount → Should save successfully
-  - Edit existing category to $0 → Should save successfully
-  - Display $0 categories correctly in budget list
-  - Verify $0 categories included in "Total Assigned" calculation
+**Bug 1.1: CoreData Errors on App Startup**
+- [ ] **Symptoms**: Console errors on app launch (but app still starts successfully):
+  ```
+  CoreData: error: URL: file:///.../default.store
+  CoreData: error: Recovery attempt while adding <NSPersistentStoreDescription> was successful!
+  ```
+- [ ] **Current behavior**: 
+  - App displays CoreData file creation errors
+  - Error messages mention "Failed to create file; code = 2"
+  - Recovery is reported as successful
+  - App functions normally despite errors
+- [ ] **Impact**: Console noise, potential underlying persistence issue
+- [ ] **Investigation needed**:
+  - Check if SwiftData ModelContainer configuration is causing CoreData fallback
+  - Verify application support directory permissions
+  - Check if old CoreData store files exist from previous versions
+  - Review ZeroBasedBudgetApp.swift ModelContainer setup
+  - Verify cloudKitDatabase: .none is properly configured
+- [ ] **Possible causes**:
+  - SwiftData attempting to migrate from or create CoreData store
+  - Application Support directory not existing on first launch
+  - Permissions issue with simulator/device file system
+  - Conflict between SwiftData and CoreData (SwiftData uses CoreData under the hood)
+- [ ] **Files to investigate**:
+  - ZeroBasedBudgetApp.swift (ModelContainer configuration)
+  - Check if any CoreData code exists in project (should only be SwiftData)
+- [ ] **Resolution approach**:
+  - Ensure ModelContainer is configured correctly with explicit schema
+  - May need to add error handling for container initialization
+  - Consider clearing app data/simulator to test fresh install
+  - Verify SwiftData best practices for iOS 26
 
-**Bug 1.2: Transaction Detail Sheet - Blank After App Restart** ✅ FIXED
-- [x] Current behavior: After adding transaction and restarting app, tapping transaction shows blank sheet
-- [x] Expected behavior: Should display transaction details correctly
-- [x] Root cause identified:
-  - Sheet presentation pattern using `.sheet(isPresented:)` with separate boolean and optional transaction
-  - Timing issue where sheet content evaluated before transaction properly loaded from SwiftData
-- [x] Files modified:
-  - Views/TransactionLogView.swift (changed to `.sheet(item:)` pattern)
-  - Removed `showingEditSheet` boolean state variable
-  - Simplified tap gesture to only set `transactionToEdit`
-- [x] Solution:
-  - Changed from `.sheet(isPresented:)` to `.sheet(item:)` pattern
-  - Sheet now tied directly to optional transaction object
-  - Recommended SwiftUI pattern for item-based sheet presentation
-- [x] Test cases (ready for manual testing):
-  - Add transaction → Close app → Reopen → Tap transaction → Should show details correctly
-  - Verify all transaction fields load properly (date, description, amount, category, type, notes)
-  - Verify can edit and save changes after restart
+**Bug 1.2: Notification Settings Not Visible on New Expense Creation**
+- [ ] **Current behavior**: 
+  - Create new expense → toggle "Set due date" ON
+  - "Notification Settings" section does NOT appear
+  - Must save expense, then reopen expense
+  - Only then does "Notification Settings" section appear
+- [ ] **Expected behavior**: 
+  - Toggle "Set due date" ON → "Notification Settings" should appear immediately
+  - User should be able to configure notifications during creation (not just editing)
+- [ ] **Impact**: Poor UX, requires extra steps to configure notifications
+- [ ] **Files to investigate**:
+  - Views/BudgetPlanningView.swift (AddCategorySheet)
+  - Check conditional logic showing notification settings section
+  - Likely comparing against category.dueDate instead of local state
+- [ ] **Root cause hypothesis**:
+  - Notification section visibility likely checking `if category.dueDate != nil`
+  - During creation, category is new/unsaved, so dueDate is nil even if toggle is on
+  - Need to check toggle state directly: `if hasDueDate` (local @State variable)
+- [ ] **Solution approach**:
+  - AddCategorySheet: Check toggle state (`hasDueDate`) not model property (`category.dueDate`)
+  - Ensure notification settings section appears/disappears based on toggle
+  - Similar pattern should already work in EditCategorySheet (use that as reference)
+- [ ] **Test cases**:
+  - Create expense → toggle due date ON → Notification section should appear immediately
+  - Toggle due date OFF → Notification section should disappear
+  - Save with notification settings → Should persist correctly
 
 ---
 
-### 🟡 Priority 2: New Feature Enhancements
+### 🟡 Priority 2: UX Improvements
 
-**Enhancement 2.1: Due Date Push Notifications** ✅ IMPLEMENTED
-- [x] Implement local push notifications for categories with due dates
-- [x] Notifications work when app is closed (using UNUserNotificationCenter)
-- [x] Requirements implemented:
-  - ✅ Request notification permissions from user (on app launch)
-  - ✅ Schedule notifications based on due date (9:00 AM on due date)
-  - ⏸️ User-configurable notification timing → See Enhancement 2.2
-  - ✅ Notification displays: category name, due date, budgeted amount
-  - ⏸️ Tapping notification opens app → Not yet implemented (future enhancement)
-- [x] Implementation:
-  - ✅ Created Utilities/NotificationManager.swift for centralized notification handling
-  - ✅ Added notificationID (UUID) to Models/BudgetCategory.swift
-  - ✅ Modified Views/BudgetPlanningView.swift (schedule on save/update, cancel on delete)
-  - ✅ Updated ZeroBasedBudgetApp.swift (request permissions using .task modifier)
-- [x] Features:
-  - Notifications scheduled for 9:00 AM on due date
-  - Automatically managed (scheduled/canceled) as categories change
-  - Uses UUID for reliable notification identification
-  - Separate from SwiftData PersistentIdentifier for cleaner implementation
-- [x] Test cases (ready for manual testing):
-  - Create category with due date → Should schedule notification
-  - Edit category due date → Should reschedule notification
-  - Remove due date from category → Should cancel notification
-  - Delete category → Should cancel notification
-  - Verify notification appears at 9:00 AM on due date (when app is closed)
+**Enhancement 2.1: YNAB-Style Day-of-Month Due Date Picker**
+- [ ] **Current behavior**: Due date uses standard iOS DatePicker (full calendar)
+- [ ] **Desired behavior**: Show day-of-month picker (1st, 2nd, 3rd... 31st)
+- [ ] **Rationale**: 
+  - More YNAB-like approach (bills repeat monthly on same day)
+  - User thinks "rent is due on the 15th" not "rent is due November 15, 2025"
+  - Reduces cognitive overhead (just pick day number)
+  - Aligns with monthly budgeting cycle
+- [ ] **Implementation approach**:
+  - Replace DatePicker with day-of-month selector
+  - Consider using Picker with 1-31 range styled as "1st", "2nd", "3rd", etc.
+  - Store as day number (Int) + "isLastDayOfMonth" (Bool)
+  - Calculate actual Date based on current month when needed
+  - Maintain backward compatibility with existing date-based due dates
+- [ ] **UI/UX Design Considerations**:
+  - Use ordinal format: "1st", "2nd", "3rd", "4th", "5th", etc.
+  - Picker style options:
+    - **Option A**: Wheel picker (iOS standard, compact)
+    - **Option B**: Segmented grid (easier to scan, but takes space)
+    - **Option C**: Dropdown menu with search
+  - **Recommendation**: Wheel picker with ordinal formatting (native feel, compact)
+  - Add "Last day of month" as special option at end of list
+- [ ] **Model changes needed**:
+  - Option 1: Add `dueDayOfMonth: Int?` field (1-31), deprecate `dueDate: Date?`
+  - Option 2: Keep `dueDate: Date?` but calculate from day-of-month when needed
+  - **Recommendation**: Option 1 (cleaner, more explicit)
+- [ ] **Migration strategy** (if changing model)**:
+  - Keep existing `dueDate` for backward compatibility initially
+  - Extract day from existing dates: `Calendar.current.component(.day, from: dueDate)`
+  - Phase out old field in future version
+- [ ] **Files to modify**:
+  - Models/BudgetCategory.swift (add dueDayOfMonth or refactor dueDate)
+  - Views/BudgetPlanningView.swift (replace DatePicker with day-of-month picker)
+  - Utilities/NotificationManager.swift (calculate notification dates from day-of-month)
+- [ ] **Test cases**:
+  - Select various days (1st, 15th, 31st, last day)
+  - Test in different months (30-day, 31-day, February)
+  - Verify notifications still schedule correctly
+  - Test month navigation updates due dates properly
 
-**Enhancement 2.2: Notification Frequency Settings** ✅ IMPLEMENTED
-- [x] Allow user to configure when notifications are sent for each category
-- [x] Frequency options implemented:
-  - ✅ 7 days before due date
-  - ✅ 2 days before due date
-  - ✅ On day of due date
-  - ✅ Custom (user-specified 1-30 days before)
-- [x] Default: notifyOnDueDate only (backward compatible with Enhancement 2.1)
-- [x] Implementation:
-  - ✅ Added notification frequency fields to BudgetCategory model (5 new fields)
-  - ✅ Enhanced NotificationManager to schedule multiple notifications per category
-  - ✅ Updated EditCategorySheet with notification settings UI
-  - ✅ Notification section only visible when due date is set
-- [x] Files modified:
-  - ✅ Models/BudgetCategory.swift (added notify7DaysBefore, notify2DaysBefore, notifyOnDueDate, notifyCustomDays, customDaysCount)
-  - ✅ Views/BudgetPlanningView.swift (added notification settings section with toggles + stepper)
-  - ✅ Utilities/NotificationManager.swift (scheduleNotifications now supports multiple timings)
-- [x] UI Features:
-  - ✅ Toggle switches for each frequency option
-  - ✅ Clear labels: "Notify 7 days before", "Notify 2 days before", "Notify on due date"
-  - ✅ Stepper for custom days (1-30 range)
-  - ✅ Section footer explaining notification settings
-  - ⏸️ Preview of scheduled notifications → Future enhancement (debugging feature exists)
-  - ⏸️ Test notification immediately → Future enhancement
-- [x] Features:
-  - Multiple simultaneous notifications per category
-  - Custom notification messages per timing ("due in 7 days", "due in 2 days", "due today", "due in X days")
-  - Unique identifiers per notification type (prevents conflicts)
-  - Cancels all notification types when category deleted or due date removed
-- [x] Test cases (ready for manual testing):
-  - Enable multiple notification options → Should schedule all enabled notifications
-  - Toggle custom days → Should show/hide stepper
-  - Change custom days count → Should update notification timing
-  - Remove due date → Should cancel all notifications
-  - Edit category → Settings should persist from previous values
+**Enhancement 2.2: Remove Excessive Top Whitespace**
+- [ ] **Current behavior**: Budget/Transactions/Analysis tabs have too much whitespace at top
+- [ ] **Expected behavior**: More compact, efficient use of screen space
+- [ ] **Investigation needed**:
+  - Check navigation bar configuration in each view
+  - Check if navigationTitle is using large display mode unnecessarily
+  - Look for extra padding or spacing modifiers
+  - Review iOS 26 SwiftUI navigation best practices
+- [ ] **Files to investigate**:
+  - Views/BudgetPlanningView.swift
+  - Views/TransactionLogView.swift
+  - Views/BudgetAnalysisView.swift
+  - ContentView.swift (TabView configuration)
+- [ ] **Possible solutions**:
+  - Use `.navigationBarTitleDisplayMode(.inline)` instead of `.large`
+  - Remove unnecessary top padding
+  - Adjust Form/List inset behavior
+  - Use `listStyle(.plain)` if lists have extra insets
+- [ ] **Implementation approach**:
+  - Test different navigationBarTitleDisplayMode options
+  - Remove any explicit spacers or padding at top of views
+  - Consider custom toolbar/header if needed for compact display
+  - Ensure consistent across all three tabs
+- [ ] **Test cases**:
+  - Visual comparison before/after on various device sizes
+  - Ensure scrolling behavior still works correctly
+  - Verify content is still accessible (not cut off)
+  - Test on iPhone SE (small screen) and iPhone Pro Max (large screen)
 
-**Enhancement 2.3: "Last Day of Month" Due Date Option** ✅ IMPLEMENTED
-- [x] Add ability to set due date as "Last Day of Month" (variable based on month)
-- [x] Challenges addressed:
-  - ✅ Date varies by month (28/29/30/31 days) - Uses Calendar.range() for accurate day count
-  - ✅ Handles leap years (February 29 vs 28) - Automatic via Calendar API
-  - ✅ Calculates actual date when scheduling notifications - Uses effectiveDueDate
-  - ✅ Displays correctly in UI - Shows "Last day of month (Nov 30)" format
-- [x] Implementation:
-  - ✅ Added isLastDayOfMonth boolean to BudgetCategory
-  - ✅ Added effectiveDueDate computed property (returns stored date or calculated last day)
-  - ✅ Added lastDayOfCurrentMonth() helper method (public for UI access)
-  - ✅ Updated EditCategorySheet with "Last day of month" toggle
-  - ✅ Notification scheduling uses effectiveDueDate (automatic recalculation)
-- [x] Files modified:
-  - ✅ Models/BudgetCategory.swift (isLastDayOfMonth, effectiveDueDate, lastDayOfCurrentMonth())
-  - ✅ Views/BudgetPlanningView.swift (toggle UI, CategoryRow display, notification integration)
-  - ⏸️ Utilities/BudgetCalculations.swift - Not needed (logic in model)
-  - ⏸️ Utilities/NotificationManager.swift - No changes needed (uses effectiveDueDate)
-- [x] UI Features:
-  - ✅ Toggle: "Last day of month"
-  - ✅ DatePicker hidden when toggle enabled
-  - ✅ Shows "Effective Date" as read-only with calculated date
-  - ✅ Category row displays: "Last day of month (Nov 30)"
-  - ✅ Updates automatically when viewing different months
-- [x] Features:
-  - Dynamic date calculation based on current month
-  - Handles all month lengths (28/29/30/31 days)
-  - Leap year support (February 29 vs 28)
-  - Notifications scheduled for correct last day of current month
-  - Clean toggle interface in EditCategorySheet
-- [x] Test cases (ready for manual testing):
-  - View category in November → Should show Nov 30
-  - View same category in December → Should show Dec 31
-  - View in February (non-leap) → Should show Feb 28
-  - View in February (leap year) → Should show Feb 29
-  - Toggle enabled → DatePicker hidden, shows effective date
-  - Notifications → Should schedule for current month's last day
-  - Category display → Shows "Last day of month (Nov 30)" format
+**Enhancement 2.3: Improve Analysis View with Pie Chart**
+- [ ] **Current behavior**: 
+  - Analysis view uses grouped bar chart (budgeted vs actual)
+  - With many categories, becomes difficult to read
+  - Summary cards show totals but visual is crowded
+- [ ] **Desired behavior**: 
+  - Add pie chart showing spending distribution
+  - Easier to see proportions at a glance
+  - More user-friendly with many categories
+- [ ] **Implementation approach**:
+  - Add toggle or tabs to switch between bar chart and pie chart views
+  - Pie chart shows actual spending by category (color-coded)
+  - Consider showing only top N categories + "Other" for clarity
+  - Use Swift Charts SectorMark for pie/donut chart
+- [ ] **Design considerations**:
+  - **Chart type**: Pie chart or donut chart?
+    - Donut chart preferred (modern, cleaner, can show total in center)
+  - **Data**: Show actual spending only (not budgeted on pie chart)
+  - **Colors**: Use consistent category colors from budget view
+  - **Labels**: Category names + amounts/percentages
+  - **Interaction**: Tap segment to see details or filter
+  - **Limit categories**: If >10 categories, group smallest into "Other"
+- [ ] **Files to modify**:
+  - Views/BudgetAnalysisView.swift (add pie chart view, toggle/tabs)
+  - May need to refactor chart into separate components
+- [ ] **SwiftUI/Swift Charts reference**:
+  - Use `SectorMark` for pie/donut charts
+  - `.foregroundStyle(by: .value("Category", category))` for colors
+  - `.annotation(position: .overlay)` for labels
+- [ ] **Test cases**:
+  - Test with few categories (3-5)
+  - Test with many categories (15+)
+  - Verify "Other" grouping works correctly
+  - Test month navigation updates chart
+  - Verify colors match budget view
 
 ---
 
 ## Active Development
 
-**Current Focus**: ✅ All Planned Features Complete
-**Status**: Production Ready - All Priority 1 & 2 enhancements implemented
+**Current Focus**: 🔴 Fix CoreData errors on startup (Bug 1.1)  
+**Status**: Ready to investigate and fix Priority 1 bugs
 
-**Completed Work:**
-1. ✅ **Bug 1.1** - Allow $0 amounts for budget categories (YNAB principle)
-2. ✅ **Bug 1.2** - Transaction detail sheet blank after app restart (sheet presentation pattern)
-3. ✅ **Enhancement 2.1** - Due date push notifications (basic implementation, 9:00 AM on due date)
-4. ✅ **Enhancement 2.2** - Configurable notification frequency settings (7 days, 2 days, on date, custom)
-5. ✅ **Enhancement 2.3** - Last day of month due date option (dynamic, handles leap years)
+**Why These Are Priority:**
+1. **Bug 1.1** (CoreData errors) may indicate underlying persistence issue
+2. **Bug 1.2** (notification settings UI) impacts user experience for new feature
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-02] ✅ Enhancement 2.3 - Last day of month due date option (variable months/leap years)
-2. [2025-11-02] ✅ Enhancement 2.2 - Notification frequency settings (multiple notifications per category)
-3. [2025-11-02] ✅ Enhancement 2.1 - Due date push notifications implemented
-4. [2025-11-02] ✅ Bug 1.2 Fixed - Transaction detail sheet after app restart (sheet pattern)
-5. [2025-11-02] ✅ Bug 1.1 Fixed - Allow $0 amounts for budget categories (YNAB principle)
+1. [2025-11-02] ✅ v1.3.0 Released - Last day of month due dates implemented
+2. [2025-11-02] ✅ Notification frequency settings complete (7-day, 2-day, custom)
+3. [2025-11-02] ✅ Push notifications for due dates implemented
+4. [2025-11-02] ✅ Fixed transaction detail sheet blank issue
+5. [2025-11-02] ✅ Allow $0 category amounts (YNAB principle)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file
-2. Test all implemented features:
-   - $0 category amounts
-   - Transaction detail sheet after restart
-   - Notifications with multiple frequencies
-   - Last day of month due dates (test in different months)
-3. Manual testing and bug fixes if needed
-4. Consider: App store preparation, documentation, or new features
+1. Read this CLAUDE.md file (especially YNAB Methodology and new bugs)
+2. Begin Bug 1.1: Investigate CoreData errors on app startup
+3. Files to check: ZeroBasedBudgetApp.swift (ModelContainer configuration)
+4. Run app and capture full error output for analysis
 
 **Implementation Priority Order:**
-1. ✅ Bug 1.1 → Allow $0 category amounts
-2. ✅ Bug 1.2 → Fix transaction detail sheet after restart
-3. ✅ Enhancement 2.1 → Due date push notifications (basic)
-4. ✅ Enhancement 2.2 → Notification frequency settings
-5. ✅ Enhancement 2.3 → Last day of month due date option
-
-**All Planned Features Complete! 🎉**
+1. Bug 1.1 → Fix CoreData errors on startup
+2. Bug 1.2 → Show notification settings immediately when toggling due date
+3. Enhancement 2.1 → YNAB-style day-of-month due date picker
+4. Enhancement 2.2 → Remove excessive top whitespace
+5. Enhancement 2.3 → Add pie chart to Analysis view
 
 ## Git Commit Strategy
 
@@ -304,21 +324,22 @@ ZeroBasedBudget/
 <type>: <description>
 
 Examples:
-fix: allow $0 amounts for budget categories (YNAB principle)
-fix: resolve blank transaction detail sheet after app restart
-feat: add push notifications for category due dates
-feat: add notification frequency settings for due dates
-feat: add last day of month option for due dates
-docs: update CLAUDE.md with new bugs and enhancements
+fix: resolve CoreData errors on app startup
+fix: show notification settings immediately on due date toggle
+feat: add YNAB-style day-of-month due date picker
+feat: reduce top whitespace across all tabs
+feat: add pie chart visualization to Analysis view
+refactor: extract chart components for better organization
 ```
 
 **Commit Types**:
-- `fix:` - Bug fix (use for Priority 1 bugs)
-- `feat:` - New feature (use for Priority 2 enhancements)
+- `fix:` - Bug fix
+- `feat:` - New feature
 - `refactor:` - Code restructuring without behavior change
 - `docs:` - Documentation updates
 - `test:` - Test additions/modifications
 - `perf:` - Performance improvements
+- `style:` - UI/UX styling changes
 
 **Requirements**:
 - Code must build successfully before committing
@@ -345,7 +366,7 @@ Read CLAUDE.md "Active Development" section and continue with current focus.
 
 **Full Start** (after interruption or uncertainty):
 ```
-1. Read CLAUDE.md completely (especially YNAB methodology)
+1. Read CLAUDE.md completely (especially YNAB methodology and active bugs)
 2. Run: git log --oneline -10
 3. Run: git status (check for uncommitted work)
 4. Build project to verify working state
@@ -361,6 +382,7 @@ Read CLAUDE.md "Active Development" section and continue with current focus.
   - Completing enhancements
   - Major refactoring
   - Model schema changes
+  - Version releases
 - Update "Active Decisions/Blockers" if blocked or decision needed
 - Update "Next Session Start Here" at end of session
 
@@ -368,7 +390,7 @@ Read CLAUDE.md "Active Development" section and continue with current focus.
 - Add blow-by-blow implementation details to session notes
 - List every file changed (git handles that)
 - Create detailed session logs with timestamps (git log handles that)
-- Keep old session notes (delete after work complete)
+- Keep completed items in backlog (move to version history)
 
 ### After Interruption
 
@@ -430,9 +452,6 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
    ```swift
    // ✅ CORRECT - Allow $0 for unfunded but tracked expenses
    if amount >= 0 { /* Valid */ }
-   
-   // ❌ WRONG - Requiring amount > 0
-   if amount > 0 { /* Valid */ }
    ```
 
 10. **Notifications**: Use UNUserNotificationCenter for local notifications
@@ -441,23 +460,38 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
     UNUserNotificationCenter.current().add(request)
     ```
 
+11. **SwiftData Best Practices**: Follow iOS 26 SwiftData patterns
+    ```swift
+    // ✅ CORRECT - Explicit schema and configuration
+    let schema = Schema([Transaction.self, BudgetCategory.self, MonthlyBudget.self])
+    let config = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
+    let container = try ModelContainer(for: schema, configurations: [config])
+    ```
+
 ## Issue & Enhancement Management
 
 **Adding New Issues**:
 1. Add to "Active Issues & Enhancement Backlog" with appropriate priority
-2. Use 🔴 for critical bugs (Priority 1), 🟡 for features (Priority 2)
+2. Use 🔴 for critical bugs (Priority 1), 🟡 for UX improvements (Priority 2)
 3. Use task checkboxes [ ] for tracking
 4. Include clear acceptance criteria and test cases
-5. Reference files to modify
-6. **Verify it aligns with YNAB methodology**
+5. Reference files to modify/investigate
+6. Add implementation approaches and design considerations
+7. **Verify it aligns with YNAB methodology**
 
 **Completing Issues/Enhancements**:
 1. Check off all related tasks [x]
 2. Commit with descriptive fix:/feat: message
 3. Add entry to "Recent Significant Changes"
-4. Update "Next Session Start Here" if needed
-5. Test thoroughly before marking complete
-6. Verify YNAB principles maintained (if applicable)
+4. Move completed item to version history (brief summary)
+5. Update "Next Session Start Here" if needed
+6. Test thoroughly before marking complete
+7. Verify YNAB principles maintained (if applicable)
+
+**Moving to Version History**:
+- When bug/enhancement is complete, remove detailed tasks
+- Add brief one-line summary to version history
+- Keep backlog focused on ACTIVE work only
 
 ## Quick Reference
 
@@ -476,3 +510,9 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
 - ✅ "Ready to Assign" prominently displayed?
 - ✅ Goal to reach Ready to Assign = $0?
 - ✅ Categories can be $0 (tracked but unfunded)?
+
+**Common SwiftUI Debugging**:
+- Console errors? Check error messages for root cause
+- UI not updating? Verify @State/@Published property wrappers
+- Sheet not appearing? Check binding and presentation logic
+- Chart not rendering? Verify data structure and mark types
