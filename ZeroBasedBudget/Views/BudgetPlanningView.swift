@@ -533,8 +533,19 @@ struct BudgetPlanningView: View {
                 startingBalance = budget.startingBalance
             }
             .sheet(isPresented: $showingAddCategory) {
-                AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDate in
-                    saveNewCategory(name: name, amount: amount, type: newCategoryType, dueDate: dueDate)
+                AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDate, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                    saveNewCategory(
+                        name: name,
+                        amount: amount,
+                        type: newCategoryType,
+                        dueDate: dueDate,
+                        isLastDayOfMonth: isLastDayOfMonth,
+                        notify7DaysBefore: notify7Days,
+                        notify2DaysBefore: notify2Days,
+                        notifyOnDueDate: notifyOnDate,
+                        notifyCustomDays: notifyCustom,
+                        customDaysCount: customDays
+                    )
                 })
             }
             .sheet(item: $editingCategory) { category in
@@ -717,7 +728,7 @@ struct BudgetPlanningView: View {
         showingAddCategory = true
     }
 
-    private func saveNewCategory(name: String, amount: Decimal, type: String, dueDate: Date?) {
+    private func saveNewCategory(name: String, amount: Decimal, type: String, dueDate: Date?, isLastDayOfMonth: Bool, notify7DaysBefore: Bool, notify2DaysBefore: Bool, notifyOnDueDate: Bool, notifyCustomDays: Bool, customDaysCount: Int) {
         let category = BudgetCategory(
             name: name,
             budgetedAmount: amount,
@@ -725,6 +736,15 @@ struct BudgetPlanningView: View {
             colorHex: generateRandomColor(),
             dueDate: dueDate
         )
+
+        // Set notification preferences from user input
+        category.isLastDayOfMonth = isLastDayOfMonth
+        category.notify7DaysBefore = notify7DaysBefore
+        category.notify2DaysBefore = notify2DaysBefore
+        category.notifyOnDueDate = notifyOnDueDate
+        category.notifyCustomDays = notifyCustomDays
+        category.customDaysCount = customDaysCount
+
         modelContext.insert(category)
         try? modelContext.save()
         showingAddCategory = false
@@ -957,12 +977,47 @@ struct CategoryRow: View {
 struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let categoryType: String
-    let onSave: (String, Decimal, Date?) -> Void
+    let onSave: (String, Decimal, Date?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
 
     @State private var categoryName: String = ""
     @State private var budgetedAmount: Decimal = 0
     @State private var hasDueDate: Bool = false
     @State private var dueDate: Date = Date()
+    @State private var isLastDayOfMonth: Bool = false
+    @State private var notify7DaysBefore: Bool = false
+    @State private var notify2DaysBefore: Bool = false
+    @State private var notifyOnDueDate: Bool = true  // Default to ON
+    @State private var notifyCustomDays: Bool = false
+    @State private var customDaysCount: Int = 1
+
+    // Helper to calculate last day of month for preview
+    private var displayDate: Date {
+        if isLastDayOfMonth {
+            return lastDayOfCurrentMonth()
+        } else {
+            return dueDate
+        }
+    }
+
+    // Calculate the last day of the current month
+    private func lastDayOfCurrentMonth() -> Date {
+        let calendar = Calendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.year, .month], from: now)
+
+        guard let firstDayOfMonth = calendar.date(from: components),
+              let range = calendar.range(of: .day, in: .month, for: firstDayOfMonth) else {
+            return now
+        }
+
+        var lastDayComponents = components
+        lastDayComponents.day = range.count
+        lastDayComponents.hour = 0
+        lastDayComponents.minute = 0
+        lastDayComponents.second = 0
+
+        return calendar.date(from: lastDayComponents) ?? now
+    }
 
     var body: some View {
         NavigationStack {
@@ -981,7 +1036,30 @@ struct AddCategorySheet: View {
                     Toggle("Set Due Date", isOn: $hasDueDate)
 
                     if hasDueDate {
-                        DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                        Toggle("Last day of month", isOn: $isLastDayOfMonth)
+
+                        if !isLastDayOfMonth {
+                            DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                        } else {
+                            LabeledContent("Effective Date") {
+                                Text(displayDate, style: .date)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
+                if hasDueDate {
+                    Section(header: Text("Notification Settings"), footer: Text("Choose when to be notified about this budget due date")) {
+                        Toggle("Notify 7 days before", isOn: $notify7DaysBefore)
+                        Toggle("Notify 2 days before", isOn: $notify2DaysBefore)
+                        Toggle("Notify on due date", isOn: $notifyOnDueDate)
+
+                        Toggle("Notify custom days before", isOn: $notifyCustomDays)
+
+                        if notifyCustomDays {
+                            Stepper("Notify \(customDaysCount) day\(customDaysCount == 1 ? "" : "s") before", value: $customDaysCount, in: 1...30)
+                        }
                     }
                 }
 
@@ -1001,7 +1079,17 @@ struct AddCategorySheet: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(categoryName, budgetedAmount, hasDueDate ? dueDate : nil)
+                        onSave(
+                            categoryName,
+                            budgetedAmount,
+                            hasDueDate ? dueDate : nil,
+                            isLastDayOfMonth,
+                            notify7DaysBefore,
+                            notify2DaysBefore,
+                            notifyOnDueDate,
+                            notifyCustomDays,
+                            customDaysCount
+                        )
                         dismiss()
                     }
                     .disabled(categoryName.trimmingCharacters(in: .whitespaces).isEmpty || budgetedAmount < 0)
