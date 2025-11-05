@@ -72,7 +72,7 @@ struct TransactionLogView: View {
                                 Spacer()
                                 Image(systemName: "arrow.right.circle.fill")
                                     .font(.title2)
-                                    .foregroundStyle(.appAccent)
+                                    .foregroundStyle(Color.appAccent)
                             }
                         }
                         .buttonStyle(.plain)
@@ -223,7 +223,7 @@ struct AddTransactionSheet: View {
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(.appError)
+                            .foregroundStyle(Color.appError)
                     }
                 }
 
@@ -245,7 +245,7 @@ struct AddTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(.appWarning)
+                            .foregroundStyle(Color.appWarning)
                     }
                 }
 
@@ -348,7 +348,7 @@ struct EditTransactionSheet: View {
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(.appError)
+                            .foregroundStyle(Color.appError)
                     }
                 }
 
@@ -370,7 +370,7 @@ struct EditTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(.appWarning)
+                            .foregroundStyle(Color.appWarning)
                     }
                 }
 

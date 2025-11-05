@@ -34,11 +34,11 @@ struct BudgetAnalysisView: View {
 
     // Summary totals
     private var totalBudgeted: Decimal {
-        categoryComparisons.appErroruce(Decimal.zero) { $0 + $1.budgeted }
+        categoryComparisons.reduce(Decimal.zero) { $0 + $1.budgeted }
     }
 
     private var totalActual: Decimal {
-        categoryComparisons.appErroruce(Decimal.zero) { $0 + $1.actual }
+        categoryComparisons.reduce(Decimal.zero) { $0 + $1.actual }
     }
 
     private var totalDifference: Decimal {
@@ -230,7 +230,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.budgeted as NSDecimalNumber))
                     )
-                    .foregroundStyle(.appAccent)
+                    .foregroundStyle(Color.appAccent)
                     .position(by: .value("Type", "Budgeted"))
 
                     // Actual bar
@@ -281,7 +281,7 @@ struct DonutChartSection: View {
         let sortedByAmount = categoriesWithSpending.sorted { $0.actual > $1.actual }
         let topCategories = Array(sortedByAmount.prefix(maxCategories - 1))
         let otherCategories = Array(sortedByAmount.dropFirst(maxCategories - 1))
-        let otherTotal = otherCategories.appErroruce(Decimal.zero) { $0 + $1.actual }
+        let otherTotal = otherCategories.reduce(Decimal.zero) { $0 + $1.actual }
 
         var result = topCategories.map { comparison in
             DonutChartData(
@@ -303,7 +303,7 @@ struct DonutChartSection: View {
     }
 
     private var totalSpending: Decimal {
-        chartData.appErroruce(Decimal.zero) { $0 + $1.amount }
+        chartData.reduce(Decimal.zero) { $0 + $1.amount }
     }
 
     var body: some View {
@@ -438,7 +438,7 @@ struct CategoryComparisonRow: View {
                 Spacer()
 
                 Image(systemName: comparison.isOverBudget ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                    .foregroundStyle(comparison.isOverBudget ? .appError : .appSuccess)
+                    .foregroundStyle(comparison.isOverBudget ? Color.appError : Color.appSuccess)
             }
 
             // Metrics grid
