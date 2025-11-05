@@ -432,7 +432,7 @@ struct BudgetPlanningView: View {
                 _ = getOrCreateMonthlyBudget(for: selectedMonth)
             }
             .sheet(isPresented: $showingAddCategory) {
-                AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                AddCategorySheet(categoryType: newCategoryType, currencyCode: currencyCode, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     saveNewCategory(
                         name: name,
                         amount: amount,
@@ -448,7 +448,7 @@ struct BudgetPlanningView: View {
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, onSave: { updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                EditCategorySheet(category: category, currencyCode: currencyCode, onSave: { updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     updateCategory(
                         category,
                         amount: updatedAmount,
@@ -877,6 +877,7 @@ struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let categoryType: String
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
+    var currencyCode: String = "USD"
 
     @State private var categoryName: String = ""
     @State private var budgetedAmount: Decimal = 0
@@ -1026,6 +1027,7 @@ struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let category: BudgetCategory
     let onSave: (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
+    var currencyCode: String = "USD"
 
     @State private var budgetedAmount: Decimal
     @State private var hasDueDate: Bool
@@ -1037,8 +1039,9 @@ struct EditCategorySheet: View {
     @State private var notifyCustomDays: Bool
     @State private var customDaysCount: Int
 
-    init(category: BudgetCategory, onSave: @escaping (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
+    init(category: BudgetCategory, currencyCode: String = "USD", onSave: @escaping (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
         self.category = category
+        self.currencyCode = currencyCode
         self.onSave = onSave
         _budgetedAmount = State(initialValue: category.budgetedAmount)
 

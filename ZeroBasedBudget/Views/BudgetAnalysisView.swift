@@ -70,7 +70,8 @@ struct BudgetAnalysisView: View {
                         SummarySection(
                             totalBudgeted: totalBudgeted,
                             totalActual: totalActual,
-                            totalDifference: totalDifference
+                            totalDifference: totalDifference,
+                            currencyCode: currencyCode
                         )
 
                         // Chart Type Picker
@@ -161,6 +162,7 @@ struct SummarySection: View {
     let totalBudgeted: Decimal
     let totalActual: Decimal
     let totalDifference: Decimal
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 12) {
