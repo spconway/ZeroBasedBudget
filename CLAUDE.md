@@ -111,6 +111,9 @@ ZeroBasedBudget/
 - ✅ Enhancement 3.3: Full dark mode support with manual toggle
 - ✅ Semantic color system (appSuccess, appWarning, appError, appAccent)
 - ✅ Dark mode toggle in Settings (System / Light / Dark)
+- ✅ Enhancement 3.2: Global Settings Tab with comprehensive configuration
+- ✅ Data export/import functionality (CSV and JSON formats)
+- ✅ Dynamic currency support (USD, EUR, GBP, CAD, AUD, JPY)
 - ✅ AppSettings model for persisting user preferences
 
 **v1.3.0:**
@@ -158,111 +161,44 @@ ZeroBasedBudget/
 
 ---
 
-#### Enhancement 3.2: Global Settings Tab 🟢
+#### Enhancement 3.2: Global Settings Tab ✅ COMPLETED
 
-**Objective**: Add comprehensive settings view for app configuration, data management, and user preferences.
+**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commit: 1e045ae)
 
-**YNAB Alignment Check**: ✅ Neutral - settings don't affect core YNAB methodology.
+**Summary**: Comprehensive settings view with 6 sections for app configuration, data management, and user preferences. Includes data export/import functionality and dynamic currency support throughout the app.
 
-**Settings Categories** (organized by importance):
+**Key Implementations**:
+1. **Expanded AppSettings Model**:
+   - Added `defaultNotificationSchedule`, `numberFormat`, `allowNegativeCategoryAmounts`
+   - All settings persist via SwiftData
 
-1. **Appearance**
-   - Dark mode: System / Light / Dark (see Enhancement 3.3)
-   - Color scheme: Default / Custom (future enhancement)
-   - Font size: System / Custom (future enhancement)
+2. **Comprehensive SettingsView (6 Sections)**:
+   - **Appearance**: Dark mode toggle (System/Light/Dark)
+   - **Currency & Formatting**: Currency picker (USD/EUR/GBP/CAD/AUD/JPY), date format, number format
+   - **Budget Behavior**: Month start date (1-31), default notifications, over-budget toggle
+   - **Notifications**: Master enable/disable switch
+   - **Data Management**: Export CSV/JSON, import JSON, clear all data, storage info
+   - **About**: Version, build, YNAB methodology sheet, privacy, feedback link
 
-2. **Currency & Formatting**
-   - Currency selection (currently hardcoded to USD)
-     - Support: USD, EUR, GBP, CAD, AUD, JPY, etc.
-   - Date format: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
-   - Number format: 1,234.56 vs 1.234,56 vs 1 234,56
+3. **Data Export/Import Utilities**:
+   - DataExporter.swift: CSV export (current month) and JSON export (full backup)
+   - DataImporter.swift: JSON import with validation and error handling
+   - ShareSheet wrapper for UIActivityViewController
 
-3. **Budget Behavior**
-   - Month start date: 1st-31st (currently hardcoded to 1st)
-     - Use case: Some users get paid mid-month
-   - Default notification frequency for new categories
-   - Allow negative category amounts: Yes / No (currently allowed)
+4. **Dynamic Currency Support**:
+   - All 11 views updated to use `currencyCode` from AppSettings
+   - Replaced 40+ hardcoded "USD" references
+   - Currency changes update immediately across all tabs
 
-4. **Notifications**
-   - Enable notifications: On / Off (master switch)
-   - Default notification schedule: 7-day, 2-day, on-date, custom
-   - Notification sound: Default / Silent / Custom
+5. **Data Management Features**:
+   - Export current month budget to CSV
+   - Export complete data to JSON (accounts, categories, transactions, budgets)
+   - Import data from JSON with validation
+   - Clear all data with confirmation (preserves AppSettings)
 
-5. **Data Management**
-   - Export budget data (CSV format)
-   - Export budget data (JSON format - full backup)
-   - Import budget data (JSON)
-   - Clear all data (with confirmation + warning)
-   - Storage location info (local-only, no cloud)
+**Files Created**: DataExporter.swift, DataImporter.swift
 
-6. **About**
-   - App version & build number
-   - YNAB Methodology explanation (educational)
-   - Privacy policy (emphasize local-only storage)
-   - Feedback / GitHub link
-   - Acknowledgments
-
-**Files to Create**:
-- [ ] `Views/SettingsView.swift` - Main settings container with List of sections
-- [ ] `Views/Settings/AppearanceSettingsView.swift` - Dark mode, colors, fonts
-- [ ] `Views/Settings/CurrencySettingsView.swift` - Currency and number format
-- [ ] `Views/Settings/BudgetBehaviorSettingsView.swift` - Month start, defaults
-- [ ] `Views/Settings/NotificationSettingsView.swift` - Notification preferences
-- [ ] `Views/Settings/DataManagementView.swift` - Export, import, clear data
-- [ ] `Views/Settings/AboutView.swift` - Version, methodology, links
-- [ ] `Models/AppSettings.swift` - SwiftData model for persisting settings
-- [ ] `Utilities/DataExporter.swift` - CSV/JSON export functionality
-- [ ] `Utilities/DataImporter.swift` - JSON import with validation
-
-**Files to Modify**:
-- [ ] `ContentView.swift` - Add Settings to navigation (tab or sidebar item)
-- [ ] All views using hardcoded "USD" - Make currency dynamic via AppSettings
-- [ ] `NotificationManager.swift` - Respect global notification settings
-- [ ] `BudgetPlanningView.swift` - Use dynamic month start date from settings
-
-**Implementation Notes**:
-- Use `@AppStorage` for simple preferences (dark mode, date format)
-- Use SwiftData `AppSettings` model for complex preferences (currency, custom notifications)
-- Implement settings schema versioning for future migrations
-- All settings must have sensible defaults (current behavior)
-- Settings changes apply immediately (no "Save" button needed)
-
-**Data Export Format (CSV)**:
-```csv
-Category,Type,Amount,DueDate,NotificationEnabled
-Rent,Fixed,1500.00,2025-12-01,true
-Groceries,Variable,600.00,,false
-```
-
-**Data Export Format (JSON)** - Full backup:
-```json
-{
-  "version": "1.4.0",
-  "exportDate": "2025-11-04T12:00:00Z",
-  "monthlyBudgets": [...],
-  "categories": [...],
-  "transactions": [...]
-}
-```
-
-**Testing Checklist**:
-- [ ] Each setting persists across app restarts
-- [ ] Currency changes update all currency displays immediately
-- [ ] Export CSV produces valid, importable file
-- [ ] Export JSON contains complete data
-- [ ] Import JSON validates schema and restores data correctly
-- [ ] Import JSON shows error for invalid files
-- [ ] Clear data requires confirmation and works completely
-- [ ] About section displays correct version info
-
-**Acceptance Criteria**:
-- ✅ Settings tab/view accessible from navigation
-- ✅ All settings categories implemented
-- ✅ Settings persist across app launches
-- ✅ Currency selection updates all views
-- ✅ Export/import functionality works correctly
-- ✅ Clear data functionality has proper safeguards
-- ✅ About section contains accurate information
+**Files Modified**: AppSettings.swift, SettingsView.swift, BudgetPlanningView.swift, TransactionLogView.swift, BudgetAnalysisView.swift, AccountsView.swift, AccountRow.swift, ReadyToAssignBanner.swift, AddAccountSheet.swift, EditAccountSheet.swift, NotificationManager.swift
 
 ---
 
@@ -363,30 +299,30 @@ Groceries,Variable,600.00,,false
 
 ## Active Development
 
-**Current Focus**: 🚀 v1.4.0 Feature Development - Two enhancements complete, one remaining
-**Status**: Ready to begin Enhancement 3.2 (Global Settings Tab)
+**Current Focus**: 🎉 v1.4.0 Feature Development - ALL THREE ENHANCEMENTS COMPLETE!
+**Status**: Ready for v1.4.0 release testing
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-05] ✅ **Completed Enhancement 3.3**: Full dark mode support with manual toggle
-2. [2025-11-05] ✅ **Completed Enhancement 3.1**: YNAB-style Accounts tab with account-based budgeting
-3. [2025-11-04] 💰 Revised Enhancement 3.1 (2nd revision): YNAB-style Accounts tab + simplified banner
-4. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
-5. [2025-11-04] 📋 Specified v1.4.0 enhancements: Accounts, Settings, Dark mode
+1. [2025-11-05] ✅ **Completed Enhancement 3.2**: Global Settings Tab with data export/import and dynamic currency
+2. [2025-11-05] ✅ **Completed Enhancement 3.3**: Full dark mode support with manual toggle
+3. [2025-11-05] ✅ **Completed Enhancement 3.1**: YNAB-style Accounts tab with account-based budgeting
+4. [2025-11-04] 💰 Revised Enhancement 3.1 (2nd revision): YNAB-style Accounts tab + simplified banner
+5. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read CLAUDE.md "Active Issues & Enhancement Backlog" section
-2. **Enhancement 3.1 COMPLETE** ✅ - Accounts tab with account-based budgeting
-3. **Enhancement 3.3 COMPLETE** ✅ - Dark mode support with semantic colors
-4. Next: **Enhancement 3.2 (Global Settings Tab)** - Most complex, comprehensive settings
+1. **ALL v1.4.0 ENHANCEMENTS COMPLETE** ✅ 🎉
+2. **Enhancement 3.1 COMPLETE** ✅ - Accounts tab with account-based budgeting (commit: 5edfe37)
+3. **Enhancement 3.3 COMPLETE** ✅ - Dark mode support with semantic colors (commits: e240fb7, 06562df, d37a88d)
+4. **Enhancement 3.2 COMPLETE** ✅ - Global Settings Tab (commit: 1e045ae)
 5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-6. Review Enhancement 3.2 specifications below for implementation details
+6. Next Steps: Test in Xcode Simulator, consider releasing v1.4.0
 
-**Implementation Priority Order (Updated):**
+**Implementation Priority Order (v1.4.0 - ALL COMPLETE):**
 1. ✅ **Enhancement 3.1** (YNAB Accounts Tab) - **COMPLETED**
 2. ✅ **Enhancement 3.3** (Dark Mode Support) - **COMPLETED**
-3. **Enhancement 3.2** (Global Settings) - **Next**: Comprehensive settings, data export/import
+3. ✅ **Enhancement 3.2** (Global Settings) - **COMPLETED**
 
 ## Git Commit Strategy
 
