@@ -835,7 +835,7 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
 
 ## Quick Reference
 
-**Build Project**: `Cmd+B` in Xcode
+**Build Project**: `Cmd+B` in Xcode or `xcodebuild -project ZeroBasedBudget.xcodeproj -scheme ZeroBasedBudget build`
 
 **Run Tests** (after v1.6.0): `Cmd+U` in Xcode or `xcodebuild test -scheme ZeroBasedBudget -destination 'platform=iOS Simulator,name=iPhone 17'`
 
