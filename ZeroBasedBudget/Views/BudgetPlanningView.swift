@@ -132,11 +132,11 @@ struct BudgetPlanningView: View {
     // Color coding for Ready to Assign
     private var readyToAssignColor: Color {
         if readyToAssign == 0 {
-            return .green  // Goal achieved!
+            return .appSuccess  // Goal achieved!
         } else if readyToAssign > 0 {
-            return .orange  // Money needs to be assigned
+            return .appWarning  // Money needs to be assigned
         } else {
-            return .red  // Over-assigned, need to reduce categories
+            return .appError  // Over-assigned, need to reduce categories
         }
     }
 
@@ -178,7 +178,7 @@ struct BudgetPlanningView: View {
                         Button(action: previousMonth) {
                             Image(systemName: "chevron.left")
                                 .font(.title3)
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(.appAccent)
                         }
                         .buttonStyle(.plain)
 
@@ -194,7 +194,7 @@ struct BudgetPlanningView: View {
                         Button(action: nextMonth) {
                             Image(systemName: "chevron.right")
                                 .font(.title3)
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(.appAccent)
                         }
                         .buttonStyle(.plain)
                     }
@@ -350,15 +350,15 @@ struct BudgetPlanningView: View {
                                 if comparison.amount < readyToAssign {
                                     Image(systemName: "arrow.up")
                                         .font(.caption2)
-                                        .foregroundStyle(.green)
+                                        .foregroundStyle(.appSuccess)
                                 } else if comparison.amount > readyToAssign {
                                     Image(systemName: "arrow.down")
                                         .font(.caption2)
-                                        .foregroundStyle(.red)
+                                        .foregroundStyle(.appError)
                                 } else {
                                     Image(systemName: "arrow.right")
                                         .font(.caption2)
-                                        .foregroundStyle(.gray)
+                                        .foregroundStyle(.appMuted)
                                 }
                             }
                         }
@@ -370,34 +370,34 @@ struct BudgetPlanningView: View {
                     if readyToAssign == 0 {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
+                                .foregroundStyle(.appSuccess)
                                 .font(.title2)
                             Text("Goal Achieved!")
                                 .font(.headline)
-                                .foregroundStyle(.green)
+                                .foregroundStyle(.appSuccess)
                             Spacer()
                         }
                         .padding(.vertical, 8)
-                        .listRowBackground(Color.green.opacity(0.1))
+                        .listRowBackground(Color.appSuccess.opacity(0.1))
                     } else if readyToAssign > 0 {
                         HStack {
                             Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(.appWarning)
                                 .font(.title3)
                             Text("Assign \(readyToAssign, format: .currency(code: "USD")) to categories")
                                 .font(.subheadline)
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(.appWarning)
                             Spacer()
                         }
                         .padding(.vertical, 4)
                     } else {
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.red)
+                                .foregroundStyle(.appError)
                                 .font(.title3)
                             Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: "USD"))")
                                 .font(.subheadline)
-                                .foregroundStyle(.red)
+                                .foregroundStyle(.appError)
                             Spacer()
                         }
                         .padding(.vertical, 4)
@@ -408,7 +408,7 @@ struct BudgetPlanningView: View {
                     if readyToAssign == 0 {
                         Text("Perfect! Every dollar has a job. You've successfully budgeted all available money.")
                             .font(.caption)
-                            .foregroundStyle(.green)
+                            .foregroundStyle(.appSuccess)
                     }
                 }
             }
@@ -495,7 +495,7 @@ struct BudgetPlanningView: View {
 
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
+                                .foregroundStyle(.appSuccess)
                                 .font(.title3)
 
                             Text(action.actionDescription)
@@ -508,7 +508,7 @@ struct BudgetPlanningView: View {
                                 performUndo()
                             }
                             .fontWeight(.semibold)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(.appAccent)
 
                             Button(action: {
                                 withAnimation {
@@ -849,7 +849,7 @@ struct CategoryRow: View {
                         .font(.system(size: 14))
                         .foregroundStyle(.white)
                         .frame(width: 28, height: 28)
-                        .background(Color.orange)
+                        .background(Color.appWarning)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
