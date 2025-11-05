@@ -876,8 +876,8 @@ struct CategoryRow: View {
 struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     let categoryType: String
+	var currencyCode: String = "USD"
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
-    var currencyCode: String = "USD"
 
     @State private var categoryName: String = ""
     @State private var budgetedAmount: Decimal = 0
