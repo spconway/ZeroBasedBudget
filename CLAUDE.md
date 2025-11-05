@@ -60,11 +60,13 @@ Income is logged when it ARRIVES via transactions, not pre-budgeted.
 ## Architecture
 
 - **Framework**: SwiftUI for iOS 26
+- **Platform**: iPhone only (iOS 26+) - iPad and other platforms not supported
 - **Persistence**: SwiftData (local-only storage, NO cloud sync)
 - **Pattern**: MVVM (Model-View-ViewModel)
 - **Data Type**: Decimal for ALL monetary values (never Double/Float)
 - **Charts**: Swift Charts for budget visualization
 - **Notifications**: UNUserNotificationCenter for local push notifications
+- **Orientation**: Portrait mode optimized (landscape functional but not primary design)
 
 ## Current Project Structure
 
@@ -115,57 +117,139 @@ ZeroBasedBudget/
 
 ### 🟢 Priority 3: New Features (v1.4.0)
 
-#### Enhancement 3.1: Navigation Sidebar (Hamburger Menu) 🟢
+#### Enhancement 3.1: Financial Summary Card (Quick View) 🟢
 
-**Objective**: Modernize navigation by replacing TabView with NavigationSplitView, moving financial summary data to sidebar while keeping "Ready to Assign" progress bar prominent.
+**Objective**: Add a quick-access Financial Summary card that displays key budget metrics (Starting Balance, Total Income, Total Assigned) without disrupting the existing TabView navigation structure.
 
-**YNAB Alignment Check**: ⚠️ Requires careful implementation. Moving financial data to sidebar could reduce visibility of key metrics. Solution: Keep sidebar visible on iPad, easily accessible on iPhone, and maintain "Ready to Assign" in main view.
+**YNAB Alignment Check**: ✅ Neutral - Provides convenient access to summary metrics while keeping "Ready to Assign" prominently displayed in Budget view. Does not affect core YNAB methodology.
 
 **Implementation Approach**:
-- Replace TabView with NavigationSplitView (iOS 16+ native component)
-- Sidebar contains:
-  - Navigation: Budget, Transactions, Analysis, Settings
-  - Financial Summary Card (read-only, auto-updating):
-    - Starting Balance
-    - Total Income (This Period)
-    - Total Assigned
-  - Display current month in sidebar
-- Main view keeps "Ready to Assign" progress bar (most important metric)
-- Platform-specific behavior:
-  - iPhone: Collapsible sidebar with hamburger menu icon
-  - iPad: Persistent sidebar (better UX for larger screens)
+- **Keep existing TabView navigation** (Budget, Transactions, Analysis tabs)
+- Add a **toolbar button** (info icon, top-right) accessible from all tabs
+- Tapping button presents a **sheet** with Financial Summary Card
+- Financial Summary Card shows (read-only, auto-updating):
+  - Current month display (e.g., "November 2025")
+  - Starting Balance
+  - Total Income (This Period)
+  - Total Assigned
+  - Ready to Assign (for context, with color coding)
+- Sheet dismisses via swipe-down or close button
+- **Add Settings as 4th tab** in TabView for future use
+
+**Why This Approach**:
+- ✅ Keeps familiar TabView navigation (no learning curve)
+- ✅ iPhone-native pattern (sheet presentation)
+- ✅ Non-disruptive - existing views unchanged
+- ✅ Quick access from any tab via toolbar button
+- ✅ No complex sidebar logic or platform-specific behavior
+- ✅ Ready to Assign stays prominent in Budget view
 
 **Files to Create**:
-- [ ] `Views/SidebarView.swift` - Sidebar navigation and financial summary component
+- [ ] `Views/FinancialSummaryCard.swift` - Reusable summary card component
+- [ ] `Views/FinancialSummarySheet.swift` - Sheet container for summary card
+- [ ] `Views/SettingsView.swift` - Basic settings view (placeholder for Enhancement 3.2)
 
 **Files to Modify**:
-- [ ] `ContentView.swift` - Major refactor: TabView → NavigationSplitView
-- [ ] `BudgetPlanningView.swift` - Remove Starting Balance, Total Income, Total Assigned fields from form
-- [ ] Keep Ready to Assign progress bar and large amount display
+- [ ] `ContentView.swift` - Add 4th Settings tab, add @State for sheet presentation
+- [ ] `BudgetPlanningView.swift` - Add toolbar with info button, sheet modifier
+- [ ] `TransactionLogView.swift` - Add toolbar with info button, sheet modifier
+- [ ] `BudgetAnalysisView.swift` - Add toolbar with info button, sheet modifier
+- [ ] Extract financial calculation logic to shared utility if not already modular
+
+**UI Design**:
+```swift
+// Toolbar button in navigation bar (all tabs)
+.toolbar {
+    ToolbarItem(placement: .topBarTrailing) {
+        Button {
+            showingFinancialSummary = true
+        } label: {
+            Image(systemName: "info.circle")
+        }
+    }
+}
+
+// Sheet presentation
+.sheet(isPresented: $showingFinancialSummary) {
+    FinancialSummarySheet(
+        month: selectedMonth,
+        startingBalance: startingBalance,
+        totalIncome: totalIncome,
+        totalAssigned: totalAssigned,
+        readyToAssign: readyToAssign
+    )
+    .presentationDetents([.medium, .large])
+    .presentationDragIndicator(.visible)
+}
+
+// FinancialSummaryCard component
+VStack(spacing: 20) {
+    // Month header
+    Text(monthYearText)
+        .font(.title2)
+        .fontWeight(.bold)
+
+    Divider()
+
+    // Financial metrics
+    LabeledContent("Starting Balance") {
+        Text(startingBalance, format: .currency(code: "USD"))
+            .fontWeight(.semibold)
+    }
+
+    LabeledContent("Total Income (This Period)") {
+        Text(totalIncome, format: .currency(code: "USD"))
+            .fontWeight(.semibold)
+            .foregroundStyle(.green)
+    }
+
+    LabeledContent("Total Assigned") {
+        Text(totalAssigned, format: .currency(code: "USD"))
+            .fontWeight(.semibold)
+    }
+
+    Divider()
+
+    // Ready to Assign (contextual)
+    LabeledContent("Ready to Assign") {
+        Text(readyToAssign, format: .currency(code: "USD"))
+            .fontWeight(.bold)
+            .foregroundStyle(readyToAssignColor)
+    }
+}
+.padding()
+```
 
 **Design Considerations**:
-- Financial summary in sidebar updates in real-time
-- Sidebar shows data for currently selected month
-- Visual hierarchy: Ready to Assign remains most prominent
-- Smooth animations for sidebar collapse/expand
-- Maintain color coding (green/orange/red for Ready to Assign status)
+- Info icon (ℹ️) is universally understood for "more information"
+- Sheet with .medium detent shows summary without covering entire screen
+- Swipe-down to dismiss follows iOS conventions
+- Financial data updates in real-time (passed as @Binding or computed)
+- Works identically across all tabs
+- No state persistence needed (ephemeral view)
 
 **Testing Checklist**:
-- [ ] Test on iPhone SE (smallest screen, sidebar collapses properly)
+- [ ] Test on iPhone SE (smallest screen, sheet sizes appropriately)
 - [ ] Test on iPhone 15 Pro (standard size)
-- [ ] Test on iPad Pro (sidebar persistent, proper layout)
-- [ ] Verify financial calculations update instantly in sidebar
-- [ ] Test sidebar state persists across app launches
-- [ ] Verify accessibility (VoiceOver, Dynamic Type)
-- [ ] Test month navigation updates sidebar data
+- [ ] Test on iPhone 15 Pro Max (largest screen)
+- [ ] Verify financial calculations update instantly when sheet is open
+- [ ] Test toolbar button visible on all three main tabs
+- [ ] Verify sheet dismissal (swipe down, close button, tap outside)
+- [ ] Test with different month selections (month navigation)
+- [ ] Verify accessibility (VoiceOver reads all values correctly)
+- [ ] Test with Dynamic Type (text scales appropriately)
+- [ ] Verify color coding for Ready to Assign works in sheet
 
 **Acceptance Criteria**:
-- ✅ Sidebar shows financial summary (Starting Balance, Total Income, Total Assigned)
-- ✅ Ready to Assign progress bar remains in main Budget view
-- ✅ Navigation works identically to previous TabView
-- ✅ Sidebar collapses on iPhone, persistent on iPad
+- ✅ Toolbar button (info icon) appears in all tabs
+- ✅ Tapping button presents Financial Summary sheet
+- ✅ Sheet displays: Starting Balance, Total Income, Total Assigned, Ready to Assign
+- ✅ Sheet shows current month clearly
 - ✅ All financial data updates in real-time
+- ✅ Sheet dismisses via swipe-down or close button
+- ✅ TabView navigation unchanged (Budget, Transactions, Analysis, Settings)
 - ✅ No regressions in existing functionality
+- ✅ Settings tab added for future use
 
 ---
 
@@ -369,30 +453,33 @@ Groceries,Variable,600.00,,false
 
 ### Implementation Priority Order (v1.4.0)
 
-**Recommended sequence:**
+**Recommended sequence (revised for iPhone-only focus):**
 
-1. **Enhancement 3.3 (Dark Mode)** - Do first
+1. **Enhancement 3.1 (Financial Summary Card)** - Do first ⭐ *Complexity reduced*
+   - Reason: Now very simple - just add toolbar button + sheet
+   - No architectural changes (TabView stays)
+   - Creates Settings tab for future use
+   - Can be implemented in ~1-2 hours
+   - Good foundation for other enhancements
+
+2. **Enhancement 3.3 (Dark Mode)** - Do second
    - Reason: Least disruptive, mostly visual changes
-   - Will inform color choices for sidebar design
+   - Will inform color choices for Financial Summary Card
    - Can be tested incrementally (view by view)
    - Phase 1 audit is non-breaking
+   - Tests Financial Summary sheet in both modes
 
-2. **Enhancement 3.2 (Settings)** - Do second
-   - Reason: Required for dark mode toggle (Phase 3)
+3. **Enhancement 3.2 (Settings)** - Do last
+   - Reason: Most complex with many sub-features
+   - Required for dark mode toggle (Phase 3 of Enhancement 3.3)
    - Creates infrastructure for future preferences
-   - Independent of navigation changes
    - Establishes data export patterns for future features
+   - Benefits from Settings tab already existing (from Enhancement 3.1)
 
-3. **Enhancement 3.1 (Sidebar)** - Do last
-   - Reason: Most complex, largest refactor
-   - Touches core navigation architecture
-   - Benefits from completed dark mode (test sidebar in both modes)
-   - Benefits from Settings tab already existing
-
-**Estimated Complexity**:
+**Estimated Complexity** (updated):
+- Enhancement 3.1: **Low** ⬇️ (simple sheet presentation, no architectural changes)
 - Enhancement 3.3: Medium (color audit tedious but straightforward)
 - Enhancement 3.2: High (many sub-features, export/import logic)
-- Enhancement 3.1: Very High (architectural change, platform-specific behavior)
 
 ---
 
@@ -402,24 +489,25 @@ Groceries,Variable,600.00,,false
 **Status**: Enhancement specifications complete, ready to begin implementation
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-04] 📋 Specified v1.4.0 enhancements: Sidebar navigation, Settings, Dark mode
-2. [2025-11-03] ✅ Added donut chart visualization to Analysis view
-3. [2025-11-03] ✅ Removed excessive top whitespace (inline navigation mode)
-4. [2025-11-03] ✅ Implemented YNAB-style day-of-month picker (1st-31st with ordinals)
-5. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
+1. [2025-11-04] 🎯 **Revised Enhancement 3.1**: iPhone-only focus - Financial Summary sheet (not sidebar)
+2. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
+3. [2025-11-04] 📋 Specified v1.4.0 enhancements: Financial Summary, Settings, Dark mode
+4. [2025-11-03] ✅ Added donut chart visualization to Analysis view
+5. [2025-11-03] ✅ Removed excessive top whitespace (inline navigation mode)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
 1. Read CLAUDE.md "Active Issues & Enhancement Backlog" section
-2. Review recommended implementation order: 3.3 (Dark Mode) → 3.2 (Settings) → 3.1 (Sidebar)
-3. Start with Enhancement 3.3 Phase 1: Dark Mode Audit (non-breaking, exploratory)
-4. Or wait for user to select which enhancement to start with
+2. Review recommended implementation order: 3.1 (Financial Summary) → 3.3 (Dark Mode) → 3.2 (Settings)
+3. **NEW**: Enhancement 3.1 simplified for iPhone-only (no sidebar, just sheet + Settings tab)
+4. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+5. Start with Enhancement 3.1: Financial Summary Card (Low complexity, ~1-2 hours)
 
 **Implementation Priority Order:**
-1. **Enhancement 3.3** (Dark Mode) - Recommended first: least disruptive, informs other designs
-2. **Enhancement 3.2** (Settings) - Recommended second: needed for dark mode toggle
-3. **Enhancement 3.1** (Sidebar) - Recommended last: most complex architectural change
+1. **Enhancement 3.1** (Financial Summary Card) - **Start here**: Simple sheet, no architectural changes
+2. **Enhancement 3.3** (Dark Mode) - Second: Visual changes, test new summary sheet
+3. **Enhancement 3.2** (Settings) - Last: Most complex, needs Settings tab from 3.1
 
 ## Git Commit Strategy
 

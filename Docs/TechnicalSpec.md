@@ -2,14 +2,20 @@ rom iOS 18 to iOS 26 to align all platforms with the 2025-2026 release cycle. Th
 
 iOS 26 introduces the Liquid Glass design system, featuring translucent, glass-like UI elements with dynamic materials. While apps automatically adopt this aesthetic when recompiled with the iOS 26 SDK, developers can opt out during the one-year transition period if needed. For this budget tracking app, Liquid Glass provides an elegant, modern appearance that e# Technical Specification: Zero-Based Budget Tracker iOS App
 
-**Version**: 1.1.0 (Post-MVP Enhancements Complete)
-**Last Updated**: November 2, 2025
+**Version**: 1.4.0-dev (v1.3.0 Complete, New Features Planned)
+**Last Updated**: November 4, 2025
+**Platform**: iPhone only, iOS 26+
 
 **The latest SwiftUI for iOS 26 paired with SwiftData provides native capabilities to replicate Excel's budget tracking functionality while delivering a modern, on-device-only financial management experience.** This specification outlines the complete technical approach for migrating a three-sheet Excel workbook into a fully-functional iOS application with zero-based budgeting, transaction logging, and budget analysis features.
+
+**Platform Support Policy**: This app is designed exclusively for iPhone devices running iOS 26 or later. iPad and other platforms are not supported. Development and testing focus solely on iPhone form factors.
 
 **Version History:**
 - **1.0.0** (November 1, 2025): MVP release with core budget, transaction, and analysis features
 - **1.1.0** (November 2, 2025): Post-MVP enhancements including Current Available tracking, yearly income, month navigation, due dates, and improved UX
+- **1.2.0** (November 2, 2025): Quick Assign, Undo functionality, enhanced Ready to Assign visual hierarchy
+- **1.3.0** (November 3, 2025): Push notifications, notification frequency settings, last-day-of-month due dates, donut chart visualization, zero-amount categories allowed
+- **1.4.0** (In Development): Dark mode support, global settings, financial summary card (iPhone-only focus)
 
 ## Context and version clarification
 
@@ -17,7 +23,13 @@ SwiftUI versions are tied to iOS releases rather than having independent version
 
 ## Technical stack and requirements
 
-**SwiftUI for iOS 26** serves as the UI framework, providing declarative views with native form handling, list performance optimizations, and built-in data binding. The minimum device support includes iPhone 11 and later (A13 Bionic or newer).
+**SwiftUI for iOS 26** serves as the UI framework, providing declarative views with native form handling, list performance optimizations, and built-in data binding.
+
+**Platform Requirements**:
+- **Minimum iOS Version**: iOS 26 or later
+- **Device Support**: iPhone only (iPhone 11 and later recommended for A13 Bionic or newer processor)
+- **iPad Support**: Not supported - app is designed exclusively for iPhone form factors
+- **Orientation**: Portrait mode optimized (landscape functional but not primary design target)
 
 **SwiftData** handles all data persistence with on-device-only storage. This modern framework, available since iOS 17, uses Swift's macro system for declarative data modeling and provides seamless SwiftUI integration through the `@Query` property wrapper. Unlike Core Data, SwiftData requires significantly less boilerplate code while maintaining robust persistence capabilities.
 
