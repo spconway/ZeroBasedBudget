@@ -161,72 +161,227 @@ git commit -m "docs: update CLAUDE.md with current state after interruption"
 
 ## Step 4: Prepare Resumption Prompt
 
-Create a new chat with Claude Code using this template:
+Choose the appropriate template based on your situation:
+
+### Template A: Mid-Task Interruption (Incomplete Work)
+
+Use this when Claude Code stopped mid-execution with uncommitted changes or incomplete work.
+
 ```markdown
-RESUMING WORK - Claude Code reached session limit mid-execution.
+RESUMING WORK - Claude Code reached context limit mid-execution.
 
-═══════════════════════════════════════════════════════════════════════════════
-CONTEXT RESTORATION
-═══════════════════════════════════════════════════════════════════════════════
+# Project Context
+- **Project**: ZeroBasedBudget iOS app (SwiftUI + SwiftData, iOS 26+)
+- **Platform**: iPhone only (no iPad support)
+- **Methodology**: YNAB-style zero-based budgeting (CRITICAL - must follow)
+- **Status Doc**: CLAUDE.md (contains complete current state)
+- **Tech Spec**: Docs/TechnicalSpec.md (implementation patterns)
 
-Project: ZeroBasedBudget iOS app (SwiftUI + SwiftData)
-Technical Spec: Docs/TechnicalSpec.md
-Project Status: Docs/CLAUDE.md
+# Pre-Resumption Checklist
 
-CRITICAL: Read CLAUDE.md thoroughly before proceeding - it contains the complete 
-current state, what's done, what's in progress, and what's next.
+Before proceeding, complete ALL verification steps and report findings:
 
-═══════════════════════════════════════════════════════════════════════════════
-VERIFICATION TASKS (Do these FIRST)
-═══════════════════════════════════════════════════════════════════════════════
+## 1. Read CLAUDE.md Key Sections
+Focus on these critical sections (in order):
+- [ ] **"Next Session Start Here"** - What was being worked on
+- [ ] **"Active Development" → "Current Focus"** - Active task/bug/enhancement
+- [ ] **"Active Development" → "Recent Significant Changes"** - Last 5 commits
+- [ ] **"Active Issues & Enhancement Backlog"** - Current priority work
+- [ ] **"YNAB-Style Budgeting Methodology"** - Core principles (MUST FOLLOW)
 
-1. Read CLAUDE.md completely, especially:
-   - Current phase status
-   - "Detailed Tasks" checklist (what's checked [x] vs unchecked [ ])
-   - "Current Session Notes" section (bottom of file)
-
-2. Review recent git history:
+## 2. Verify Git State
 ```bash
+# Check recent work
 git log --oneline -10
+
+# Check for uncommitted changes
+git status
+
+# Check branch status
+git branch -v
 ```
-   
-3. Verify project structure:
+
+## 3. Build Verification
 ```bash
+# Build project (or use Cmd+B in Xcode)
+xcodebuild -project ZeroBasedBudget.xcodeproj -scheme ZeroBasedBudget build
+```
+Report: Does build succeed or fail? If failed, what errors?
+
+## 4. Report Current State
+After completing steps 1-3, provide concise summary:
+- **Current version**: (e.g., v1.5.0 complete, v1.6.0 planned)
+- **Active work**: (what was being worked on when interrupted)
+- **Build status**: (success/failure)
+- **Uncommitted changes**: (yes/no - what files)
+- **Next steps**: (what should happen next, from CLAUDE.md)
+
+# Critical Implementation Reminders
+
+When resuming implementation, ALWAYS follow these rules:
+
+## YNAB Methodology (NON-NEGOTIABLE)
+- ✅ Budget only money that exists TODAY (never future/expected income)
+- ✅ Income tracked via transactions only (not pre-budgeted)
+- ✅ "Ready to Assign" = starting balance + actual income - total budgeted
+- ✅ Expenses reduce account balance (NOT Ready to Assign)
+- ✅ Categories can have $0 budgeted (tracked but unfunded)
+
+## Technical Requirements
+- ✅ Use `Decimal` for ALL monetary values (never Double/Float)
+- ✅ Use `cloudKitDatabase: .none` (local storage only)
+- ✅ Use `.currency(code: "USD")` for all currency formatting
+- ✅ Commit after each logical unit of work
+- ✅ Update CLAUDE.md after significant commits
+- ✅ Platform: iPhone only, iOS 26+ (no iPad)
+
+# Action Required
+
+**BEGIN VERIFICATION NOW** - Complete checklist above and report findings before resuming work.
+```
+
+---
+
+### Template B: Clean Checkpoint Resumption (Work Complete)
+
+Use this when resuming from a clean state with all work committed.
+
+```markdown
+RESUMING WORK - Continuing from clean checkpoint.
+
+# Project Context
+- **Project**: ZeroBasedBudget iOS app (SwiftUI + SwiftData, iOS 26+)
+- **Platform**: iPhone only (no iPad support)
+- **Methodology**: YNAB-style zero-based budgeting
+
+# Quick Verification
+
+## 1. Read Current State
+Read CLAUDE.md sections:
+- [ ] **"Next Session Start Here"** - Continuation point
+- [ ] **"Active Development" → "Current Focus"** - What to work on
+- [ ] **"Active Issues & Enhancement Backlog"** - Priority work
+
+## 2. Verify Clean State
+```bash
+git status              # Should show clean working tree
+git log --oneline -5    # Review recent commits
+```
+
+## 3. Report & Proceed
+Provide brief summary:
+- Current version and status
+- What CLAUDE.md says to do next
+- Any blockers or decisions needed
+
+Then ask: **"Ready to proceed with [specific task from CLAUDE.md]?"**
+
+# Critical Reminders
+- ✅ Follow YNAB methodology (budget only existing money, income via transactions)
+- ✅ Use Decimal for money, cloudKitDatabase: .none, iPhone-only (iOS 26+)
+- ✅ Commit frequently with conventional commit messages (fix:/feat:/refactor:)
+
+**BEGIN VERIFICATION NOW**
+```
+
+---
+
+### Template C: Uncertain State Recovery
+
+Use this when you're not sure what state the project is in.
+
+```markdown
+RECOVERY MODE - Uncertain project state, need full assessment.
+
+# Project Context
+- **Project**: ZeroBasedBudget iOS app (SwiftUI + SwiftData, iOS 26+)
+- **Status**: Uncertain - need full verification
+
+# Full State Assessment Required
+
+## 1. Read Complete CLAUDE.md
+Read the ENTIRE file, paying special attention to:
+- [ ] YNAB-Style Budgeting Methodology (understand core principles)
+- [ ] Critical Implementation Rules (must follow)
+- [ ] Active Development section (current focus)
+- [ ] Active Issues & Enhancement Backlog (priority work)
+- [ ] Next Session Start Here (continuation point)
+
+## 2. Git History Analysis
+```bash
+# Review recent commits
+git log --oneline -20
+git log --graph --oneline -10
+
+# Check current state
+git status
+git diff
+
+# Check branch information
+git branch -av
+```
+
+## 3. Project Structure Verification
+```bash
+# Verify key directories exist
 ls -la ZeroBasedBudget/Models/
 ls -la ZeroBasedBudget/Views/
+ls -la ZeroBasedBudget/Utilities/
+ls -la Docs/
 ```
 
-4. Check for uncommitted changes:
+## 4. Build Status Check
 ```bash
-git status
+xcodebuild -project ZeroBasedBudget.xcodeproj -scheme ZeroBasedBudget build
 ```
 
-5. Verify build status:
-   - Build the project
-   - Report if build succeeds or fails
+## 5. Comprehensive State Report
+After completing steps 1-4, provide detailed report:
 
-6. Report back with summary:
-   - What phase/step we're on
-   - What's complete
-   - What's incomplete
-   - What needs to happen next
+**Version & Status**:
+- Current version: [from CLAUDE.md]
+- Build status: [success/fail with errors if any]
 
-═══════════════════════════════════════════════════════════════════════════════
-AFTER VERIFICATION - Resume Implementation
-═══════════════════════════════════════════════════════════════════════════════
+**Git State**:
+- Last 5 commit messages
+- Uncommitted changes: [list files]
+- Branch: [name and status]
 
-Based on CLAUDE.md "Current Session Notes" section, continue from where we left off.
+**Active Work** (from CLAUDE.md):
+- Current focus: [what was being worked on]
+- Recent changes: [last significant work]
+- Next steps: [what CLAUDE.md says to do next]
 
-CRITICAL REQUIREMENTS (from TechnicalSpec.md):
-- Use Decimal type for all monetary values (never Double/Float)
-- Ensure cloudKitDatabase: .none for local storage only
-- Commit after each logical unit of work
-- Update CLAUDE.md after each commit
+**Blockers/Issues**:
+- Any build errors
+- Any uncommitted changes that need decision
+- Any unclear state that needs clarification
 
-Follow the same implementation pattern and commit strategy as before.
+**Recommendation**:
+- Should we continue from current state?
+- Should we commit/discard uncommitted work?
+- Should we return to last good commit?
 
-BEGIN VERIFICATION NOW.
+# Critical Project Constraints
+- **YNAB Methodology**: Budget only existing money, income via transactions only
+- **Technical**: Decimal for money, local storage only, iPhone-only iOS 26+
+- **Quality**: Build must succeed before commits, test features before committing
+
+**BEGIN FULL ASSESSMENT NOW**
 ```
+
+---
+
+## Choosing the Right Template
+
+| Situation | Use Template | Why |
+|-----------|--------------|-----|
+| Claude stopped mid-task, uncommitted changes exist | **Template A** | Need verification before continuing incomplete work |
+| Resuming after clean commit, ready for next task | **Template B** | Quick context refresh, move to next item |
+| Unsure what state project is in, confusion about progress | **Template C** | Full assessment needed to understand state |
+| Coming back after several days/weeks | **Template C** | Full context restoration needed |
+| Quick same-day continuation | **Template B** | Minimal verification needed |
+| Build was failing when interrupted | **Template A** or **C** | Need to assess and fix before continuing |
 
 ---
 
