@@ -3,7 +3,7 @@
 ## Project Status: ✅ Production Ready
 
 **Version**: 1.4.0-dev
-**Last Updated**: November 4, 2025  
+**Last Updated**: November 5, 2025  
 **Methodology**: YNAB-Style Zero-Based Budgeting  
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -73,13 +73,20 @@ Income is logged when it ARRIVES via transactions, not pre-budgeted.
 ```
 ZeroBasedBudget/
 ├── Models/
+│   ├── Account.swift                # NEW: Financial accounts (checking, savings, cash)
 │   ├── BudgetCategory.swift         # Categories with amounts, due dates, notifications
 │   ├── Transaction.swift            # Financial transactions (income/expense)
-│   └── MonthlyBudget.swift          # Monthly budget with startingBalance, YNAB calcs
+│   └── MonthlyBudget.swift          # Monthly budget (startingBalance deprecated in v1.4.0)
 ├── Views/
-│   ├── BudgetPlanningView.swift     # Ready to Assign, category assignment, Quick Assign
+│   ├── AccountsView.swift           # NEW: Accounts tab with total banner
+│   ├── AccountRow.swift             # NEW: Account list row component
+│   ├── AddAccountSheet.swift        # NEW: Add account sheet
+│   ├── EditAccountSheet.swift       # NEW: Edit account sheet
+│   ├── BudgetPlanningView.swift     # Budget tab with Ready to Assign banner
+│   ├── ReadyToAssignBanner.swift    # NEW: Compact Ready to Assign banner
 │   ├── TransactionLogView.swift     # Transaction log with running balance, tap-to-edit
-│   └── BudgetAnalysisView.swift     # Budget vs actual with Swift Charts
+│   ├── BudgetAnalysisView.swift     # Budget vs actual with Swift Charts
+│   └── SettingsView.swift           # NEW: Settings tab (placeholder for Enhancement 3.2)
 ├── Utilities/
 │   ├── BudgetCalculations.swift     # Financial aggregation functions
 │   ├── NotificationManager.swift    # Local push notification scheduling
@@ -92,7 +99,16 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
-**v1.3.0 (Current):**
+**v1.4.0-dev (Current):**
+- ✅ Enhancement 3.1: YNAB-style Accounts tab with true account-based budgeting
+- ✅ New Account model for tracking real money accounts (checking, savings, cash)
+- ✅ New Accounts tab (first tab) with total banner and CRUD operations
+- ✅ Simplified Budget tab with compact Ready to Assign banner
+- ✅ 5-tab structure: Accounts → Budget → Transactions → Analysis → Settings
+- ✅ Ready to Assign now calculated as: Sum(accounts) - Sum(categories)
+- ✅ Settings tab placeholder for Enhancement 3.2
+
+**v1.3.0:**
 - ✅ Fixed: $0 category amounts now allowed (YNAB principle)
 - ✅ Fixed: Transaction detail sheet works after app restart
 - ✅ Added: Push notifications for category due dates
@@ -117,369 +133,23 @@ ZeroBasedBudget/
 
 ### 🟢 Priority 3: New Features (v1.4.0)
 
-#### Enhancement 3.1: YNAB-Style Accounts Tab 🟢
+#### Enhancement 3.1: YNAB-Style Accounts Tab ✅ COMPLETED
 
-**Objective**: Implement true YNAB-style account tracking where users manage actual account balances (checking, savings, cash, etc.) as the single source of truth for budgeting. Replace complex "Ready to Assign" section with simple banner showing available funds.
+**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commit: 5edfe37)
 
-**YNAB Alignment Check**: ✅ **Strongly aligned** - This IS core YNAB methodology. Accounts represent real money that exists today. The sum of all accounts is the money available to budget against. "Ready to Assign" = money in accounts that hasn't been given a job yet.
+**Summary**: Implemented true YNAB-style account tracking where users manage actual account balances (checking, savings, cash, etc.) as the single source of truth for budgeting. Replaced complex "Ready to Assign" section with simple banner.
 
-**YNAB Methodology Context**:
+**Key Changes**:
+- Added Account model (SwiftData) with name, balance, type, dates
+- Created Accounts tab (first tab) with total banner and CRUD operations
+- Simplified Budget tab with compact Ready to Assign banner
+- Updated calculation: Ready to Assign = Sum(accounts) - Sum(categories)
+- Added Settings tab placeholder for Enhancement 3.2
+- Tab structure: Accounts → Budget → Transactions → Analysis → Settings
 
-In YNAB, you don't budget based on "monthly income" or "starting balance." Instead:
-1. You track **actual account balances** (checking, savings, cash, etc.)
-2. The **sum of all accounts** = total money you have RIGHT NOW
-3. You assign that money to budget categories (give every dollar a job)
-4. **Ready to Assign** = Money in accounts - Money assigned to categories
-5. Goal: Ready to Assign = $0 (all money has been given a job)
+**Files Created**: Account.swift, AccountsView.swift, AddAccountSheet.swift, EditAccountSheet.swift, AccountRow.swift, ReadyToAssignBanner.swift, SettingsView.swift
 
-**Implementation Approach**:
-
-**1. Create New Accounts Tab** (positioned FIRST, before Budget):
-- Tab order: **Accounts → Budget → Transactions → Analysis → Settings**
-- Accounts tab displays:
-  - **Top banner**: "Total: $X,XXX.XX" (sum of all account balances)
-  - **List of accounts**: Each account shows name + balance
-  - **Add button**: Create new accounts
-  - **Tap account**: Edit name and balance
-  - **Swipe to delete**: Remove accounts (with warning if balance > $0)
-- Accounts are **global** (not month-specific, persist across months)
-- Default balance: $0.00 for new accounts
-- Allow negative balances (overdraft scenario)
-
-**2. Simplify Budget Tab**:
-- **REMOVE entire "Ready to Assign" section** that currently shows:
-  - ❌ Starting Balance (input field)
-  - ❌ Total Income (This Period) (calculated)
-  - ❌ Total Assigned (calculated)
-  - ❌ Divider
-  - ❌ Large Ready to Assign display with progress bar
-- **REPLACE with simple banner** at top of Budget view:
-  - "Ready to Assign: $X,XXX.XX"
-  - Color-coded: Green ($0), Orange (positive), Red (negative)
-  - Compact design (1-2 lines max)
-  - Always visible at top
-- **Keep category sections unchanged** (Fixed, Variable, Quarterly)
-
-**Why This Approach**:
-- ✅ True YNAB methodology (accounts are source of truth)
-- ✅ Simpler mental model (no "starting balance" per month)
-- ✅ Cleaner Budget UI (removes clutter)
-- ✅ Accounts represent real-world money accounts
-- ✅ Ready to Assign becomes crystal clear: money not yet assigned
-- ✅ Natural place to view total wealth across accounts
-
-**Data Model Changes**:
-
-New `Account` model (SwiftData):
-```swift
-@Model
-final class Account {
-    var id: UUID
-    var name: String
-    var balance: Decimal
-    var accountType: String? // Optional: "Checking", "Savings", "Cash", "Credit Card"
-    var createdDate: Date
-    var notes: String? // Optional: account number, bank name, etc.
-
-    init(name: String, balance: Decimal = 0, accountType: String? = nil) {
-        self.id = UUID()
-        self.name = name
-        self.balance = balance
-        self.accountType = accountType
-        self.createdDate = Date()
-    }
-}
-```
-
-**Files to Create**:
-- [ ] `Models/Account.swift` - Account data model with name and balance
-- [ ] `Views/AccountsView.swift` - Main accounts list view with total banner
-- [ ] `Views/AddAccountSheet.swift` - Sheet for adding new account
-- [ ] `Views/EditAccountSheet.swift` - Sheet for editing account name/balance
-- [ ] `Views/AccountRow.swift` - Reusable account row component
-- [ ] `Views/ReadyToAssignBanner.swift` - Simple banner component for Budget tab
-- [ ] `Views/SettingsView.swift` - Basic settings view (placeholder for Enhancement 3.2)
-
-**Files to Modify**:
-- [ ] `ContentView.swift` - Add Accounts as FIRST tab, reorder tabs, add Settings as 5th tab
-- [ ] `BudgetPlanningView.swift` - **Major changes**:
-  - Remove entire "Ready to Assign" section (lines ~225-310)
-  - Add ReadyToAssignBanner at top (below month indicator)
-  - Update readyToAssign calculation: `totalAccountBalances - totalAssigned`
-  - Access account balances via @Query or passed binding
-- [ ] `ZeroBasedBudgetApp.swift` - Add Account to SwiftData schema
-- [ ] `MonthlyBudget.swift` - Deprecate `startingBalance` field (or mark as legacy)
-
-**Calculation Logic**:
-
-```swift
-// In AccountsView
-@Query private var allAccounts: [Account]
-
-private var totalAccountBalances: Decimal {
-    allAccounts.reduce(0) { $0 + $1.balance }
-}
-
-// In BudgetPlanningView (updated)
-@Query private var allAccounts: [Account]
-@Query private var allCategories: [BudgetCategory]
-
-private var totalAccountBalances: Decimal {
-    allAccounts.reduce(0) { $0 + $1.balance }
-}
-
-private var totalAssigned: Decimal {
-    allCategories.reduce(0) { $0 + $1.budgetedAmount }
-}
-
-// NEW Ready to Assign calculation
-private var readyToAssign: Decimal {
-    totalAccountBalances - totalAssigned
-}
-
-// Color coding remains same
-private var readyToAssignColor: Color {
-    if readyToAssign == 0 { return .green }
-    else if readyToAssign > 0 { return .orange }
-    else { return .red }
-}
-```
-
-**UI Design Examples**:
-
-**1. Accounts Tab UI:**
-```swift
-// AccountsView.swift
-NavigationStack {
-    VStack(spacing: 0) {
-        // Top banner with total
-        VStack(spacing: 8) {
-            Text("Total Across All Accounts")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            Text(totalAccountBalances, format: .currency(code: "USD"))
-                .font(.system(size: 42, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(Color(.systemGroupedBackground))
-
-        // Accounts list
-        List {
-            ForEach(allAccounts) { account in
-                AccountRow(account: account)
-                    .onTapGesture {
-                        editingAccount = account
-                        showingEditSheet = true
-                    }
-            }
-            .onDelete(perform: deleteAccounts)
-        }
-    }
-    .navigationTitle("Accounts")
-    .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                showingAddSheet = true
-            } label: {
-                Image(systemName: "plus")
-            }
-        }
-    }
-    .sheet(isPresented: $showingAddSheet) {
-        AddAccountSheet { name, balance in
-            addAccount(name: name, balance: balance)
-        }
-    }
-    .sheet(item: $editingAccount) { account in
-        EditAccountSheet(account: account)
-    }
-}
-```
-
-**2. AccountRow Component:**
-```swift
-// AccountRow.swift
-HStack {
-    VStack(alignment: .leading, spacing: 4) {
-        Text(account.name)
-            .font(.headline)
-
-        if let accountType = account.accountType {
-            Text(accountType)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    Spacer()
-
-    Text(account.balance, format: .currency(code: "USD"))
-        .font(.body.monospacedDigit())
-        .foregroundStyle(account.balance >= 0 ? .primary : .red)
-}
-```
-
-**3. Ready to Assign Banner (Budget Tab):**
-```swift
-// ReadyToAssignBanner.swift - Simple, compact banner
-struct ReadyToAssignBanner: View {
-    let amount: Decimal
-    let color: Color
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Ready to Assign")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                Text(amount, format: .currency(code: "USD"))
-                    .font(.title2.bold())
-                    .foregroundStyle(color)
-            }
-
-            Spacer()
-
-            // Optional: Info button for explanation
-            Button {
-                // Show explainer sheet
-            } label: {
-                Image(systemName: "info.circle")
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .cornerRadius(12)
-    }
-}
-
-// Usage in BudgetPlanningView (replaces entire "Ready to Assign" section)
-Form {
-    // Month Indicator (keep as-is)
-    Section { ... }
-
-    // NEW: Ready to Assign Banner (replaces old section)
-    Section {
-        ReadyToAssignBanner(
-            amount: readyToAssign,
-            color: readyToAssignColor
-        )
-    }
-    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-    .listRowBackground(Color.clear)
-
-    // Category sections (keep as-is)
-    Section(header: Text("Fixed Expenses")) { ... }
-    Section(header: Text("Variable Expenses")) { ... }
-    Section(header: Text("Quarterly Expenses")) { ... }
-}
-```
-
-**4. Add/Edit Account Sheets:**
-```swift
-// AddAccountSheet.swift
-Form {
-    TextField("Account Name", text: $accountName)
-        .textInputAutocapitalization(.words)
-
-    TextField("Balance", value: $accountBalance, format: .currency(code: "USD"))
-        .keyboardType(.decimalPad)
-
-    Picker("Account Type", selection: $accountType) {
-        Text("None").tag(nil as String?)
-        Text("Checking").tag("Checking" as String?)
-        Text("Savings").tag("Savings" as String?)
-        Text("Cash").tag("Cash" as String?)
-        Text("Credit Card").tag("Credit Card" as String?)
-    }
-
-    Button("Save Account") {
-        onSave(accountName, accountBalance)
-        dismiss()
-    }
-    .disabled(accountName.isEmpty)
-}
-.navigationTitle("Add Account")
-.navigationBarTitleDisplayMode(.inline)
-```
-
-**Design Considerations**:
-
-1. **Account Balance Management**:
-   - Accounts are global, not month-specific
-   - Users manually update balances OR balances auto-update via transactions (future)
-   - Allow $0.00 balances (unfunded accounts, placeholders)
-   - Allow negative balances (overdraft, credit card debt)
-   - Account deletion warning if balance ≠ $0
-
-2. **Ready to Assign Simplification**:
-   - Old section was verbose: 5 labeled fields + progress bar + large display
-   - New banner: Compact, single-line focus on key metric
-   - Removes cognitive load (no need to track Starting Balance per month)
-   - Banner always visible at top of Budget view
-
-3. **Tab Ordering Rationale**:
-   - Accounts FIRST: Set up your money before budgeting it
-   - Budget SECOND: Assign money from accounts to categories
-   - Transactions THIRD: Log spending and income
-   - Analysis FOURTH: Review budget vs actual
-   - Settings FIFTH: Configure app preferences
-
-4. **Data Migration Considerations**:
-   - Existing users have `startingBalance` in MonthlyBudget
-   - Migration path: Convert current month's starting balance to "Checking" account
-   - Or: Prompt user to set up accounts on first launch after update
-   - Mark `startingBalance` as deprecated but don't delete (data preservation)
-
-5. **Future Enhancements** (not in v1.4.0):
-   - Link transactions to accounts (income increases, expenses decrease)
-   - Account reconciliation (compare app balance to real bank balance)
-   - Net worth tracking (sum of all accounts over time)
-   - Multiple currency support (account-specific currencies)
-
-**Testing Checklist**:
-- [ ] Add multiple accounts with various balances (positive, negative, zero)
-- [ ] Edit account names and balances successfully
-- [ ] Delete accounts (test warning dialog for non-zero balances)
-- [ ] Verify sum displays correctly at top of Accounts tab
-- [ ] Verify sum updates instantly when adding/editing/deleting accounts
-- [ ] Test on iPhone SE (smallest screen, layouts work)
-- [ ] Test on iPhone 15 Pro (standard size)
-- [ ] Test on iPhone 15 Pro Max (largest screen, no wasted space)
-- [ ] Verify Ready to Assign banner shows correct calculation on Budget tab
-- [ ] Verify Ready to Assign color coding (green/orange/red)
-- [ ] Test banner updates instantly when account balances change
-- [ ] Test banner updates instantly when category amounts change
-- [ ] Test with no accounts (should show $0.00, warn user to add accounts)
-- [ ] Test with all categories assigned (Ready to Assign = $0, green)
-- [ ] Test over-assignment (Ready to Assign negative, red)
-- [ ] Verify accounts persist across app restarts
-- [ ] Verify accounts persist across month navigation (global, not per-month)
-- [ ] Verify accessibility (VoiceOver reads all account info correctly)
-- [ ] Test with Dynamic Type (text scales appropriately in banner and accounts)
-- [ ] Test swipe-to-delete on accounts
-- [ ] Test tap-to-edit on accounts
-- [ ] Test account type picker (optional field)
-
-**Acceptance Criteria**:
-- ✅ Accounts tab added as FIRST tab
-- ✅ Can add/edit/delete accounts with name and balance
-- ✅ Each account can have $0.00 or negative balance
-- ✅ Sum of all accounts displays at top of Accounts tab
-- ✅ Budget tab shows "Ready to Assign" banner (replaces old section)
-- ✅ Banner shows: Total accounts - Total assigned
-- ✅ Banner has color coding (green = $0, orange = positive, red = negative)
-- ✅ Banner updates in real-time as accounts or categories change
-- ✅ Accounts persist across months (global, not month-specific)
-- ✅ Settings tab added for future use (5th tab)
-- ✅ No regressions in existing functionality
-- ✅ Account model added to SwiftData schema
-- ✅ Old "Ready to Assign" section completely removed from Budget tab
-- ✅ Month navigation still works (accounts remain visible across months)
+**Files Modified**: ContentView.swift (5-tab structure), BudgetPlanningView.swift (account-based calculations), ZeroBasedBudgetApp.swift (Account in schema)
 
 ---
 
@@ -724,35 +394,33 @@ Groceries,Variable,600.00,,false
 
 ## Active Development
 
-**Current Focus**: 🚀 v1.4.0 Feature Development - Three major enhancements planned
-**Status**: Enhancement specifications complete, ready to begin implementation
+**Current Focus**: 🚀 v1.4.0 Feature Development - Enhancement 3.1 complete, two enhancements remaining
+**Status**: Ready to begin Enhancement 3.3 (Dark Mode Support)
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-04] 💰 **Revised Enhancement 3.1 (2nd revision)**: YNAB-style Accounts tab + simplified banner
-2. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
-3. [2025-11-04] 📋 Specified v1.4.0 enhancements: Accounts, Settings, Dark mode
-4. [2025-11-03] ✅ Added donut chart visualization to Analysis view
-5. [2025-11-03] ✅ Removed excessive top whitespace (inline navigation mode)
+1. [2025-11-05] ✅ **Completed Enhancement 3.1**: YNAB-style Accounts tab with account-based budgeting
+2. [2025-11-04] 💰 Revised Enhancement 3.1 (2nd revision): YNAB-style Accounts tab + simplified banner
+3. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
+4. [2025-11-04] 📋 Specified v1.4.0 enhancements: Accounts, Settings, Dark mode
+5. [2025-11-03] ✅ Added donut chart visualization to Analysis view
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
 1. Read CLAUDE.md "Active Issues & Enhancement Backlog" section
-2. **IMPORTANT**: Enhancement 3.1 revised to YNAB-style Accounts tab (not sidebar, not sheet)
-3. Review recommended implementation order: 3.1 (Accounts) → 3.3 (Dark Mode) → 3.2 (Settings)
-4. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-5. Start with Enhancement 3.1: YNAB-Style Accounts Tab (Medium complexity, ~4-6 hours)
-6. Key changes:
-   - New Account model (SwiftData)
-   - New Accounts tab (first tab, before Budget)
-   - Remove entire "Ready to Assign" section from Budget tab
-   - Replace with simple banner: "Ready to Assign: $X,XXX.XX"
-   - Calculation: Sum(accounts) - Sum(budgeted)
+2. **Enhancement 3.1 COMPLETE** ✅ - Accounts tab, Account model, Ready to Assign banner all implemented
+3. Next: **Enhancement 3.3 (Dark Mode Support)** - Visual enhancement, test all 5 tabs
+4. Implementation approach:
+   - Phase 1: Audit current UI in dark mode (non-breaking, exploratory)
+   - Phase 2: Fix color issues (replace hardcoded colors with semantic colors)
+   - Phase 3: Add manual toggle in Settings
+5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+6. Review Enhancement 3.3 specifications below for detailed implementation steps
 
-**Implementation Priority Order:**
-1. **Enhancement 3.1** (YNAB Accounts Tab) - **Start here**: Foundation for true YNAB methodology
-2. **Enhancement 3.3** (Dark Mode) - Second: Visual changes, test new Accounts tab
-3. **Enhancement 3.2** (Settings) - Last: Most complex, benefits from existing Settings tab
+**Implementation Priority Order (Updated):**
+1. ✅ **Enhancement 3.1** (YNAB Accounts Tab) - **COMPLETED**
+2. **Enhancement 3.3** (Dark Mode) - **Next**: Visual changes, test all 5 tabs including new Accounts
+3. **Enhancement 3.2** (Settings) - Last: Most complex, uses Settings tab from Enhancement 3.1
 
 ## Git Commit Strategy
 
