@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.3.0  
-**Last Updated**: November 2, 2025  
+**Version**: 1.4.0-dev
+**Last Updated**: November 4, 2025  
 **Methodology**: YNAB-Style Zero-Based Budgeting  
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -113,32 +113,313 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-(No active issues or enhancements at this time)
+### 🟢 Priority 3: New Features (v1.4.0)
+
+#### Enhancement 3.1: Navigation Sidebar (Hamburger Menu) 🟢
+
+**Objective**: Modernize navigation by replacing TabView with NavigationSplitView, moving financial summary data to sidebar while keeping "Ready to Assign" progress bar prominent.
+
+**YNAB Alignment Check**: ⚠️ Requires careful implementation. Moving financial data to sidebar could reduce visibility of key metrics. Solution: Keep sidebar visible on iPad, easily accessible on iPhone, and maintain "Ready to Assign" in main view.
+
+**Implementation Approach**:
+- Replace TabView with NavigationSplitView (iOS 16+ native component)
+- Sidebar contains:
+  - Navigation: Budget, Transactions, Analysis, Settings
+  - Financial Summary Card (read-only, auto-updating):
+    - Starting Balance
+    - Total Income (This Period)
+    - Total Assigned
+  - Display current month in sidebar
+- Main view keeps "Ready to Assign" progress bar (most important metric)
+- Platform-specific behavior:
+  - iPhone: Collapsible sidebar with hamburger menu icon
+  - iPad: Persistent sidebar (better UX for larger screens)
+
+**Files to Create**:
+- [ ] `Views/SidebarView.swift` - Sidebar navigation and financial summary component
+
+**Files to Modify**:
+- [ ] `ContentView.swift` - Major refactor: TabView → NavigationSplitView
+- [ ] `BudgetPlanningView.swift` - Remove Starting Balance, Total Income, Total Assigned fields from form
+- [ ] Keep Ready to Assign progress bar and large amount display
+
+**Design Considerations**:
+- Financial summary in sidebar updates in real-time
+- Sidebar shows data for currently selected month
+- Visual hierarchy: Ready to Assign remains most prominent
+- Smooth animations for sidebar collapse/expand
+- Maintain color coding (green/orange/red for Ready to Assign status)
+
+**Testing Checklist**:
+- [ ] Test on iPhone SE (smallest screen, sidebar collapses properly)
+- [ ] Test on iPhone 15 Pro (standard size)
+- [ ] Test on iPad Pro (sidebar persistent, proper layout)
+- [ ] Verify financial calculations update instantly in sidebar
+- [ ] Test sidebar state persists across app launches
+- [ ] Verify accessibility (VoiceOver, Dynamic Type)
+- [ ] Test month navigation updates sidebar data
+
+**Acceptance Criteria**:
+- ✅ Sidebar shows financial summary (Starting Balance, Total Income, Total Assigned)
+- ✅ Ready to Assign progress bar remains in main Budget view
+- ✅ Navigation works identically to previous TabView
+- ✅ Sidebar collapses on iPhone, persistent on iPad
+- ✅ All financial data updates in real-time
+- ✅ No regressions in existing functionality
+
+---
+
+#### Enhancement 3.2: Global Settings Tab 🟢
+
+**Objective**: Add comprehensive settings view for app configuration, data management, and user preferences.
+
+**YNAB Alignment Check**: ✅ Neutral - settings don't affect core YNAB methodology.
+
+**Settings Categories** (organized by importance):
+
+1. **Appearance**
+   - Dark mode: System / Light / Dark (see Enhancement 3.3)
+   - Color scheme: Default / Custom (future enhancement)
+   - Font size: System / Custom (future enhancement)
+
+2. **Currency & Formatting**
+   - Currency selection (currently hardcoded to USD)
+     - Support: USD, EUR, GBP, CAD, AUD, JPY, etc.
+   - Date format: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
+   - Number format: 1,234.56 vs 1.234,56 vs 1 234,56
+
+3. **Budget Behavior**
+   - Month start date: 1st-31st (currently hardcoded to 1st)
+     - Use case: Some users get paid mid-month
+   - Default notification frequency for new categories
+   - Allow negative category amounts: Yes / No (currently allowed)
+
+4. **Notifications**
+   - Enable notifications: On / Off (master switch)
+   - Default notification schedule: 7-day, 2-day, on-date, custom
+   - Notification sound: Default / Silent / Custom
+
+5. **Data Management**
+   - Export budget data (CSV format)
+   - Export budget data (JSON format - full backup)
+   - Import budget data (JSON)
+   - Clear all data (with confirmation + warning)
+   - Storage location info (local-only, no cloud)
+
+6. **About**
+   - App version & build number
+   - YNAB Methodology explanation (educational)
+   - Privacy policy (emphasize local-only storage)
+   - Feedback / GitHub link
+   - Acknowledgments
+
+**Files to Create**:
+- [ ] `Views/SettingsView.swift` - Main settings container with List of sections
+- [ ] `Views/Settings/AppearanceSettingsView.swift` - Dark mode, colors, fonts
+- [ ] `Views/Settings/CurrencySettingsView.swift` - Currency and number format
+- [ ] `Views/Settings/BudgetBehaviorSettingsView.swift` - Month start, defaults
+- [ ] `Views/Settings/NotificationSettingsView.swift` - Notification preferences
+- [ ] `Views/Settings/DataManagementView.swift` - Export, import, clear data
+- [ ] `Views/Settings/AboutView.swift` - Version, methodology, links
+- [ ] `Models/AppSettings.swift` - SwiftData model for persisting settings
+- [ ] `Utilities/DataExporter.swift` - CSV/JSON export functionality
+- [ ] `Utilities/DataImporter.swift` - JSON import with validation
+
+**Files to Modify**:
+- [ ] `ContentView.swift` - Add Settings to navigation (tab or sidebar item)
+- [ ] All views using hardcoded "USD" - Make currency dynamic via AppSettings
+- [ ] `NotificationManager.swift` - Respect global notification settings
+- [ ] `BudgetPlanningView.swift` - Use dynamic month start date from settings
+
+**Implementation Notes**:
+- Use `@AppStorage` for simple preferences (dark mode, date format)
+- Use SwiftData `AppSettings` model for complex preferences (currency, custom notifications)
+- Implement settings schema versioning for future migrations
+- All settings must have sensible defaults (current behavior)
+- Settings changes apply immediately (no "Save" button needed)
+
+**Data Export Format (CSV)**:
+```csv
+Category,Type,Amount,DueDate,NotificationEnabled
+Rent,Fixed,1500.00,2025-12-01,true
+Groceries,Variable,600.00,,false
+```
+
+**Data Export Format (JSON)** - Full backup:
+```json
+{
+  "version": "1.4.0",
+  "exportDate": "2025-11-04T12:00:00Z",
+  "monthlyBudgets": [...],
+  "categories": [...],
+  "transactions": [...]
+}
+```
+
+**Testing Checklist**:
+- [ ] Each setting persists across app restarts
+- [ ] Currency changes update all currency displays immediately
+- [ ] Export CSV produces valid, importable file
+- [ ] Export JSON contains complete data
+- [ ] Import JSON validates schema and restores data correctly
+- [ ] Import JSON shows error for invalid files
+- [ ] Clear data requires confirmation and works completely
+- [ ] About section displays correct version info
+
+**Acceptance Criteria**:
+- ✅ Settings tab/view accessible from navigation
+- ✅ All settings categories implemented
+- ✅ Settings persist across app launches
+- ✅ Currency selection updates all views
+- ✅ Export/import functionality works correctly
+- ✅ Clear data functionality has proper safeguards
+- ✅ About section contains accurate information
+
+---
+
+#### Enhancement 3.3: Dark Mode Support 🟢
+
+**Objective**: Full dark mode support with automatic system theme detection and manual override option.
+
+**YNAB Alignment Check**: ✅ Neutral - visual enhancement, doesn't affect methodology.
+
+**Implementation Phases**:
+
+**Phase 1: Audit Current UI** ✅ (Non-breaking, exploratory)
+- [ ] Test app in dark mode (iOS Settings > Display > Dark)
+- [ ] Document all views and identify hardcoded colors
+- [ ] Test Swift Charts in dark mode
+- [ ] Check SF Symbols (most auto-adapt, verify custom symbols)
+- [ ] Identify contrast/readability issues
+
+**Phase 2: Fix Color Issues** 🎨
+- [ ] Replace hardcoded colors with semantic colors:
+  - `.black` → `.primary`
+  - `.gray` → `.secondary`
+  - `.white` → `.background`
+  - Hardcoded hex colors → semantic or Color asset
+- [ ] Create Color Set in `Assets.xcassets`:
+  - `AccentColor` (light: blue, dark: light blue)
+  - `SuccessColor` (light: green, dark: light green)
+  - `WarningColor` (light: orange, dark: amber)
+  - `ErrorColor` (light: red, dark: light red)
+  - `ChartColor1-5` (light/dark variants)
+- [ ] Update chart colors for dark mode:
+  - Bar charts: Use semantic colors
+  - Line charts: Increase line width for dark mode readability
+  - Donut chart: Ensure sufficient contrast between segments
+- [ ] Test color contrast ratios (WCAG AA: 4.5:1 for text)
+
+**Phase 3: Manual Toggle** ⚙️
+- [ ] Add toggle in Settings: "Appearance" section
+  - Options: System (default), Light, Dark
+- [ ] Implement via `.preferredColorScheme()` on ContentView
+- [ ] Persist preference in AppSettings
+- [ ] Update immediately when changed (no app restart)
+
+**Files to Modify**:
+- [ ] `BudgetPlanningView.swift` - Audit/fix colors, check progress bar
+- [ ] `TransactionLogView.swift` - Audit/fix colors, check row backgrounds
+- [ ] `BudgetAnalysisView.swift` - Update chart colors for dark mode
+- [ ] `ContentView.swift` - Apply `.preferredColorScheme()` from settings
+- [ ] `Assets.xcassets` - Add color sets with light/dark variants
+- [ ] `SettingsView.swift` - Add Appearance section with dark mode toggle
+
+**Color Audit Checklist**:
+- [ ] Background colors (Form, List, Section backgrounds)
+- [ ] Text colors (primary, secondary, disabled)
+- [ ] Chart colors (bar, line, donut - all 5+ colors)
+- [ ] Button colors (primary, secondary, destructive)
+- [ ] Progress bar colors (Ready to Assign: green/orange/red)
+- [ ] Section headers and footers
+- [ ] List row backgrounds and separators
+- [ ] Navigation bar and tab bar
+- [ ] Sheet and alert backgrounds
+
+**Testing Checklist**:
+- [ ] Test in iOS Settings dark mode (automatic)
+- [ ] Test manual toggle in Settings (System/Light/Dark)
+- [ ] Test all 3 main views in both modes
+- [ ] Test all charts readable in dark mode
+- [ ] Test Ready to Assign colors work in dark mode
+- [ ] Test notification settings UI in dark mode
+- [ ] Test month picker in dark mode
+- [ ] Verify accessibility: VoiceOver, contrast ratios
+- [ ] Test on OLED display (true black or dark gray?)
+- [ ] Test dynamic type (larger text) in both modes
+
+**Design Decisions**:
+- True black (#000000) vs dark gray (#1C1C1E)?
+  - Recommendation: Dark gray (matches iOS system apps)
+- Chart colors: Saturated or muted in dark mode?
+  - Recommendation: Slightly desaturated for less eye strain
+- Progress bar: Keep bright green for goal achievement?
+  - Recommendation: Yes, but use lighter shade
+
+**Acceptance Criteria**:
+- ✅ App supports iOS system dark mode automatically
+- ✅ All views render correctly in dark mode
+- ✅ All charts readable with good contrast
+- ✅ Manual dark mode toggle in Settings works
+- ✅ Color contrast meets WCAG AA standards
+- ✅ No visual glitches during theme transitions
+- ✅ Settings persist across app launches
+
+---
+
+### Implementation Priority Order (v1.4.0)
+
+**Recommended sequence:**
+
+1. **Enhancement 3.3 (Dark Mode)** - Do first
+   - Reason: Least disruptive, mostly visual changes
+   - Will inform color choices for sidebar design
+   - Can be tested incrementally (view by view)
+   - Phase 1 audit is non-breaking
+
+2. **Enhancement 3.2 (Settings)** - Do second
+   - Reason: Required for dark mode toggle (Phase 3)
+   - Creates infrastructure for future preferences
+   - Independent of navigation changes
+   - Establishes data export patterns for future features
+
+3. **Enhancement 3.1 (Sidebar)** - Do last
+   - Reason: Most complex, largest refactor
+   - Touches core navigation architecture
+   - Benefits from completed dark mode (test sidebar in both modes)
+   - Benefits from Settings tab already existing
+
+**Estimated Complexity**:
+- Enhancement 3.3: Medium (color audit tedious but straightforward)
+- Enhancement 3.2: High (many sub-features, export/import logic)
+- Enhancement 3.1: Very High (architectural change, platform-specific behavior)
 
 ---
 
 ## Active Development
 
-**Current Focus**: ✅ All enhancements complete! Ready for new features/improvements
-**Status**: v1.3.0 fully enhanced with all Priority 2 UX improvements complete
+**Current Focus**: 🚀 v1.4.0 Feature Development - Three major enhancements planned
+**Status**: Enhancement specifications complete, ready to begin implementation
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-03] ✅ Added donut chart visualization to Analysis view
-2. [2025-11-03] ✅ Removed excessive top whitespace (inline navigation mode)
-3. [2025-11-03] ✅ Implemented YNAB-style day-of-month picker (1st-31st with ordinals)
-4. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
-5. [2025-11-03] ✅ Fixed CoreData errors on startup by pre-creating store directory
+1. [2025-11-04] 📋 Specified v1.4.0 enhancements: Sidebar navigation, Settings, Dark mode
+2. [2025-11-03] ✅ Added donut chart visualization to Analysis view
+3. [2025-11-03] ✅ Removed excessive top whitespace (inline navigation mode)
+4. [2025-11-03] ✅ Implemented YNAB-style day-of-month picker (1st-31st with ordinals)
+5. [2025-11-03] ✅ Fixed notification settings visibility during expense creation
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read this CLAUDE.md file
-2. All Priority 1 bugs and Priority 2 UX enhancements are complete!
-3. Consider new features or improvements (user feedback, testing, polish)
-4. Possible areas: recurring transactions, budget templates, export/import, etc.
+1. Read CLAUDE.md "Active Issues & Enhancement Backlog" section
+2. Review recommended implementation order: 3.3 (Dark Mode) → 3.2 (Settings) → 3.1 (Sidebar)
+3. Start with Enhancement 3.3 Phase 1: Dark Mode Audit (non-breaking, exploratory)
+4. Or wait for user to select which enhancement to start with
 
 **Implementation Priority Order:**
-1. Awaiting new priorities or user feedback
+1. **Enhancement 3.3** (Dark Mode) - Recommended first: least disruptive, informs other designs
+2. **Enhancement 3.2** (Settings) - Recommended second: needed for dark mode toggle
+3. **Enhancement 3.1** (Sidebar) - Recommended last: most complex architectural change
 
 ## Git Commit Strategy
 
@@ -295,28 +576,41 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
 
 ## Issue & Enhancement Management
 
-**Adding New Issues**:
-1. Add to "Active Issues & Enhancement Backlog" with appropriate priority
-2. Use 🔴 for critical bugs (Priority 1), 🟡 for UX improvements (Priority 2)
-3. Use task checkboxes [ ] for tracking
-4. Include clear acceptance criteria and test cases
-5. Reference files to modify/investigate
-6. Add implementation approaches and design considerations
-7. **Verify it aligns with YNAB methodology**
+**Priority Levels**:
+- 🔴 **Priority 1**: Critical bugs (app crashes, data loss, core functionality broken)
+- 🟡 **Priority 2**: UX improvements (usability issues, polish, refinements)
+- 🟢 **Priority 3**: New features (enhancements, additional functionality)
+
+**Adding New Issues/Enhancements**:
+1. Add to "Active Issues & Enhancement Backlog" with appropriate priority emoji
+2. Use comprehensive format for Priority 3 features:
+   - Objective (clear goal statement)
+   - YNAB Alignment Check (ensure methodology compliance)
+   - Implementation Approach (technical strategy)
+   - Files to Create/Modify (specific file paths)
+   - Design Considerations (UX/architecture decisions)
+   - Testing Checklist (comprehensive test cases)
+   - Acceptance Criteria (definition of done)
+3. Use task checkboxes [ ] for all actionable items
+4. Include code examples where helpful
+5. Reference specific file paths with line numbers if applicable
+6. **Always verify alignment with YNAB methodology**
 
 **Completing Issues/Enhancements**:
-1. Check off all related tasks [x]
-2. Commit with descriptive fix:/feat: message
-3. Add entry to "Recent Significant Changes"
-4. Move completed item to version history (brief summary)
-5. Update "Next Session Start Here" if needed
-6. Test thoroughly before marking complete
+1. Check off all related tasks [x] as you complete them
+2. Commit after each logical unit with descriptive fix:/feat: message
+3. Add entry to "Recent Significant Changes" (keep last 5)
+4. Move completed item to version history (brief one-line summary)
+5. Update "Next Session Start Here" for continuity
+6. Test thoroughly before marking complete (follow testing checklist)
 7. Verify YNAB principles maintained (if applicable)
+8. Update version number if releasing (x.y.z format)
 
 **Moving to Version History**:
-- When bug/enhancement is complete, remove detailed tasks
-- Add brief one-line summary to version history
+- When enhancement is complete, remove detailed specifications
+- Add brief one-line summary to appropriate version section
 - Keep backlog focused on ACTIVE work only
+- Archive detailed specs if needed for future reference
 
 ## Quick Reference
 
