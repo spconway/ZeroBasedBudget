@@ -97,11 +97,15 @@ struct BudgetPlanningView: View {
     }
 
     /// Calculate Ready to Assign for a specific month
-    /// NOTE: Enhancement 3.1 - With account-based budgeting, this now uses global account balances
-    /// Previous month calculations are no longer accurate with this model
+    /// Calculate Ready to Assign using YNAB methodology
+    /// Formula: Starting Balances + All Income - Total Budgeted
+    /// This avoids double-counting expenses (which already reduced current balances)
     private func calculateReadyToAssign(for month: Date) -> Decimal {
-        // NEW: Use account balances instead of per-month starting balance
-        return totalAccountBalances - allCategories.reduce(0) { $0 + $1.budgetedAmount }
+        let startingBalances = allAccounts.reduce(0) { $0 + $1.startingBalance }
+        let totalIncome = allTransactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+        let totalBudgeted = allCategories.reduce(0) { $0 + $1.budgetedAmount }
+
+        return startingBalances + totalIncome - totalBudgeted
     }
 
     /// Get previous month's Ready to Assign for comparison
@@ -129,10 +133,14 @@ struct BudgetPlanningView: View {
         allCategories.reduce(0) { $0 + $1.budgetedAmount }
     }
 
-    // NEW Ready to Assign calculation: Total accounts - Total assigned
-    // YNAB Principle: Budget only money that exists in accounts RIGHT NOW
+    // Ready to Assign calculation using YNAB methodology
+    // Formula: Starting Balances + All Income - Total Budgeted
+    // Avoids double-counting expenses (which already reduced current balances)
     private var readyToAssign: Decimal {
-        totalAccountBalances - totalAssigned
+        let startingBalances = allAccounts.reduce(0) { $0 + $1.startingBalance }
+        let totalIncome = allTransactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+
+        return startingBalances + totalIncome - totalAssigned
     }
 
     // Color coding for Ready to Assign

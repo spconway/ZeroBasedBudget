@@ -141,6 +141,48 @@ ZeroBasedBudget/
 
 ### 🔴 Priority 1: Critical Bugs & YNAB Methodology Issues
 
+#### Bug 1.2: Ready to Assign Double-Counting Expenses ✅ COMPLETED
+
+**Status**: ✅ **RESOLVED** - Fixed double-counting bug in Ready to Assign calculation
+**Completed**: November 5, 2025
+**Commit**: Pending
+
+**Problem**: Ready to Assign was incorrectly going negative after expense transactions due to double-counting:
+1. Expense transactions reduced account.balance automatically
+2. Ready to Assign was calculated as: `Sum(current balances) - Sum(budgeted)`
+3. This double-counted expenses (once in balance reduction, once in budgeted subtraction)
+
+**Example Bug Scenario**:
+- Account starting balance: $2,000
+- Budget $1,200 to category → Ready to Assign: $800 ✅
+- Spend $1,200 (reduces account to $800)
+- Ready to Assign: $800 - $1,200 = **-$400** ❌ (WRONG - should stay $800)
+
+**Root Cause**: Using current account balances (which already reflect spending) instead of starting balances.
+
+**Solution Implemented**:
+1. Added `startingBalance: Decimal` field to Account model
+2. Set `startingBalance = balance` when account is created
+3. Updated Ready to Assign formula:
+   ```swift
+   // OLD (WRONG):
+   Ready to Assign = Sum(account.balance) - Sum(budgeted)
+
+   // NEW (CORRECT):
+   Ready to Assign = Sum(account.startingBalance) + Sum(income) - Sum(budgeted)
+   ```
+
+**Additional Fix**: Changed transaction list label from "Balance:" to "Net Worth:" and fixed calculation to start from sum of starting balances instead of $0.
+
+**Files Modified**:
+- `Models/Account.swift` - Added startingBalance field
+- `Views/BudgetPlanningView.swift` - Fixed readyToAssign calculation
+- `Views/TransactionLogView.swift` - Fixed transaction balance display
+
+**YNAB Methodology**: ✅ Now correctly follows YNAB principle that Ready to Assign represents unassigned money from your starting balances plus income.
+
+---
+
 #### Bug 1.1: Transaction Running Balance Disconnected from Accounts ✅ COMPLETED
 
 **Status**: ✅ **RESOLVED** - Implemented Option 1 (Full Account-Transaction Integration)
@@ -490,25 +532,25 @@ private func deleteTransaction(_ transaction: Transaction) {
 
 ## Active Development
 
-**Current Focus**: 🚀 v1.5.0 Development - Account-Transaction Integration Complete!
-**Status**: Ready to commit and test
+**Current Focus**: 🐛 v1.5.0 Critical Bug Fixes - Ready to Assign Double-Counting Fixed!
+**Status**: Ready to commit bug fixes
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-05] ✅ **Bug 1.1 RESOLVED**: Full account-transaction integration (Option 1) - completes Enhancement 4.2 simultaneously
-2. [2025-11-05] 📋 **v1.5.0 Planning**: Identified Bug 1.1, Enhancement 4.1 (date grouping), 4.2 (account linking)
-3. [2025-11-05] ✅ **v1.4.0 RELEASED**: All three enhancements complete (Accounts, Dark Mode, Settings)
-4. [2025-11-05] ✅ **Completed Enhancement 3.2**: Global Settings Tab with data export/import and dynamic currency
+1. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting (startingBalance field added)
+2. [2025-11-05] ✅ **Bug 1.1 RESOLVED**: Full account-transaction integration (Option 1) - completes Enhancement 4.2
+3. [2025-11-05] 📋 **v1.5.0 Planning**: Identified bugs and enhancements for v1.5.0
+4. [2025-11-05] ✅ **v1.4.0 RELEASED**: All three enhancements complete (Accounts, Dark Mode, Settings)
 5. [2025-11-05] ✅ **Completed Enhancement 3.3**: Full dark mode support with manual toggle
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Bug 1.1 COMPLETE** ✅ - Full account-transaction integration implemented and tested
-2. **Enhancement 4.2 COMPLETE** ✅ - Completed as part of Bug 1.1 resolution
-3. **Ready to Commit**: Transaction-account integration ready for git commit
+1. **Bug 1.1 COMPLETE** ✅ - Account-transaction integration (commit: c16fa6c)
+2. **Bug 1.2 COMPLETE** ✅ - Ready to Assign double-counting fix (ready to commit)
+3. **Enhancement 4.2 COMPLETE** ✅ - Completed as part of Bug 1.1 resolution
 4. **Remaining Work**: Enhancement 4.1 (Date-Grouped Transaction List) - estimated 2-3 hours
 5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-6. Next Steps: Commit changes → Test in simulator → Implement Enhancement 4.1 → Release v1.5.0
+6. Next Steps: Commit Bug 1.2 fixes → Test in simulator → Implement Enhancement 4.1 → Release v1.5.0
 
 ## Git Commit Strategy
 

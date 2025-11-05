@@ -12,6 +12,7 @@ struct TransactionLogView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
+    @Query private var accounts: [Account]
     @Query private var settings: [AppSettings]
 
     @Binding var selectedTab: Int
@@ -37,9 +38,11 @@ struct TransactionLogView: View {
         }
     }
 
-    // Transactions with running balance (sorted oldest to newest for calculation)
+    // Transactions with running net worth balance
+    // Starts from sum of starting balances, then applies transactions chronologically
     private var transactionsWithBalance: [(Transaction, Decimal)] {
-        var runningBalance: Decimal = 0
+        // Start from total starting balances (before any transactions)
+        var runningBalance: Decimal = accounts.reduce(0) { $0 + $1.startingBalance }
         let sortedTransactions = filteredTransactions.sorted(by: { $0.date < $1.date })
 
         return sortedTransactions.map { transaction in
@@ -186,9 +189,9 @@ struct TransactionRow: View {
                 }
             }
 
-            // Running balance display
+            // Running net worth display (total across all accounts after this transaction)
             HStack {
-                Text("Balance:")
+                Text("Net Worth:")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
