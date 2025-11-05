@@ -145,9 +145,10 @@ ZeroBasedBudget/
 
 #### Enhancement 5.1: Add XCTest Framework for Unit Testing
 
-**Status**: 📋 **PLANNED** - Not yet started
+**Status**: ✅ **COMPLETE**
 **Version**: v1.6.0 (Testing Infrastructure)
 **Priority**: High (Foundation for quality assurance)
+**Completed**: November 5, 2025
 
 **Objective**: Establish comprehensive unit testing infrastructure using XCTest to ensure code quality, prevent regressions, and validate YNAB methodology compliance.
 
@@ -304,14 +305,14 @@ enum TestDataFactory {
 ```
 
 **Testing Checklist**:
-- [ ] Test target builds successfully
-- [ ] Tests can import main app code
-- [ ] In-memory SwiftData container works correctly
-- [ ] Test data factories create valid models
-- [ ] Custom Decimal assertions work correctly
-- [ ] Tests run in isolation (no cross-contamination)
-- [ ] All tests pass on fresh project clone
-- [ ] Test execution time is reasonable (< 30 seconds for full suite)
+- [x] Test target builds successfully
+- [x] Tests can import main app code
+- [x] In-memory SwiftData container works correctly
+- [x] Test data factories create valid models
+- [x] Custom Decimal assertions work correctly
+- [x] Tests run in isolation (no cross-contamination)
+- [x] All tests pass on fresh project clone (2 sample tests: 0.041s total)
+- [x] Test execution time is reasonable (< 30 seconds for full suite)
 
 **Acceptance Criteria**:
 - XCTest target added to project and builds successfully
@@ -614,32 +615,36 @@ test: add SwiftData persistence tests (8 tests)
 
 ## Active Development
 
-**Current Focus**: 📋 v1.6.0 Planning COMPLETE - Unit Testing Architecture Designed
-**Status**: v1.5.0 ready for testing; v1.6.0 comprehensive test suite fully planned
+**Current Focus**: ✅ Enhancement 5.1 COMPLETE - XCTest Framework Infrastructure Ready
+**Status**: v1.5.0 ready for testing; v1.6.0 test infrastructure complete, ready for Enhancement 5.2 (110 tests)
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-05] 📋 **v1.6.0 PLANNING COMPLETE**: Comprehensive unit testing architecture designed (110 tests across 10 files)
-2. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list (commit: b2cc82b)
-3. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting (commit: 7154b66)
-4. [2025-11-05] ✅ **Bug 1.1 RESOLVED**: Full account-transaction integration (commit: c16fa6c) + Enhancement 4.2
-5. [2025-11-05] ✅ **v1.4.0 RELEASED**: All three enhancements complete (Accounts, Dark Mode, Settings)
+1. [2025-11-05] ✅ **Enhancement 5.1 COMPLETE**: XCTest framework infrastructure with in-memory SwiftData testing (2 sample tests passing)
+2. [2025-11-05] 📋 **v1.6.0 PLANNING COMPLETE**: Comprehensive unit testing architecture designed (110 tests across 10 files)
+3. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list (commit: b2cc82b)
+4. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting (commit: 7154b66)
+5. [2025-11-05] ✅ **Bug 1.1 RESOLVED**: Full account-transaction integration (commit: c16fa6c) + Enhancement 4.2
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **v1.5.0 STATUS**: ✅ All features complete and committed (4 commits ahead of origin/main)
-   - Bug 1.1 (Account-transaction integration) - commit: c16fa6c
-   - Bug 1.2 (Ready to Assign fix) - commit: 7154b66
-   - Enhancement 4.1 (Date-grouped transactions) - commit: b2cc82b
-   - v1.6.0 Planning documentation - commit: e0b9c0c
-2. **v1.6.0 PLANNING**: ✅ Comprehensive unit testing architecture fully designed
-   - Enhancement 5.1: XCTest Framework setup (4-6 hours)
-   - Enhancement 5.2: 110 unit tests across 10 files (20-25 hours)
-   - Organized by domain: Models, Utilities, YNAB, Edge Cases, Persistence
+1. **v1.6.0 STATUS**: Enhancement 5.1 COMPLETE (test infrastructure ready)
+   - ✅ XCTest target added to project and builds successfully
+   - ✅ In-memory SwiftData container for isolated testing
+   - ✅ TestDataFactory with factory methods for all models
+   - ✅ TestHelpers with YNAB validation helpers and test scenarios
+   - ✅ Custom Decimal assertions for financial testing
+   - ✅ 2 sample tests passing (infrastructure + YNAB calculation test)
+2. **v1.6.0 NEXT**: Ready to implement Enhancement 5.2 (110 comprehensive tests)
+   - Domain 1: Models (48 tests) - AccountTests, TransactionTests, CategoryTests, etc.
+   - Domain 2: Utilities (32 tests) - BudgetCalculationsTests, ValidationHelpersTests
+   - Domain 3: YNAB (12 tests) - YNABMethodologyTests (most critical)
+   - Domain 4: Edge Cases (10 tests) - Boundary conditions, precision, leap years
+   - Domain 5: Persistence (8 tests) - SwiftData CRUD operations
 3. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 4. **Next Steps Options**:
-   - Option A: Test v1.5.0 in simulator → Push to origin → Release
-   - Option B: Begin v1.6.0 implementation (Enhancement 5.1: XCTest Framework)
+   - Option A: Continue with Enhancement 5.2 (implement 110 tests incrementally by domain)
+   - Option B: Test v1.5.0 in simulator first, then continue with Enhancement 5.2
    - Option C: User provides new requirements/priorities
 
 ## Git Commit Strategy
