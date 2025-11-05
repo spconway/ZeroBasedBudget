@@ -18,7 +18,9 @@ struct ZeroBasedBudgetApp: App {
             let schema = Schema([
                 Transaction.self,
                 BudgetCategory.self,
-                MonthlyBudget.self
+                MonthlyBudget.self,
+                Account.self,
+                AppSettings.self
             ])
 
             // Get application support directory

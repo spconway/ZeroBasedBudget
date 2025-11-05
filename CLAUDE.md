@@ -3,7 +3,7 @@
 ## Project Status: ✅ Production Ready
 
 **Version**: 1.4.0-dev
-**Last Updated**: November 4, 2025  
+**Last Updated**: November 5, 2025 (Enhancement 3.3 Complete)  
 **Methodology**: YNAB-Style Zero-Based Budgeting  
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -73,14 +73,23 @@ Income is logged when it ARRIVES via transactions, not pre-budgeted.
 ```
 ZeroBasedBudget/
 ├── Models/
+│   ├── Account.swift                # NEW: Financial accounts (checking, savings, cash)
+│   ├── AppSettings.swift            # NEW: App settings and preferences (dark mode, etc.)
 │   ├── BudgetCategory.swift         # Categories with amounts, due dates, notifications
 │   ├── Transaction.swift            # Financial transactions (income/expense)
-│   └── MonthlyBudget.swift          # Monthly budget with startingBalance, YNAB calcs
+│   └── MonthlyBudget.swift          # Monthly budget (startingBalance deprecated in v1.4.0)
 ├── Views/
-│   ├── BudgetPlanningView.swift     # Ready to Assign, category assignment, Quick Assign
+│   ├── AccountsView.swift           # NEW: Accounts tab with total banner
+│   ├── AccountRow.swift             # NEW: Account list row component
+│   ├── AddAccountSheet.swift        # NEW: Add account sheet
+│   ├── EditAccountSheet.swift       # NEW: Edit account sheet
+│   ├── BudgetPlanningView.swift     # Budget tab with Ready to Assign banner
+│   ├── ReadyToAssignBanner.swift    # NEW: Compact Ready to Assign banner
 │   ├── TransactionLogView.swift     # Transaction log with running balance, tap-to-edit
-│   └── BudgetAnalysisView.swift     # Budget vs actual with Swift Charts
+│   ├── BudgetAnalysisView.swift     # Budget vs actual with Swift Charts
+│   └── SettingsView.swift           # NEW: Settings tab (placeholder for Enhancement 3.2)
 ├── Utilities/
+│   ├── AppColors.swift              # NEW: Semantic color system for dark mode
 │   ├── BudgetCalculations.swift     # Financial aggregation functions
 │   ├── NotificationManager.swift    # Local push notification scheduling
 │   ├── ValidationHelpers.swift      # Input validation utilities
@@ -92,7 +101,22 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
-**v1.3.0 (Current):**
+**v1.4.0-dev (Current):**
+- ✅ Enhancement 3.1: YNAB-style Accounts tab with true account-based budgeting
+- ✅ New Account model for tracking real money accounts (checking, savings, cash)
+- ✅ New Accounts tab (first tab) with total banner and CRUD operations
+- ✅ Simplified Budget tab with compact Ready to Assign banner
+- ✅ 5-tab structure: Accounts → Budget → Transactions → Analysis → Settings
+- ✅ Ready to Assign now calculated as: Sum(accounts) - Sum(categories)
+- ✅ Enhancement 3.3: Full dark mode support with manual toggle
+- ✅ Semantic color system (appSuccess, appWarning, appError, appAccent)
+- ✅ Dark mode toggle in Settings (System / Light / Dark)
+- ✅ Enhancement 3.2: Global Settings Tab with comprehensive configuration
+- ✅ Data export/import functionality (CSV and JSON formats)
+- ✅ Dynamic currency support (USD, EUR, GBP, CAD, AUD, JPY)
+- ✅ AppSettings model for persisting user preferences
+
+**v1.3.0:**
 - ✅ Fixed: $0 category amounts now allowed (YNAB principle)
 - ✅ Fixed: Transaction detail sheet works after app restart
 - ✅ Added: Push notifications for category due dates
@@ -117,569 +141,120 @@ ZeroBasedBudget/
 
 ### 🟢 Priority 3: New Features (v1.4.0)
 
-#### Enhancement 3.1: YNAB-Style Accounts Tab 🟢
+#### Enhancement 3.1: YNAB-Style Accounts Tab ✅ COMPLETED
 
-**Objective**: Implement true YNAB-style account tracking where users manage actual account balances (checking, savings, cash, etc.) as the single source of truth for budgeting. Replace complex "Ready to Assign" section with simple banner showing available funds.
+**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commit: 5edfe37)
 
-**YNAB Alignment Check**: ✅ **Strongly aligned** - This IS core YNAB methodology. Accounts represent real money that exists today. The sum of all accounts is the money available to budget against. "Ready to Assign" = money in accounts that hasn't been given a job yet.
+**Summary**: Implemented true YNAB-style account tracking where users manage actual account balances (checking, savings, cash, etc.) as the single source of truth for budgeting. Replaced complex "Ready to Assign" section with simple banner.
 
-**YNAB Methodology Context**:
+**Key Changes**:
+- Added Account model (SwiftData) with name, balance, type, dates
+- Created Accounts tab (first tab) with total banner and CRUD operations
+- Simplified Budget tab with compact Ready to Assign banner
+- Updated calculation: Ready to Assign = Sum(accounts) - Sum(categories)
+- Added Settings tab placeholder for Enhancement 3.2
+- Tab structure: Accounts → Budget → Transactions → Analysis → Settings
 
-In YNAB, you don't budget based on "monthly income" or "starting balance." Instead:
-1. You track **actual account balances** (checking, savings, cash, etc.)
-2. The **sum of all accounts** = total money you have RIGHT NOW
-3. You assign that money to budget categories (give every dollar a job)
-4. **Ready to Assign** = Money in accounts - Money assigned to categories
-5. Goal: Ready to Assign = $0 (all money has been given a job)
+**Files Created**: Account.swift, AccountsView.swift, AddAccountSheet.swift, EditAccountSheet.swift, AccountRow.swift, ReadyToAssignBanner.swift, SettingsView.swift
 
-**Implementation Approach**:
-
-**1. Create New Accounts Tab** (positioned FIRST, before Budget):
-- Tab order: **Accounts → Budget → Transactions → Analysis → Settings**
-- Accounts tab displays:
-  - **Top banner**: "Total: $X,XXX.XX" (sum of all account balances)
-  - **List of accounts**: Each account shows name + balance
-  - **Add button**: Create new accounts
-  - **Tap account**: Edit name and balance
-  - **Swipe to delete**: Remove accounts (with warning if balance > $0)
-- Accounts are **global** (not month-specific, persist across months)
-- Default balance: $0.00 for new accounts
-- Allow negative balances (overdraft scenario)
-
-**2. Simplify Budget Tab**:
-- **REMOVE entire "Ready to Assign" section** that currently shows:
-  - ❌ Starting Balance (input field)
-  - ❌ Total Income (This Period) (calculated)
-  - ❌ Total Assigned (calculated)
-  - ❌ Divider
-  - ❌ Large Ready to Assign display with progress bar
-- **REPLACE with simple banner** at top of Budget view:
-  - "Ready to Assign: $X,XXX.XX"
-  - Color-coded: Green ($0), Orange (positive), Red (negative)
-  - Compact design (1-2 lines max)
-  - Always visible at top
-- **Keep category sections unchanged** (Fixed, Variable, Quarterly)
-
-**Why This Approach**:
-- ✅ True YNAB methodology (accounts are source of truth)
-- ✅ Simpler mental model (no "starting balance" per month)
-- ✅ Cleaner Budget UI (removes clutter)
-- ✅ Accounts represent real-world money accounts
-- ✅ Ready to Assign becomes crystal clear: money not yet assigned
-- ✅ Natural place to view total wealth across accounts
-
-**Data Model Changes**:
-
-New `Account` model (SwiftData):
-```swift
-@Model
-final class Account {
-    var id: UUID
-    var name: String
-    var balance: Decimal
-    var accountType: String? // Optional: "Checking", "Savings", "Cash", "Credit Card"
-    var createdDate: Date
-    var notes: String? // Optional: account number, bank name, etc.
-
-    init(name: String, balance: Decimal = 0, accountType: String? = nil) {
-        self.id = UUID()
-        self.name = name
-        self.balance = balance
-        self.accountType = accountType
-        self.createdDate = Date()
-    }
-}
-```
-
-**Files to Create**:
-- [ ] `Models/Account.swift` - Account data model with name and balance
-- [ ] `Views/AccountsView.swift` - Main accounts list view with total banner
-- [ ] `Views/AddAccountSheet.swift` - Sheet for adding new account
-- [ ] `Views/EditAccountSheet.swift` - Sheet for editing account name/balance
-- [ ] `Views/AccountRow.swift` - Reusable account row component
-- [ ] `Views/ReadyToAssignBanner.swift` - Simple banner component for Budget tab
-- [ ] `Views/SettingsView.swift` - Basic settings view (placeholder for Enhancement 3.2)
-
-**Files to Modify**:
-- [ ] `ContentView.swift` - Add Accounts as FIRST tab, reorder tabs, add Settings as 5th tab
-- [ ] `BudgetPlanningView.swift` - **Major changes**:
-  - Remove entire "Ready to Assign" section (lines ~225-310)
-  - Add ReadyToAssignBanner at top (below month indicator)
-  - Update readyToAssign calculation: `totalAccountBalances - totalAssigned`
-  - Access account balances via @Query or passed binding
-- [ ] `ZeroBasedBudgetApp.swift` - Add Account to SwiftData schema
-- [ ] `MonthlyBudget.swift` - Deprecate `startingBalance` field (or mark as legacy)
-
-**Calculation Logic**:
-
-```swift
-// In AccountsView
-@Query private var allAccounts: [Account]
-
-private var totalAccountBalances: Decimal {
-    allAccounts.reduce(0) { $0 + $1.balance }
-}
-
-// In BudgetPlanningView (updated)
-@Query private var allAccounts: [Account]
-@Query private var allCategories: [BudgetCategory]
-
-private var totalAccountBalances: Decimal {
-    allAccounts.reduce(0) { $0 + $1.balance }
-}
-
-private var totalAssigned: Decimal {
-    allCategories.reduce(0) { $0 + $1.budgetedAmount }
-}
-
-// NEW Ready to Assign calculation
-private var readyToAssign: Decimal {
-    totalAccountBalances - totalAssigned
-}
-
-// Color coding remains same
-private var readyToAssignColor: Color {
-    if readyToAssign == 0 { return .green }
-    else if readyToAssign > 0 { return .orange }
-    else { return .red }
-}
-```
-
-**UI Design Examples**:
-
-**1. Accounts Tab UI:**
-```swift
-// AccountsView.swift
-NavigationStack {
-    VStack(spacing: 0) {
-        // Top banner with total
-        VStack(spacing: 8) {
-            Text("Total Across All Accounts")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            Text(totalAccountBalances, format: .currency(code: "USD"))
-                .font(.system(size: 42, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(Color(.systemGroupedBackground))
-
-        // Accounts list
-        List {
-            ForEach(allAccounts) { account in
-                AccountRow(account: account)
-                    .onTapGesture {
-                        editingAccount = account
-                        showingEditSheet = true
-                    }
-            }
-            .onDelete(perform: deleteAccounts)
-        }
-    }
-    .navigationTitle("Accounts")
-    .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-            Button {
-                showingAddSheet = true
-            } label: {
-                Image(systemName: "plus")
-            }
-        }
-    }
-    .sheet(isPresented: $showingAddSheet) {
-        AddAccountSheet { name, balance in
-            addAccount(name: name, balance: balance)
-        }
-    }
-    .sheet(item: $editingAccount) { account in
-        EditAccountSheet(account: account)
-    }
-}
-```
-
-**2. AccountRow Component:**
-```swift
-// AccountRow.swift
-HStack {
-    VStack(alignment: .leading, spacing: 4) {
-        Text(account.name)
-            .font(.headline)
-
-        if let accountType = account.accountType {
-            Text(accountType)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    Spacer()
-
-    Text(account.balance, format: .currency(code: "USD"))
-        .font(.body.monospacedDigit())
-        .foregroundStyle(account.balance >= 0 ? .primary : .red)
-}
-```
-
-**3. Ready to Assign Banner (Budget Tab):**
-```swift
-// ReadyToAssignBanner.swift - Simple, compact banner
-struct ReadyToAssignBanner: View {
-    let amount: Decimal
-    let color: Color
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Ready to Assign")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                Text(amount, format: .currency(code: "USD"))
-                    .font(.title2.bold())
-                    .foregroundStyle(color)
-            }
-
-            Spacer()
-
-            // Optional: Info button for explanation
-            Button {
-                // Show explainer sheet
-            } label: {
-                Image(systemName: "info.circle")
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .cornerRadius(12)
-    }
-}
-
-// Usage in BudgetPlanningView (replaces entire "Ready to Assign" section)
-Form {
-    // Month Indicator (keep as-is)
-    Section { ... }
-
-    // NEW: Ready to Assign Banner (replaces old section)
-    Section {
-        ReadyToAssignBanner(
-            amount: readyToAssign,
-            color: readyToAssignColor
-        )
-    }
-    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-    .listRowBackground(Color.clear)
-
-    // Category sections (keep as-is)
-    Section(header: Text("Fixed Expenses")) { ... }
-    Section(header: Text("Variable Expenses")) { ... }
-    Section(header: Text("Quarterly Expenses")) { ... }
-}
-```
-
-**4. Add/Edit Account Sheets:**
-```swift
-// AddAccountSheet.swift
-Form {
-    TextField("Account Name", text: $accountName)
-        .textInputAutocapitalization(.words)
-
-    TextField("Balance", value: $accountBalance, format: .currency(code: "USD"))
-        .keyboardType(.decimalPad)
-
-    Picker("Account Type", selection: $accountType) {
-        Text("None").tag(nil as String?)
-        Text("Checking").tag("Checking" as String?)
-        Text("Savings").tag("Savings" as String?)
-        Text("Cash").tag("Cash" as String?)
-        Text("Credit Card").tag("Credit Card" as String?)
-    }
-
-    Button("Save Account") {
-        onSave(accountName, accountBalance)
-        dismiss()
-    }
-    .disabled(accountName.isEmpty)
-}
-.navigationTitle("Add Account")
-.navigationBarTitleDisplayMode(.inline)
-```
-
-**Design Considerations**:
-
-1. **Account Balance Management**:
-   - Accounts are global, not month-specific
-   - Users manually update balances OR balances auto-update via transactions (future)
-   - Allow $0.00 balances (unfunded accounts, placeholders)
-   - Allow negative balances (overdraft, credit card debt)
-   - Account deletion warning if balance ≠ $0
-
-2. **Ready to Assign Simplification**:
-   - Old section was verbose: 5 labeled fields + progress bar + large display
-   - New banner: Compact, single-line focus on key metric
-   - Removes cognitive load (no need to track Starting Balance per month)
-   - Banner always visible at top of Budget view
-
-3. **Tab Ordering Rationale**:
-   - Accounts FIRST: Set up your money before budgeting it
-   - Budget SECOND: Assign money from accounts to categories
-   - Transactions THIRD: Log spending and income
-   - Analysis FOURTH: Review budget vs actual
-   - Settings FIFTH: Configure app preferences
-
-4. **Data Migration Considerations**:
-   - Existing users have `startingBalance` in MonthlyBudget
-   - Migration path: Convert current month's starting balance to "Checking" account
-   - Or: Prompt user to set up accounts on first launch after update
-   - Mark `startingBalance` as deprecated but don't delete (data preservation)
-
-5. **Future Enhancements** (not in v1.4.0):
-   - Link transactions to accounts (income increases, expenses decrease)
-   - Account reconciliation (compare app balance to real bank balance)
-   - Net worth tracking (sum of all accounts over time)
-   - Multiple currency support (account-specific currencies)
-
-**Testing Checklist**:
-- [ ] Add multiple accounts with various balances (positive, negative, zero)
-- [ ] Edit account names and balances successfully
-- [ ] Delete accounts (test warning dialog for non-zero balances)
-- [ ] Verify sum displays correctly at top of Accounts tab
-- [ ] Verify sum updates instantly when adding/editing/deleting accounts
-- [ ] Test on iPhone SE (smallest screen, layouts work)
-- [ ] Test on iPhone 15 Pro (standard size)
-- [ ] Test on iPhone 15 Pro Max (largest screen, no wasted space)
-- [ ] Verify Ready to Assign banner shows correct calculation on Budget tab
-- [ ] Verify Ready to Assign color coding (green/orange/red)
-- [ ] Test banner updates instantly when account balances change
-- [ ] Test banner updates instantly when category amounts change
-- [ ] Test with no accounts (should show $0.00, warn user to add accounts)
-- [ ] Test with all categories assigned (Ready to Assign = $0, green)
-- [ ] Test over-assignment (Ready to Assign negative, red)
-- [ ] Verify accounts persist across app restarts
-- [ ] Verify accounts persist across month navigation (global, not per-month)
-- [ ] Verify accessibility (VoiceOver reads all account info correctly)
-- [ ] Test with Dynamic Type (text scales appropriately in banner and accounts)
-- [ ] Test swipe-to-delete on accounts
-- [ ] Test tap-to-edit on accounts
-- [ ] Test account type picker (optional field)
-
-**Acceptance Criteria**:
-- ✅ Accounts tab added as FIRST tab
-- ✅ Can add/edit/delete accounts with name and balance
-- ✅ Each account can have $0.00 or negative balance
-- ✅ Sum of all accounts displays at top of Accounts tab
-- ✅ Budget tab shows "Ready to Assign" banner (replaces old section)
-- ✅ Banner shows: Total accounts - Total assigned
-- ✅ Banner has color coding (green = $0, orange = positive, red = negative)
-- ✅ Banner updates in real-time as accounts or categories change
-- ✅ Accounts persist across months (global, not month-specific)
-- ✅ Settings tab added for future use (5th tab)
-- ✅ No regressions in existing functionality
-- ✅ Account model added to SwiftData schema
-- ✅ Old "Ready to Assign" section completely removed from Budget tab
-- ✅ Month navigation still works (accounts remain visible across months)
+**Files Modified**: ContentView.swift (5-tab structure), BudgetPlanningView.swift (account-based calculations), ZeroBasedBudgetApp.swift (Account in schema)
 
 ---
 
-#### Enhancement 3.2: Global Settings Tab 🟢
+#### Enhancement 3.2: Global Settings Tab ✅ COMPLETED
 
-**Objective**: Add comprehensive settings view for app configuration, data management, and user preferences.
+**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commit: 1e045ae)
 
-**YNAB Alignment Check**: ✅ Neutral - settings don't affect core YNAB methodology.
+**Summary**: Comprehensive settings view with 6 sections for app configuration, data management, and user preferences. Includes data export/import functionality and dynamic currency support throughout the app.
 
-**Settings Categories** (organized by importance):
+**Key Implementations**:
+1. **Expanded AppSettings Model**:
+   - Added `defaultNotificationSchedule`, `numberFormat`, `allowNegativeCategoryAmounts`
+   - All settings persist via SwiftData
 
-1. **Appearance**
-   - Dark mode: System / Light / Dark (see Enhancement 3.3)
-   - Color scheme: Default / Custom (future enhancement)
-   - Font size: System / Custom (future enhancement)
+2. **Comprehensive SettingsView (6 Sections)**:
+   - **Appearance**: Dark mode toggle (System/Light/Dark)
+   - **Currency & Formatting**: Currency picker (USD/EUR/GBP/CAD/AUD/JPY), date format, number format
+   - **Budget Behavior**: Month start date (1-31), default notifications, over-budget toggle
+   - **Notifications**: Master enable/disable switch
+   - **Data Management**: Export CSV/JSON, import JSON, clear all data, storage info
+   - **About**: Version, build, YNAB methodology sheet, privacy, feedback link
 
-2. **Currency & Formatting**
-   - Currency selection (currently hardcoded to USD)
-     - Support: USD, EUR, GBP, CAD, AUD, JPY, etc.
-   - Date format: MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD
-   - Number format: 1,234.56 vs 1.234,56 vs 1 234,56
+3. **Data Export/Import Utilities**:
+   - DataExporter.swift: CSV export (current month) and JSON export (full backup)
+   - DataImporter.swift: JSON import with validation and error handling
+   - ShareSheet wrapper for UIActivityViewController
 
-3. **Budget Behavior**
-   - Month start date: 1st-31st (currently hardcoded to 1st)
-     - Use case: Some users get paid mid-month
-   - Default notification frequency for new categories
-   - Allow negative category amounts: Yes / No (currently allowed)
+4. **Dynamic Currency Support**:
+   - All 11 views updated to use `currencyCode` from AppSettings
+   - Replaced 40+ hardcoded "USD" references
+   - Currency changes update immediately across all tabs
 
-4. **Notifications**
-   - Enable notifications: On / Off (master switch)
-   - Default notification schedule: 7-day, 2-day, on-date, custom
-   - Notification sound: Default / Silent / Custom
+5. **Data Management Features**:
+   - Export current month budget to CSV
+   - Export complete data to JSON (accounts, categories, transactions, budgets)
+   - Import data from JSON with validation
+   - Clear all data with confirmation (preserves AppSettings)
 
-5. **Data Management**
-   - Export budget data (CSV format)
-   - Export budget data (JSON format - full backup)
-   - Import budget data (JSON)
-   - Clear all data (with confirmation + warning)
-   - Storage location info (local-only, no cloud)
+**Files Created**: DataExporter.swift, DataImporter.swift
 
-6. **About**
-   - App version & build number
-   - YNAB Methodology explanation (educational)
-   - Privacy policy (emphasize local-only storage)
-   - Feedback / GitHub link
-   - Acknowledgments
-
-**Files to Create**:
-- [ ] `Views/SettingsView.swift` - Main settings container with List of sections
-- [ ] `Views/Settings/AppearanceSettingsView.swift` - Dark mode, colors, fonts
-- [ ] `Views/Settings/CurrencySettingsView.swift` - Currency and number format
-- [ ] `Views/Settings/BudgetBehaviorSettingsView.swift` - Month start, defaults
-- [ ] `Views/Settings/NotificationSettingsView.swift` - Notification preferences
-- [ ] `Views/Settings/DataManagementView.swift` - Export, import, clear data
-- [ ] `Views/Settings/AboutView.swift` - Version, methodology, links
-- [ ] `Models/AppSettings.swift` - SwiftData model for persisting settings
-- [ ] `Utilities/DataExporter.swift` - CSV/JSON export functionality
-- [ ] `Utilities/DataImporter.swift` - JSON import with validation
-
-**Files to Modify**:
-- [ ] `ContentView.swift` - Add Settings to navigation (tab or sidebar item)
-- [ ] All views using hardcoded "USD" - Make currency dynamic via AppSettings
-- [ ] `NotificationManager.swift` - Respect global notification settings
-- [ ] `BudgetPlanningView.swift` - Use dynamic month start date from settings
-
-**Implementation Notes**:
-- Use `@AppStorage` for simple preferences (dark mode, date format)
-- Use SwiftData `AppSettings` model for complex preferences (currency, custom notifications)
-- Implement settings schema versioning for future migrations
-- All settings must have sensible defaults (current behavior)
-- Settings changes apply immediately (no "Save" button needed)
-
-**Data Export Format (CSV)**:
-```csv
-Category,Type,Amount,DueDate,NotificationEnabled
-Rent,Fixed,1500.00,2025-12-01,true
-Groceries,Variable,600.00,,false
-```
-
-**Data Export Format (JSON)** - Full backup:
-```json
-{
-  "version": "1.4.0",
-  "exportDate": "2025-11-04T12:00:00Z",
-  "monthlyBudgets": [...],
-  "categories": [...],
-  "transactions": [...]
-}
-```
-
-**Testing Checklist**:
-- [ ] Each setting persists across app restarts
-- [ ] Currency changes update all currency displays immediately
-- [ ] Export CSV produces valid, importable file
-- [ ] Export JSON contains complete data
-- [ ] Import JSON validates schema and restores data correctly
-- [ ] Import JSON shows error for invalid files
-- [ ] Clear data requires confirmation and works completely
-- [ ] About section displays correct version info
-
-**Acceptance Criteria**:
-- ✅ Settings tab/view accessible from navigation
-- ✅ All settings categories implemented
-- ✅ Settings persist across app launches
-- ✅ Currency selection updates all views
-- ✅ Export/import functionality works correctly
-- ✅ Clear data functionality has proper safeguards
-- ✅ About section contains accurate information
+**Files Modified**: AppSettings.swift, SettingsView.swift, BudgetPlanningView.swift, TransactionLogView.swift, BudgetAnalysisView.swift, AccountsView.swift, AccountRow.swift, ReadyToAssignBanner.swift, AddAccountSheet.swift, EditAccountSheet.swift, NotificationManager.swift
 
 ---
 
-#### Enhancement 3.3: Dark Mode Support 🟢
 
-**Objective**: Full dark mode support with automatic system theme detection and manual override option.
+#### Enhancement 3.3: Dark Mode Support ✅ COMPLETED
 
-**YNAB Alignment Check**: ✅ Neutral - visual enhancement, doesn't affect methodology.
+**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commits: e240fb7, 06562df, d37a88d)
 
-**Implementation Phases**:
+**Summary**: Full dark mode support with automatic system theme detection and manual toggle in Settings. All views updated with semantic color system for proper light/dark adaptation.
 
-**Phase 1: Audit Current UI** ✅ (Non-breaking, exploratory)
-- [ ] Test app in dark mode (iOS Settings > Display > Dark)
-- [ ] Document all views and identify hardcoded colors
-- [ ] Test Swift Charts in dark mode
-- [ ] Check SF Symbols (most auto-adapt, verify custom symbols)
-- [ ] Identify contrast/readability issues
+**Key Implementations**:
+1. **Semantic Color System** (`AppColors.swift`):
+   - `appSuccess`, `appWarning`, `appError`, `appAccent`, `appMuted`
+   - Semantic backgrounds: `cardBackground`, `listBackground`, `chartBackground`
+   - All hardcoded colors replaced throughout the app
 
-**Phase 2: Fix Color Issues** 🎨
-- [ ] Replace hardcoded colors with semantic colors:
-  - `.black` → `.primary`
-  - `.gray` → `.secondary`
-  - `.white` → `.background`
-  - Hardcoded hex colors → semantic or Color asset
-- [ ] Create Color Set in `Assets.xcassets`:
-  - `AccentColor` (light: blue, dark: light blue)
-  - `SuccessColor` (light: green, dark: light green)
-  - `WarningColor` (light: orange, dark: amber)
-  - `ErrorColor` (light: red, dark: light red)
-  - `ChartColor1-5` (light/dark variants)
-- [ ] Update chart colors for dark mode:
-  - Bar charts: Use semantic colors
-  - Line charts: Increase line width for dark mode readability
-  - Donut chart: Ensure sufficient contrast between segments
-- [ ] Test color contrast ratios (WCAG AA: 4.5:1 for text)
+2. **Updated All Views**:
+   - BudgetPlanningView: Status colors, navigation buttons, Ready to Assign banner
+   - TransactionLogView: Income/expense colors, running balance
+   - BudgetAnalysisView: Chart colors, status indicators
+   - AccountsView: Already using semantic colors (no changes needed)
+   - ReadyToAssignBanner: Already dark-mode ready
 
-**Phase 3: Manual Toggle** ⚙️
-- [ ] Add toggle in Settings: "Appearance" section
-  - Options: System (default), Light, Dark
-- [ ] Implement via `.preferredColorScheme()` on ContentView
-- [ ] Persist preference in AppSettings
-- [ ] Update immediately when changed (no app restart)
+3. **App Settings Model** (`AppSettings.swift`):
+   - SwiftData model for persisting user preferences
+   - `colorSchemePreference`: "system" / "light" / "dark"
+   - Extensible for future settings (currency, notifications, etc.)
 
-**Files to Modify**:
-- [ ] `BudgetPlanningView.swift` - Audit/fix colors, check progress bar
-- [ ] `TransactionLogView.swift` - Audit/fix colors, check row backgrounds
-- [ ] `BudgetAnalysisView.swift` - Update chart colors for dark mode
-- [ ] `ContentView.swift` - Apply `.preferredColorScheme()` from settings
-- [ ] `Assets.xcassets` - Add color sets with light/dark variants
-- [ ] `SettingsView.swift` - Add Appearance section with dark mode toggle
+4. **Settings UI**:
+   - Segmented picker in SettingsView for dark mode selection
+   - Real-time updates (no app restart required)
+   - Clear labels and helper text
 
-**Color Audit Checklist**:
-- [ ] Background colors (Form, List, Section backgrounds)
-- [ ] Text colors (primary, secondary, disabled)
-- [ ] Chart colors (bar, line, donut - all 5+ colors)
-- [ ] Button colors (primary, secondary, destructive)
-- [ ] Progress bar colors (Ready to Assign: green/orange/red)
-- [ ] Section headers and footers
-- [ ] List row backgrounds and separators
-- [ ] Navigation bar and tab bar
-- [ ] Sheet and alert backgrounds
+5. **ContentView Integration**:
+   - `.preferredColorScheme()` applies user preference
+   - Queries AppSettings from SwiftData
+   - Automatic updates when preference changes
 
-**Testing Checklist**:
-- [ ] Test in iOS Settings dark mode (automatic)
-- [ ] Test manual toggle in Settings (System/Light/Dark)
-- [ ] Test all 3 main views in both modes
-- [ ] Test all charts readable in dark mode
-- [ ] Test Ready to Assign colors work in dark mode
-- [ ] Test notification settings UI in dark mode
-- [ ] Test month picker in dark mode
-- [ ] Verify accessibility: VoiceOver, contrast ratios
-- [ ] Test on OLED display (true black or dark gray?)
-- [ ] Test dynamic type (larger text) in both modes
+**Files Created**:
+- `Utilities/AppColors.swift` - Semantic color definitions
+- `Models/AppSettings.swift` - User preferences model
 
-**Design Decisions**:
-- True black (#000000) vs dark gray (#1C1C1E)?
-  - Recommendation: Dark gray (matches iOS system apps)
-- Chart colors: Saturated or muted in dark mode?
-  - Recommendation: Slightly desaturated for less eye strain
-- Progress bar: Keep bright green for goal achievement?
-  - Recommendation: Yes, but use lighter shade
+**Files Modified**:
+- `Views/BudgetPlanningView.swift` - Semantic colors throughout
+- `Views/TransactionLogView.swift` - Semantic colors throughout
+- `Views/BudgetAnalysisView.swift` - Chart and status colors
+- `Views/SettingsView.swift` - Dark mode toggle UI
+- `Views/ContentView.swift` - Apply color scheme preference
+- `ZeroBasedBudgetApp.swift` - Add AppSettings to schema
 
-**Acceptance Criteria**:
-- ✅ App supports iOS system dark mode automatically
-- ✅ All views render correctly in dark mode
-- ✅ All charts readable with good contrast
-- ✅ Manual dark mode toggle in Settings works
-- ✅ Color contrast meets WCAG AA standards
-- ✅ No visual glitches during theme transitions
-- ✅ Settings persist across app launches
+**Testing Notes**:
+- Test in Xcode with light mode, dark mode, and system default
+- Verify all 5 tabs render correctly in both modes
+- Test manual toggle switches immediately
+- Verify colors meet WCAG AA contrast standards
 
----
 
 ### Implementation Priority Order (v1.4.0)
 
@@ -724,35 +299,30 @@ Groceries,Variable,600.00,,false
 
 ## Active Development
 
-**Current Focus**: 🚀 v1.4.0 Feature Development - Three major enhancements planned
-**Status**: Enhancement specifications complete, ready to begin implementation
+**Current Focus**: 🎉 v1.4.0 Feature Development - ALL THREE ENHANCEMENTS COMPLETE!
+**Status**: Ready for v1.4.0 release testing
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-04] 💰 **Revised Enhancement 3.1 (2nd revision)**: YNAB-style Accounts tab + simplified banner
-2. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
-3. [2025-11-04] 📋 Specified v1.4.0 enhancements: Accounts, Settings, Dark mode
-4. [2025-11-03] ✅ Added donut chart visualization to Analysis view
-5. [2025-11-03] ✅ Removed excessive top whitespace (inline navigation mode)
+1. [2025-11-05] ✅ **Completed Enhancement 3.2**: Global Settings Tab with data export/import and dynamic currency
+2. [2025-11-05] ✅ **Completed Enhancement 3.3**: Full dark mode support with manual toggle
+3. [2025-11-05] ✅ **Completed Enhancement 3.1**: YNAB-style Accounts tab with account-based budgeting
+4. [2025-11-04] 💰 Revised Enhancement 3.1 (2nd revision): YNAB-style Accounts tab + simplified banner
+5. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. Read CLAUDE.md "Active Issues & Enhancement Backlog" section
-2. **IMPORTANT**: Enhancement 3.1 revised to YNAB-style Accounts tab (not sidebar, not sheet)
-3. Review recommended implementation order: 3.1 (Accounts) → 3.3 (Dark Mode) → 3.2 (Settings)
-4. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-5. Start with Enhancement 3.1: YNAB-Style Accounts Tab (Medium complexity, ~4-6 hours)
-6. Key changes:
-   - New Account model (SwiftData)
-   - New Accounts tab (first tab, before Budget)
-   - Remove entire "Ready to Assign" section from Budget tab
-   - Replace with simple banner: "Ready to Assign: $X,XXX.XX"
-   - Calculation: Sum(accounts) - Sum(budgeted)
+1. **ALL v1.4.0 ENHANCEMENTS COMPLETE** ✅ 🎉
+2. **Enhancement 3.1 COMPLETE** ✅ - Accounts tab with account-based budgeting (commit: 5edfe37)
+3. **Enhancement 3.3 COMPLETE** ✅ - Dark mode support with semantic colors (commits: e240fb7, 06562df, d37a88d)
+4. **Enhancement 3.2 COMPLETE** ✅ - Global Settings Tab (commit: 1e045ae)
+5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+6. Next Steps: Test in Xcode Simulator, consider releasing v1.4.0
 
-**Implementation Priority Order:**
-1. **Enhancement 3.1** (YNAB Accounts Tab) - **Start here**: Foundation for true YNAB methodology
-2. **Enhancement 3.3** (Dark Mode) - Second: Visual changes, test new Accounts tab
-3. **Enhancement 3.2** (Settings) - Last: Most complex, benefits from existing Settings tab
+**Implementation Priority Order (v1.4.0 - ALL COMPLETE):**
+1. ✅ **Enhancement 3.1** (YNAB Accounts Tab) - **COMPLETED**
+2. ✅ **Enhancement 3.3** (Dark Mode Support) - **COMPLETED**
+3. ✅ **Enhancement 3.2** (Global Settings) - **COMPLETED**
 
 ## Git Commit Strategy
 

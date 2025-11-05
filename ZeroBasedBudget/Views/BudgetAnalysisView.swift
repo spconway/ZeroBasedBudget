@@ -18,9 +18,15 @@ struct BudgetAnalysisView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
+    @Query private var settings: [AppSettings]
 
     @State private var selectedMonth = Date()
     @State private var selectedChartType: ChartType = .bar
+
+    // Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
+    }
 
     // Generate category comparisons for selected month
     private var categoryComparisons: [CategoryComparison] {
@@ -64,7 +70,8 @@ struct BudgetAnalysisView: View {
                         SummarySection(
                             totalBudgeted: totalBudgeted,
                             totalActual: totalActual,
-                            totalDifference: totalDifference
+                            totalDifference: totalDifference,
+                            currencyCode: currencyCode
                         )
 
                         // Chart Type Picker
@@ -80,11 +87,11 @@ struct BudgetAnalysisView: View {
                         if selectedChartType == .bar {
                             BarChartSection(categoryComparisons: categoryComparisons)
                         } else {
-                            DonutChartSection(categoryComparisons: categoryComparisons)
+                            DonutChartSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode)
                         }
 
                         // Detailed List Section
-                        DetailedListSection(categoryComparisons: categoryComparisons)
+                        DetailedListSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode)
                     }
                 }
                 .padding()
@@ -155,6 +162,7 @@ struct SummarySection: View {
     let totalBudgeted: Decimal
     let totalActual: Decimal
     let totalDifference: Decimal
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 12) {
@@ -166,21 +174,24 @@ struct SummarySection: View {
                 SummaryCard(
                     title: "Total Budgeted",
                     amount: totalBudgeted,
-                    color: .blue
+                    color: .appAccent,
+                    currencyCode: currencyCode
                 )
 
                 SummaryCard(
                     title: "Total Actual",
                     amount: totalActual,
-                    color: totalActual > totalBudgeted ? .red : .green
+                    color: totalActual > totalBudgeted ? .appError : .appSuccess,
+                    currencyCode: currencyCode
                 )
             }
 
             SummaryCard(
                 title: totalDifference >= 0 ? "Under Budget" : "Over Budget",
                 amount: abs(totalDifference),
-                color: totalDifference >= 0 ? .green : .red,
-                isFullWidth: true
+                color: totalDifference >= 0 ? .appSuccess : .appError,
+                isFullWidth: true,
+                currencyCode: currencyCode
             )
         }
         .padding()
@@ -194,6 +205,7 @@ struct SummaryCard: View {
     let amount: Decimal
     let color: Color
     var isFullWidth: Bool = false
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 4) {
@@ -201,7 +213,7 @@ struct SummaryCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text(amount, format: .currency(code: "USD"))
+            Text(amount, format: .currency(code: currencyCode))
                 .font(isFullWidth ? .title2.bold() : .headline.bold())
                 .foregroundStyle(color)
         }
@@ -230,7 +242,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.budgeted as NSDecimalNumber))
                     )
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.appAccent)
                     .position(by: .value("Type", "Budgeted"))
 
                     // Actual bar
@@ -238,7 +250,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.actual as NSDecimalNumber))
                     )
-                    .foregroundStyle(comparison.isOverBudget ? .red : .green)
+                    .foregroundStyle(comparison.isOverBudget ? Color.appError : Color.appSuccess)
                     .position(by: .value("Type", "Actual"))
                 }
             }
@@ -258,6 +270,7 @@ struct BarChartSection: View {
 
 struct DonutChartSection: View {
     let categoryComparisons: [CategoryComparison]
+    var currencyCode: String = "USD"
 
     private let maxCategories = 10
 
@@ -352,7 +365,7 @@ struct DonutChartSection: View {
                                 Text("Total")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                Text(totalSpending, format: .currency(code: "USD"))
+                                Text(totalSpending, format: .currency(code: currencyCode))
                                     .font(.title2.bold())
                             }
                             .position(x: frame.midX, y: frame.midY)
@@ -373,7 +386,7 @@ struct DonutChartSection: View {
                                         .font(.caption)
                                         .lineLimit(1)
 
-                                    Text(data.amount, format: .currency(code: "USD"))
+                                    Text(data.amount, format: .currency(code: currencyCode))
                                         .font(.caption2.bold())
                                         .foregroundStyle(.secondary)
                                 }
@@ -403,6 +416,7 @@ struct DonutChartData: Identifiable {
 
 struct DetailedListSection: View {
     let categoryComparisons: [CategoryComparison]
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 12) {
@@ -412,7 +426,7 @@ struct DetailedListSection: View {
 
             VStack(spacing: 12) {
                 ForEach(categoryComparisons) { comparison in
-                    CategoryComparisonRow(comparison: comparison)
+                    CategoryComparisonRow(comparison: comparison, currencyCode: currencyCode)
                 }
             }
         }
@@ -421,6 +435,7 @@ struct DetailedListSection: View {
 
 struct CategoryComparisonRow: View {
     let comparison: CategoryComparison
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -438,7 +453,7 @@ struct CategoryComparisonRow: View {
                 Spacer()
 
                 Image(systemName: comparison.isOverBudget ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                    .foregroundStyle(comparison.isOverBudget ? .red : .green)
+                    .foregroundStyle(comparison.isOverBudget ? Color.appError : Color.appSuccess)
             }
 
             // Metrics grid
@@ -446,7 +461,8 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Budgeted",
                     value: comparison.budgeted,
-                    color: .primary
+                    color: .primary,
+                    currencyCode: currencyCode
                 )
 
                 Divider()
@@ -454,7 +470,8 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Actual",
                     value: comparison.actual,
-                    color: comparison.isOverBudget ? .red : .green
+                    color: comparison.isOverBudget ? .appError : .appSuccess,
+                    currencyCode: currencyCode
                 )
 
                 Divider()
@@ -462,7 +479,8 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Difference",
                     value: comparison.difference,
-                    color: comparison.difference >= 0 ? .green : .red
+                    color: comparison.difference >= 0 ? .appSuccess : .appError,
+                    currencyCode: currencyCode
                 )
 
                 Divider()
@@ -474,7 +492,7 @@ struct CategoryComparisonRow: View {
 
                     Text(comparison.percentageUsedFormatted)
                         .font(.body.bold())
-                        .foregroundStyle(comparison.percentageUsed > 1.0 ? .red : .primary)
+                        .foregroundStyle(comparison.percentageUsed > 1.0 ? Color.appError : Color.primary)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -490,6 +508,7 @@ struct MetricColumn: View {
     let title: String
     let value: Decimal
     let color: Color
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 4) {
@@ -497,7 +516,7 @@ struct MetricColumn: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text(value, format: .currency(code: "USD"))
+            Text(value, format: .currency(code: currencyCode))
                 .font(.body.bold())
                 .foregroundStyle(color)
         }

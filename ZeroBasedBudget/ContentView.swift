@@ -9,28 +9,62 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settings: [AppSettings]
+
     @State private var selectedTab = 0
+
+    /// Get the current color scheme preference from settings
+    private var colorScheme: ColorScheme? {
+        guard let preference = settings.first?.colorSchemePreference else { return nil }
+        switch preference {
+        case "light":
+            return .light
+        case "dark":
+            return .dark
+        default:
+            return nil  // System default
+        }
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
+            // Tab 0: Accounts (NEW - YNAB-style account tracking)
+            AccountsView()
+                .tabItem {
+                    Label("Accounts", systemImage: "banknote")
+                }
+                .tag(0)
+
+            // Tab 1: Budget (moved from tab 0)
             BudgetPlanningView()
                 .tabItem {
                     Label("Budget", systemImage: "dollarsign.circle")
                 }
-                .tag(0)
+                .tag(1)
 
+            // Tab 2: Transactions (moved from tab 1)
             TransactionLogView(selectedTab: $selectedTab)
                 .tabItem {
                     Label("Transactions", systemImage: "list.bullet")
                 }
-                .tag(1)
+                .tag(2)
 
+            // Tab 3: Analysis (moved from tab 2)
             BudgetAnalysisView()
                 .tabItem {
                     Label("Analysis", systemImage: "chart.bar")
                 }
-                .tag(2)
+                .tag(3)
+
+            // Tab 4: Settings (NEW - placeholder for Enhancement 3.2)
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
+                }
+                .tag(4)
         }
+        .preferredColorScheme(colorScheme)
     }
 }
 

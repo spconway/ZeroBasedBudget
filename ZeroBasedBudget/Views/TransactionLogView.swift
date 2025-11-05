@@ -12,12 +12,18 @@ struct TransactionLogView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
+    @Query private var settings: [AppSettings]
 
     @Binding var selectedTab: Int
 
     @State private var searchText = ""
     @State private var showingAddSheet = false
     @State private var transactionToEdit: Transaction?
+
+    // Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
+    }
 
     // Filtered transactions based on search
     private var filteredTransactions: [Transaction] {
@@ -72,7 +78,7 @@ struct TransactionLogView: View {
                                 Spacer()
                                 Image(systemName: "arrow.right.circle.fill")
                                     .font(.title2)
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(Color.appAccent)
                             }
                         }
                         .buttonStyle(.plain)
@@ -81,7 +87,7 @@ struct TransactionLogView: View {
 
                 // Display transactions in reverse chronological order with running balance
                 ForEach(transactionsWithBalance.reversed(), id: \.0.id) { (transaction, balance) in
-                    TransactionRow(transaction: transaction, runningBalance: balance)
+                    TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode)
                         .onTapGesture {
                             transactionToEdit = transaction
                         }
@@ -107,10 +113,10 @@ struct TransactionLogView: View {
                 }
             }
             .sheet(isPresented: $showingAddSheet) {
-                AddTransactionSheet(categories: categories)
+                AddTransactionSheet(categories: categories, currencyCode: currencyCode)
             }
             .sheet(item: $transactionToEdit) { transaction in
-                EditTransactionSheet(transaction: transaction, categories: categories)
+                EditTransactionSheet(transaction: transaction, categories: categories, currencyCode: currencyCode)
             }
             .overlay {
                 if allTransactions.isEmpty {
@@ -134,6 +140,7 @@ struct TransactionLogView: View {
 struct TransactionRow: View {
     let transaction: Transaction
     let runningBalance: Decimal
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 8) {
@@ -154,9 +161,9 @@ struct TransactionRow: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(transaction.amount, format: .currency(code: "USD"))
+                    Text(transaction.amount, format: .currency(code: currencyCode))
                         .font(.body.bold())
-                        .foregroundStyle(transaction.type == .income ? .green : .red)
+                        .foregroundStyle(transaction.type == .income ? Color.appSuccess : Color.appError)
 
                     Text(transaction.type.rawValue.capitalized)
                         .font(.caption)
@@ -170,9 +177,9 @@ struct TransactionRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text(runningBalance, format: .currency(code: "USD"))
+                Text(runningBalance, format: .currency(code: currencyCode))
                     .font(.caption.bold())
-                    .foregroundStyle(runningBalance >= 0 ? .green : .red)
+                    .foregroundStyle(runningBalance >= 0 ? Color.appSuccess : Color.appError)
             }
             .padding(.top, 4)
         }
@@ -187,6 +194,7 @@ struct AddTransactionSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let categories: [BudgetCategory]
+    var currencyCode: String = "USD"
 
     @State private var date = Date()
     @State private var description = ""
@@ -217,13 +225,13 @@ struct AddTransactionSheet: View {
                 }
 
                 Section("Amount") {
-                    TextField("Amount", value: $amount, format: .currency(code: "USD"))
+                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
 
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.appError)
                     }
                 }
 
@@ -245,7 +253,7 @@ struct AddTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color.appWarning)
                     }
                 }
 
@@ -299,6 +307,7 @@ struct EditTransactionSheet: View {
 
     let transaction: Transaction
     let categories: [BudgetCategory]
+    var currencyCode: String = "USD"
 
     @State private var date: Date
     @State private var description: String
@@ -307,9 +316,10 @@ struct EditTransactionSheet: View {
     @State private var transactionType: TransactionType
     @State private var notes: String
 
-    init(transaction: Transaction, categories: [BudgetCategory]) {
+    init(transaction: Transaction, categories: [BudgetCategory], currencyCode: String = "USD") {
         self.transaction = transaction
         self.categories = categories
+        self.currencyCode = currencyCode
 
         // Initialize state from transaction
         _date = State(initialValue: transaction.date)
@@ -342,13 +352,13 @@ struct EditTransactionSheet: View {
                 }
 
                 Section("Amount") {
-                    TextField("Amount", value: $amount, format: .currency(code: "USD"))
+                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
 
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.appError)
                     }
                 }
 
@@ -370,7 +380,7 @@ struct EditTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(Color.appWarning)
                     }
                 }
 
