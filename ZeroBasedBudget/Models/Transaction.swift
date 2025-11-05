@@ -24,16 +24,18 @@ final class Transaction {
     var notes: String?
     var type: TransactionType
     var category: BudgetCategory?
+    var account: Account?  // Link to account for balance tracking
 
     @Attribute(.externalStorage)
     var receiptImageData: Data?
 
-    init(date: Date, amount: Decimal, description: String, type: TransactionType, category: BudgetCategory?) {
+    init(date: Date, amount: Decimal, description: String, type: TransactionType, category: BudgetCategory?, account: Account? = nil) {
         self.id = UUID()
         self.date = date
         self.amount = amount
         self.transactionDescription = description
         self.type = type
         self.category = category
+        self.account = account
     }
 }

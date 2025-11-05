@@ -34,6 +34,10 @@ final class Account {
     /// Optional notes (account number, bank name, etc.)
     var notes: String?
 
+    /// Transactions associated with this account
+    @Relationship(deleteRule: .nullify, inverse: \Transaction.account)
+    var transactions: [Transaction] = []
+
     /// Initialize a new Account
     /// - Parameters:
     ///   - name: Account name (e.g., "Chase Checking")

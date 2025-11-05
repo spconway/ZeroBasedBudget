@@ -139,190 +139,376 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🟢 Priority 3: New Features (v1.4.0)
+### 🔴 Priority 1: Critical Bugs & YNAB Methodology Issues
 
-#### Enhancement 3.1: YNAB-Style Accounts Tab ✅ COMPLETED
+#### Bug 1.1: Transaction Running Balance Disconnected from Accounts ✅ COMPLETED
 
-**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commit: 5edfe37)
+**Status**: ✅ **RESOLVED** - Implemented Option 1 (Full Account-Transaction Integration)
+**Completed**: November 5, 2025
+**Commit**: Pending
 
-**Summary**: Implemented true YNAB-style account tracking where users manage actual account balances (checking, savings, cash, etc.) as the single source of truth for budgeting. Replaced complex "Ready to Assign" section with simple banner.
+**Resolution Summary**:
+- ✅ Added `account: Account?` relationship to Transaction model
+- ✅ Added inverse `transactions: [Transaction]` relationship to Account model
+- ✅ Updated AddTransactionSheet with account picker and automatic balance updates
+- ✅ Updated EditTransactionSheet to handle account changes with proper balance reversals
+- ✅ Updated TransactionRow to display account name
+- ✅ Updated deleteTransaction() to reverse account balance impact
+- ✅ Maintains backward compatibility (account field is optional)
+- ✅ Build successful with no errors or warnings
 
-**Key Changes**:
-- Added Account model (SwiftData) with name, balance, type, dates
-- Created Accounts tab (first tab) with total banner and CRUD operations
-- Simplified Budget tab with compact Ready to Assign banner
-- Updated calculation: Ready to Assign = Sum(accounts) - Sum(categories)
-- Added Settings tab placeholder for Enhancement 3.2
-- Tab structure: Accounts → Budget → Transactions → Analysis → Settings
-
-**Files Created**: Account.swift, AccountsView.swift, AddAccountSheet.swift, EditAccountSheet.swift, AccountRow.swift, ReadyToAssignBanner.swift, SettingsView.swift
-
-**Files Modified**: ContentView.swift (5-tab structure), BudgetPlanningView.swift (account-based calculations), ZeroBasedBudgetApp.swift (Account in schema)
-
----
-
-#### Enhancement 3.2: Global Settings Tab ✅ COMPLETED
-
-**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commit: 1e045ae)
-
-**Summary**: Comprehensive settings view with 6 sections for app configuration, data management, and user preferences. Includes data export/import functionality and dynamic currency support throughout the app.
-
-**Key Implementations**:
-1. **Expanded AppSettings Model**:
-   - Added `defaultNotificationSchedule`, `numberFormat`, `allowNegativeCategoryAmounts`
-   - All settings persist via SwiftData
-
-2. **Comprehensive SettingsView (6 Sections)**:
-   - **Appearance**: Dark mode toggle (System/Light/Dark)
-   - **Currency & Formatting**: Currency picker (USD/EUR/GBP/CAD/AUD/JPY), date format, number format
-   - **Budget Behavior**: Month start date (1-31), default notifications, over-budget toggle
-   - **Notifications**: Master enable/disable switch
-   - **Data Management**: Export CSV/JSON, import JSON, clear all data, storage info
-   - **About**: Version, build, YNAB methodology sheet, privacy, feedback link
-
-3. **Data Export/Import Utilities**:
-   - DataExporter.swift: CSV export (current month) and JSON export (full backup)
-   - DataImporter.swift: JSON import with validation and error handling
-   - ShareSheet wrapper for UIActivityViewController
-
-4. **Dynamic Currency Support**:
-   - All 11 views updated to use `currencyCode` from AppSettings
-   - Replaced 40+ hardcoded "USD" references
-   - Currency changes update immediately across all tabs
-
-5. **Data Management Features**:
-   - Export current month budget to CSV
-   - Export complete data to JSON (accounts, categories, transactions, budgets)
-   - Import data from JSON with validation
-   - Clear all data with confirmation (preserves AppSettings)
-
-**Files Created**: DataExporter.swift, DataImporter.swift
-
-**Files Modified**: AppSettings.swift, SettingsView.swift, BudgetPlanningView.swift, TransactionLogView.swift, BudgetAnalysisView.swift, AccountsView.swift, AccountRow.swift, ReadyToAssignBanner.swift, AddAccountSheet.swift, EditAccountSheet.swift, NotificationManager.swift
-
----
-
-
-#### Enhancement 3.3: Dark Mode Support ✅ COMPLETED
-
-**Status**: ✅ **COMPLETED** - Implemented November 5, 2025 (commits: e240fb7, 06562df, d37a88d)
-
-**Summary**: Full dark mode support with automatic system theme detection and manual toggle in Settings. All views updated with semantic color system for proper light/dark adaptation.
-
-**Key Implementations**:
-1. **Semantic Color System** (`AppColors.swift`):
-   - `appSuccess`, `appWarning`, `appError`, `appAccent`, `appMuted`
-   - Semantic backgrounds: `cardBackground`, `listBackground`, `chartBackground`
-   - All hardcoded colors replaced throughout the app
-
-2. **Updated All Views**:
-   - BudgetPlanningView: Status colors, navigation buttons, Ready to Assign banner
-   - TransactionLogView: Income/expense colors, running balance
-   - BudgetAnalysisView: Chart colors, status indicators
-   - AccountsView: Already using semantic colors (no changes needed)
-   - ReadyToAssignBanner: Already dark-mode ready
-
-3. **App Settings Model** (`AppSettings.swift`):
-   - SwiftData model for persisting user preferences
-   - `colorSchemePreference`: "system" / "light" / "dark"
-   - Extensible for future settings (currency, notifications, etc.)
-
-4. **Settings UI**:
-   - Segmented picker in SettingsView for dark mode selection
-   - Real-time updates (no app restart required)
-   - Clear labels and helper text
-
-5. **ContentView Integration**:
-   - `.preferredColorScheme()` applies user preference
-   - Queries AppSettings from SwiftData
-   - Automatic updates when preference changes
-
-**Files Created**:
-- `Utilities/AppColors.swift` - Semantic color definitions
-- `Models/AppSettings.swift` - User preferences model
+**Implementation Details**:
+This implementation provides full YNAB-correct account-transaction integration where:
+- Every transaction can be linked to a specific account
+- Account balances automatically update when transactions are created/edited/deleted
+- Transaction edits properly handle account switching (reverse old, apply new)
+- Account deletion nullifies transaction references (doesn't cascade delete)
+- Running balance display now shows accurate account state
 
 **Files Modified**:
-- `Views/BudgetPlanningView.swift` - Semantic colors throughout
-- `Views/TransactionLogView.swift` - Semantic colors throughout
-- `Views/BudgetAnalysisView.swift` - Chart and status colors
-- `Views/SettingsView.swift` - Dark mode toggle UI
-- `Views/ContentView.swift` - Apply color scheme preference
-- `ZeroBasedBudgetApp.swift` - Add AppSettings to schema
+- `Models/Transaction.swift` - Added account relationship and updated initializer
+- `Models/Account.swift` - Added transactions relationship
+- `Views/TransactionLogView.swift` - Complete transaction management overhaul:
+  - AddTransactionSheet: Account picker + automatic balance updates
+  - EditTransactionSheet: Account picker + balance reversal logic
+  - TransactionRow: Display account name
+  - deleteTransaction: Reverse balance impact
 
-**Testing Notes**:
-- Test in Xcode with light mode, dark mode, and system default
-- Verify all 5 tabs render correctly in both modes
-- Test manual toggle switches immediately
-- Verify colors meet WCAG AA contrast standards
+**Note**: This implementation also completes **Enhancement 4.2** (Account-Linked Transactions).
+
+---
+
+### 🟢 Priority 3: New Features (v1.5.0 Planned)
+
+#### Enhancement 4.1: Date-Grouped Transaction List
+
+**Objective**: Improve transaction readability by grouping transactions into date sections with clear visual separation.
+
+**Current State**: All transactions displayed in flat list sorted by date (newest first).
+
+**Proposed Design**:
+```
+Transactions
+├─ November 5, 2025 (Section Header)
+│  ├─ Grocery Store - $45.23
+│  └─ Gas Station - $52.00
+├─ November 4, 2025 (Section Header)
+│  ├─ Paycheck (Income) - $2,500.00
+│  └─ Electric Bill - $125.00
+└─ November 3, 2025 (Section Header)
+   └─ Coffee Shop - $5.75
+```
+
+**YNAB Alignment Check**: ✅ Neutral - pure UX improvement, no methodology impact.
+
+**Implementation Approach**:
+1. **Data Grouping**: Group `transactionsWithBalance` by date using `Dictionary(grouping:)`
+2. **Section Headers**: Use `ForEach` with date keys as section identifiers
+3. **Date Formatting**: Show relative dates ("Today", "Yesterday") for recent transactions
+4. **Summary Info**: Optional daily total in section header
+
+**Files to Modify**:
+- `Views/TransactionLogView.swift:88-94` - Replace flat list with sectioned list
+
+**Implementation Details**:
+```swift
+// Group transactions by date
+private var groupedTransactions: [(Date, [(Transaction, Decimal)])] {
+    let grouped = Dictionary(grouping: transactionsWithBalance.reversed()) { transaction in
+        Calendar.current.startOfDay(for: transaction.0.date)
+    }
+    return grouped.sorted { $0.key > $1.key }  // Newest first
+}
+
+// In body:
+ForEach(groupedTransactions, id: \.0) { date, transactions in
+    Section {
+        ForEach(transactions, id: \.0.id) { transaction, balance in
+            TransactionRow(transaction: transaction, runningBalance: balance)
+        }
+    } header: {
+        Text(date, format: .dateTime.month().day().year())
+            .font(.headline)
+    }
+}
+```
+
+**Design Considerations**:
+- Use relative date formatting for last 7 days ("Today", "Yesterday", "5 days ago")
+- Consider adding daily spending totals in section headers
+- Maintain existing search/filter functionality across sections
+- Preserve swipe-to-delete and tap-to-edit gestures
+
+**Testing Checklist**:
+- [ ] Transactions grouped correctly by calendar date
+- [ ] Section headers display properly formatted dates
+- [ ] Search functionality works across all sections
+- [ ] Swipe-to-delete works within sections
+- [ ] Tap-to-edit opens correct transaction
+- [ ] Empty sections don't appear
+- [ ] Performance acceptable with 100+ transactions
+- [ ] Dark mode styling correct for headers
+
+**Acceptance Criteria**:
+- Transactions visually separated by date with section headers
+- Date headers show human-readable format (e.g., "November 5, 2025")
+- All existing functionality (search, edit, delete) preserved
+- No performance degradation with large transaction lists
+
+**Estimated Complexity**: Low (2-3 hours)
+
+---
+
+#### Enhancement 4.2: Account-Linked Transactions ✅ COMPLETED
+
+**Status**: ✅ **COMPLETED** - Implemented as part of Bug 1.1 Resolution (Option 1)
+**Completed**: November 5, 2025
+**Commit**: Pending
+
+**Objective**: Link transactions to specific accounts and automatically update account balances when transactions are created, edited, or deleted. This completes the YNAB account-based budgeting implementation.
+
+**Resolution**: This enhancement was fully implemented as part of Bug 1.1 resolution. All planned features have been completed:
+- ✅ Transaction-Account relationship established
+- ✅ Automatic balance updates on transaction create/edit/delete
+- ✅ Account picker in Add/Edit sheets
+- ✅ Account name display in transaction list
+- ✅ Proper balance reversal logic
+
+See **Bug 1.1** above for complete implementation details.
+
+**Original Implementation Plan** (for reference):
+
+**Phase 1: Model Changes**
+1. Add `account` relationship to Transaction model:
+```swift
+@Model
+final class Transaction {
+    // ... existing properties ...
+    var account: Account?  // NEW: Link to account
+
+    init(date: Date, amount: Decimal, description: String,
+         type: TransactionType, category: BudgetCategory?,
+         account: Account?) {  // NEW parameter
+        // ... existing init ...
+        self.account = account
+    }
+}
+```
+
+2. Add `transactions` relationship to Account model:
+```swift
+@Model
+final class Account {
+    // ... existing properties ...
+
+    @Relationship(deleteRule: .nullify, inverse: \Transaction.account)
+    var transactions: [Transaction] = []  // NEW: Track account transactions
+
+    // NEW: Computed balance from transactions
+    var calculatedBalance: Decimal {
+        transactions.reduce(balance) { total, transaction in
+            transaction.type == .income ? total + transaction.amount : total - transaction.amount
+        }
+    }
+}
+```
+
+**Phase 2: UI Changes**
+1. **Add Account Picker** to `AddTransactionSheet` (after Category section):
+```swift
+Section("Account") {
+    Picker("Account", selection: $selectedAccount) {
+        Text("Select Account").tag(nil as Account?)
+        ForEach(accounts) { account in
+            Text(account.name).tag(account as Account?)
+        }
+    }
+    .pickerStyle(.menu)
+
+    if let account = selectedAccount {
+        HStack {
+            Text("Current Balance:")
+            Spacer()
+            Text(account.balance, format: .currency(code: currencyCode))
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+}
+```
+
+2. **Update `EditTransactionSheet`** with account picker (allow changing account)
+
+3. **Transaction Row Enhancement**: Show account name in TransactionRow
+```swift
+Text(transaction.account?.name ?? "No Account")
+    .font(.caption)
+    .foregroundStyle(.secondary)
+```
+
+**Phase 3: Balance Automation**
+1. **Update `saveTransaction()` in AddTransactionSheet**:
+```swift
+private func saveTransaction() {
+    let newTransaction = Transaction(
+        date: date,
+        amount: amount,
+        description: description,
+        type: transactionType,
+        category: selectedCategory,
+        account: selectedAccount  // NEW
+    )
+
+    // Update account balance
+    if let account = selectedAccount {
+        if transactionType == .income {
+            account.balance += amount
+        } else {
+            account.balance -= amount
+        }
+    }
+
+    modelContext.insert(newTransaction)
+    dismiss()
+}
+```
+
+2. **Update `saveChanges()` in EditTransactionSheet**:
+```swift
+// Handle account change and balance adjustments
+if let oldAccount = transaction.account, oldAccount != selectedAccount {
+    // Reverse old transaction on old account
+    if transaction.type == .income {
+        oldAccount.balance -= transaction.amount
+    } else {
+        oldAccount.balance += transaction.amount
+    }
+}
+
+// Apply new transaction to new account
+if let newAccount = selectedAccount {
+    if transactionType == .income {
+        newAccount.balance += amount
+    } else {
+        newAccount.balance -= amount
+    }
+}
+```
+
+3. **Update `deleteTransaction()` in TransactionLogView**:
+```swift
+private func deleteTransaction(_ transaction: Transaction) {
+    // Reverse transaction impact on account
+    if let account = transaction.account {
+        if transaction.type == .income {
+            account.balance -= transaction.amount
+        } else {
+            account.balance += transaction.amount
+        }
+    }
+    modelContext.delete(transaction)
+}
+```
+
+**Files to Create**: None
+
+**Files to Modify**:
+- `Models/Transaction.swift` - Add account relationship
+- `Models/Account.swift` - Add transactions relationship and calculatedBalance
+- `Views/TransactionLogView.swift` - Add account name display, update delete logic
+- `Views/TransactionLogView.swift` (AddTransactionSheet) - Add account picker and balance update
+- `Views/TransactionLogView.swift` (EditTransactionSheet) - Add account picker and balance update logic
+- `ZeroBasedBudgetApp.swift` - Update schema version if needed
+
+**Design Considerations**:
+- **Optional vs Required**: Make account optional initially (allow transactions without accounts for backward compatibility)
+- **Default Account**: Consider adding "Default Account" setting in AppSettings
+- **Validation**: Warn if creating transaction without account selected
+- **Migration**: Existing transactions will have `account = nil` (handle gracefully)
+- **Multi-Account UX**: Show current account balance when selecting account in picker
+- **Balance Integrity**: Add validation to prevent account balance desync
+
+**Testing Checklist**:
+- [ ] New transaction updates linked account balance correctly
+- [ ] Income increases account balance
+- [ ] Expense decreases account balance
+- [ ] Editing transaction reverses old account impact and applies new
+- [ ] Changing transaction account updates both old and new accounts
+- [ ] Deleting transaction reverses account balance impact
+- [ ] Transaction without account doesn't crash app
+- [ ] Account balance matches sum of transactions
+- [ ] Ready to Assign calculation still correct
+- [ ] Account deletion handles linked transactions (nullify relationship)
+- [ ] Export/import includes account data
+- [ ] Dark mode styling correct for account picker
+
+**Acceptance Criteria**:
+- Transactions can be linked to accounts via picker in Add/Edit sheets
+- Account balances automatically update when transactions are created/edited/deleted
+- Transaction list shows account name for each transaction
+- Account balance remains consistent with transaction history
+- Editing transaction account properly updates both old and new account balances
+- Deleting transaction properly reverses its impact on account balance
+- No crashes or data corruption with account-linked transactions
+
+**Estimated Complexity**: High (8-12 hours - model migration + UI + balance logic + testing)
+
+**Implementation Priority**: **High** - This completes the YNAB account-based budgeting system. Consider implementing immediately after v1.4.0 release.
+
+---
 
 
-### Implementation Priority Order (v1.4.0)
+### Implementation Priority Order (v1.5.0 Planned)
 
-**Recommended sequence (revised for YNAB-style accounts):**
+**Recommended sequence:**
 
-1. **Enhancement 3.1 (YNAB-Style Accounts Tab)** - Do first ⭐ *Revised 2nd time*
-   - Reason: Foundation for true YNAB methodology
-   - Creates Account model (needed for proper budgeting)
-   - Simplifies Budget tab UI (removes clutter)
-   - New tab + banner implementation
-   - Estimated: 4-6 hours (model + views + migration)
-   - Must be done before other enhancements (they depend on accounts existing)
+1. **Bug 1.1 Resolution (Transaction-Account Integration)** - Do first ⭐ **REQUIRED**
+   - Reason: Critical YNAB methodology gap
+   - Affects architecture of all future transaction features
+   - Resolves both Bug 1.1 and Enhancement 4.2 simultaneously
+   - Must be decided before other v1.5.0 features
+   - Estimated: 8-12 hours (if Option 1 selected) or 1 hour (if Option 2 selected)
+   - **Decision needed**: User must select Option 1, 2, or 3
 
-2. **Enhancement 3.3 (Dark Mode)** - Do second
-   - Reason: Visual changes only, no data model changes
-   - Can be tested incrementally (view by view)
-   - Phase 1 audit is non-breaking
-   - Tests new Accounts tab and Ready to Assign banner in both modes
-   - Benefits from Accounts tab existing (test all 5 tabs)
+2. **Enhancement 4.1 (Date-Grouped Transactions)** - Do second
+   - Reason: Pure UX improvement, no dependencies
+   - Low complexity, high user value
+   - Benefits from Bug 1.1 resolution (can show account in sections)
+   - Can be implemented independently if Bug 1.1 Option 2 chosen
+   - Estimated: 2-3 hours
 
-3. **Enhancement 3.2 (Settings)** - Do last
-   - Reason: Most complex with many sub-features
-   - Required for dark mode toggle (Phase 3 of Enhancement 3.3)
-   - Creates infrastructure for future preferences
-   - Establishes data export patterns for future features
-   - Benefits from Settings tab already existing (from Enhancement 3.1)
-   - Can include Account settings (default account type, etc.)
+**Recommended Approach**:
+- If **Bug 1.1 Option 1** selected → Enhancement 4.2 is completed as part of bug fix → Only Enhancement 4.1 remains
+- If **Bug 1.1 Option 2** selected → Implement Enhancement 4.1 first (quick win) → Then Enhancement 4.2 later
+- If **Bug 1.1 Option 3** selected → Implement in sequence: Bug 1.1 fix → Enhancement 4.1 → Enhancement 4.2
 
-**Estimated Complexity** (updated):
-- Enhancement 3.1: **Medium** (new model + CRUD views + Budget tab refactor + migration)
-- Enhancement 3.3: Medium (color audit tedious but straightforward)
-- Enhancement 3.2: High (many sub-features, export/import logic)
-
-**Why Enhancement 3.1 Must Go First**:
-- Accounts are foundational to YNAB methodology
-- Ready to Assign calculation changes fundamentally
-- Other enhancements need to test with account-based budgeting
-- Dark mode needs to test Accounts tab colors
-- Settings may include account-related preferences
+**Version Planning**:
+- **v1.4.1** (if Option 2): Quick bug fix release with date grouping
+- **v1.5.0** (if Option 1 or 3): Major release with full account-transaction integration
 
 ---
 
 ## Active Development
 
-**Current Focus**: 🎉 v1.4.0 Feature Development - ALL THREE ENHANCEMENTS COMPLETE!
-**Status**: Ready for v1.4.0 release testing
+**Current Focus**: 🚀 v1.5.0 Development - Account-Transaction Integration Complete!
+**Status**: Ready to commit and test
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-05] ✅ **Completed Enhancement 3.2**: Global Settings Tab with data export/import and dynamic currency
-2. [2025-11-05] ✅ **Completed Enhancement 3.3**: Full dark mode support with manual toggle
-3. [2025-11-05] ✅ **Completed Enhancement 3.1**: YNAB-style Accounts tab with account-based budgeting
-4. [2025-11-04] 💰 Revised Enhancement 3.1 (2nd revision): YNAB-style Accounts tab + simplified banner
-5. [2025-11-04] 📱 Updated platform requirements: iPhone-only, iOS 26+ (no iPad support)
+1. [2025-11-05] ✅ **Bug 1.1 RESOLVED**: Full account-transaction integration (Option 1) - completes Enhancement 4.2 simultaneously
+2. [2025-11-05] 📋 **v1.5.0 Planning**: Identified Bug 1.1, Enhancement 4.1 (date grouping), 4.2 (account linking)
+3. [2025-11-05] ✅ **v1.4.0 RELEASED**: All three enhancements complete (Accounts, Dark Mode, Settings)
+4. [2025-11-05] ✅ **Completed Enhancement 3.2**: Global Settings Tab with data export/import and dynamic currency
+5. [2025-11-05] ✅ **Completed Enhancement 3.3**: Full dark mode support with manual toggle
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **ALL v1.4.0 ENHANCEMENTS COMPLETE** ✅ 🎉
-2. **Enhancement 3.1 COMPLETE** ✅ - Accounts tab with account-based budgeting (commit: 5edfe37)
-3. **Enhancement 3.3 COMPLETE** ✅ - Dark mode support with semantic colors (commits: e240fb7, 06562df, d37a88d)
-4. **Enhancement 3.2 COMPLETE** ✅ - Global Settings Tab (commit: 1e045ae)
+1. **Bug 1.1 COMPLETE** ✅ - Full account-transaction integration implemented and tested
+2. **Enhancement 4.2 COMPLETE** ✅ - Completed as part of Bug 1.1 resolution
+3. **Ready to Commit**: Transaction-account integration ready for git commit
+4. **Remaining Work**: Enhancement 4.1 (Date-Grouped Transaction List) - estimated 2-3 hours
 5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-6. Next Steps: Test in Xcode Simulator, consider releasing v1.4.0
-
-**Implementation Priority Order (v1.4.0 - ALL COMPLETE):**
-1. ✅ **Enhancement 3.1** (YNAB Accounts Tab) - **COMPLETED**
-2. ✅ **Enhancement 3.3** (Dark Mode Support) - **COMPLETED**
-3. ✅ **Enhancement 3.2** (Global Settings) - **COMPLETED**
+6. Next Steps: Commit changes → Test in simulator → Implement Enhancement 4.1 → Release v1.5.0
 
 ## Git Commit Strategy
 

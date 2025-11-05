@@ -131,6 +131,15 @@ struct TransactionLogView: View {
     }
 
     private func deleteTransaction(_ transaction: Transaction) {
+        // Reverse transaction impact on account balance before deleting
+        if let account = transaction.account {
+            if transaction.type == .income {
+                account.balance -= transaction.amount
+            } else {
+                account.balance += transaction.amount
+            }
+        }
+
         modelContext.delete(transaction)
     }
 }
@@ -152,6 +161,12 @@ struct TransactionRow: View {
                     Text(transaction.category?.name ?? "Uncategorized")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+
+                    if let account = transaction.account {
+                        Text(account.name)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
 
                     Text(transaction.date, style: .date)
                         .font(.caption)
@@ -192,6 +207,7 @@ struct TransactionRow: View {
 struct AddTransactionSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query private var accounts: [Account]
 
     let categories: [BudgetCategory]
     var currencyCode: String = "USD"
@@ -200,6 +216,7 @@ struct AddTransactionSheet: View {
     @State private var description = ""
     @State private var amount = Decimal.zero
     @State private var selectedCategory: BudgetCategory?
+    @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType = .expense
     @State private var notes = ""
 
@@ -257,6 +274,32 @@ struct AddTransactionSheet: View {
                     }
                 }
 
+                Section("Account") {
+                    Picker("Account", selection: $selectedAccount) {
+                        Text("Select Account").tag(nil as Account?)
+                        ForEach(accounts.sorted(by: { $0.name < $1.name })) { account in
+                            Text(account.name).tag(account as Account?)
+                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    if let account = selectedAccount {
+                        HStack {
+                            Text("Current Balance:")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(account.balance, format: .currency(code: currencyCode))
+                                .font(.caption)
+                                .foregroundStyle(account.balance >= 0 ? Color.appSuccess : Color.appError)
+                        }
+                    } else {
+                        Text("Optional - Select to track account balance")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Section("Notes (Optional)") {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
@@ -287,11 +330,21 @@ struct AddTransactionSheet: View {
             amount: amount,
             description: description,
             type: transactionType,
-            category: selectedCategory
+            category: selectedCategory,
+            account: selectedAccount
         )
 
         if !notes.trimmingCharacters(in: .whitespaces).isEmpty {
             newTransaction.notes = notes
+        }
+
+        // Update account balance if account is selected
+        if let account = selectedAccount {
+            if transactionType == .income {
+                account.balance += amount
+            } else {
+                account.balance -= amount
+            }
         }
 
         modelContext.insert(newTransaction)
@@ -304,6 +357,7 @@ struct AddTransactionSheet: View {
 struct EditTransactionSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query private var accounts: [Account]
 
     let transaction: Transaction
     let categories: [BudgetCategory]
@@ -313,6 +367,7 @@ struct EditTransactionSheet: View {
     @State private var description: String
     @State private var amount: Decimal
     @State private var selectedCategory: BudgetCategory?
+    @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType
     @State private var notes: String
 
@@ -326,6 +381,7 @@ struct EditTransactionSheet: View {
         _description = State(initialValue: transaction.transactionDescription)
         _amount = State(initialValue: transaction.amount)
         _selectedCategory = State(initialValue: transaction.category)
+        _selectedAccount = State(initialValue: transaction.account)
         _transactionType = State(initialValue: transaction.type)
         _notes = State(initialValue: transaction.notes ?? "")
     }
@@ -384,6 +440,32 @@ struct EditTransactionSheet: View {
                     }
                 }
 
+                Section("Account") {
+                    Picker("Account", selection: $selectedAccount) {
+                        Text("Select Account").tag(nil as Account?)
+                        ForEach(accounts.sorted(by: { $0.name < $1.name })) { account in
+                            Text(account.name).tag(account as Account?)
+                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    if let account = selectedAccount {
+                        HStack {
+                            Text("Current Balance:")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(account.balance, format: .currency(code: currencyCode))
+                                .font(.caption)
+                                .foregroundStyle(account.balance >= 0 ? Color.appSuccess : Color.appError)
+                        }
+                    } else {
+                        Text("Optional - Select to track account balance")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 Section("Notes (Optional)") {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
@@ -409,10 +491,30 @@ struct EditTransactionSheet: View {
     }
 
     private func updateTransaction() {
+        // Step 1: Reverse the old transaction's impact on the old account
+        if let oldAccount = transaction.account {
+            if transaction.type == .income {
+                oldAccount.balance -= transaction.amount
+            } else {
+                oldAccount.balance += transaction.amount
+            }
+        }
+
+        // Step 2: Apply the new transaction to the new account
+        if let newAccount = selectedAccount {
+            if transactionType == .income {
+                newAccount.balance += amount
+            } else {
+                newAccount.balance -= amount
+            }
+        }
+
+        // Step 3: Update transaction properties
         transaction.date = date
         transaction.transactionDescription = description
         transaction.amount = amount
         transaction.category = selectedCategory
+        transaction.account = selectedAccount
         transaction.type = transactionType
         transaction.notes = notes.trimmingCharacters(in: .whitespaces).isEmpty ? nil : notes
 
