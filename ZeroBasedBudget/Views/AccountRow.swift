@@ -28,7 +28,7 @@ struct AccountRow: View {
 
             Text(account.balance, format: .currency(code: "USD"))
                 .font(.body.monospacedDigit())
-                .foregroundStyle(account.balance >= 0 ? .primary : .red)
+                .foregroundStyle(account.balance >= 0 ? Color.primary : Color.red)
         }
     }
 }

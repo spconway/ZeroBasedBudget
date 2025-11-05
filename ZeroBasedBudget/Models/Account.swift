@@ -48,6 +48,3 @@ final class Account {
         self.notes = nil
     }
 }
-
-// MARK: - Identifiable Conformance
-extension Account: Identifiable {}
