@@ -6,29 +6,61 @@
 //
 
 import SwiftUI
+import SwiftData
 
-/// Placeholder settings view for Enhancement 3.2
+/// Settings view with dark mode toggle and app information
 ///
-/// This view will be fully implemented in Enhancement 3.2 with:
-/// - Appearance settings (dark mode)
-/// - Currency & formatting
-/// - Budget behavior
-/// - Notifications
-/// - Data management (export/import)
-/// - About section
+/// Enhanced with Enhancement 3.3: Dark Mode Support
+/// Full implementation coming in Enhancement 3.2
 struct SettingsView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settings: [AppSettings]
+
+    /// Get or create singleton settings
+    private var appSettings: AppSettings {
+        if let existing = settings.first {
+            return existing
+        } else {
+            let newSettings = AppSettings()
+            modelContext.insert(newSettings)
+            return newSettings
+        }
+    }
+
     var body: some View {
         NavigationStack {
             List {
+                // Appearance Section (Enhancement 3.3)
                 Section {
-                    Label("Coming Soon", systemImage: "gear")
-                        .foregroundStyle(.secondary)
+                    Picker("Appearance", selection: Binding(
+                        get: { appSettings.colorSchemePreference },
+                        set: { newValue in
+                            appSettings.colorSchemePreference = newValue
+                            appSettings.lastModifiedDate = Date()
+                        }
+                    )) {
+                        Text("System").tag("system")
+                        Text("Light").tag("light")
+                        Text("Dark").tag("dark")
+                    }
+                    .pickerStyle(.segmented)
                 } header: {
-                    Text("Settings")
+                    Text("Appearance")
                 } footer: {
-                    Text("Comprehensive settings will be available in v1.4.0 (Enhancement 3.2)")
+                    Text("Choose your preferred color scheme. System will match your device settings.")
                 }
 
+                // Coming Soon Section
+                Section {
+                    Label("More settings coming soon", systemImage: "gear")
+                        .foregroundStyle(.secondary)
+                } header: {
+                    Text("Additional Settings")
+                } footer: {
+                    Text("Currency, formatting, notifications, and data management will be available in Enhancement 3.2")
+                }
+
+                // About Section
                 Section {
                     HStack {
                         Text("Version")
@@ -40,7 +72,7 @@ struct SettingsView: View {
                     HStack {
                         Text("Build")
                         Spacer()
-                        Text("v1.4.0-alpha")
+                        Text("Enhancement 3.3")
                             .foregroundStyle(.secondary)
                     }
                 } header: {
@@ -54,4 +86,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .modelContainer(for: AppSettings.self, inMemory: true)
 }

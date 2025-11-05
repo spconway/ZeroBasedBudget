@@ -19,7 +19,8 @@ struct ZeroBasedBudgetApp: App {
                 Transaction.self,
                 BudgetCategory.self,
                 MonthlyBudget.self,
-                Account.self
+                Account.self,
+                AppSettings.self
             ])
 
             // Get application support directory

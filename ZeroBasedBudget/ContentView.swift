@@ -9,7 +9,23 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settings: [AppSettings]
+
     @State private var selectedTab = 0
+
+    /// Get the current color scheme preference from settings
+    private var colorScheme: ColorScheme? {
+        guard let preference = settings.first?.colorSchemePreference else { return nil }
+        switch preference {
+        case "light":
+            return .light
+        case "dark":
+            return .dark
+        default:
+            return nil  // System default
+        }
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -48,6 +64,7 @@ struct ContentView: View {
                 }
                 .tag(4)
         }
+        .preferredColorScheme(colorScheme)
     }
 }
 
