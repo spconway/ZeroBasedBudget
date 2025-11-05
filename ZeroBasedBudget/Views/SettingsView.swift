@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 /// Comprehensive settings view for app configuration and preferences
 ///
@@ -397,16 +398,8 @@ struct SettingsView: View {
     // MARK: - Data Management Methods
 
     private func exportCSV() {
-        // Get current month's categories
-        let calendar = Calendar.current
-        let now = Date()
-        let year = calendar.component(.year, from: now)
-        let month = calendar.component(.month, from: now)
-        let yearMonth = String(format: "%04d-%02d", year, month)
-
-        let currentMonthCategories = categories.filter { $0.yearMonth == yearMonth }
-
-        if let data = DataExporter.exportCategoriesCSV(categories: currentMonthCategories, yearMonth: yearMonth) {
+        // Export all budget categories
+        if let data = DataExporter.exportCategoriesCSV(categories: categories) {
             csvExportData = data
             showingExportCSV = true
         }

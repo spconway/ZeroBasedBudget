@@ -87,7 +87,7 @@ struct TransactionLogView: View {
 
                 // Display transactions in reverse chronological order with running balance
                 ForEach(transactionsWithBalance.reversed(), id: \.0.id) { (transaction, balance) in
-                    TransactionRow(transaction: transaction, runningBalance: balance)
+                    TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode)
                         .onTapGesture {
                             transactionToEdit = transaction
                         }
@@ -113,10 +113,10 @@ struct TransactionLogView: View {
                 }
             }
             .sheet(isPresented: $showingAddSheet) {
-                AddTransactionSheet(categories: categories)
+                AddTransactionSheet(categories: categories, currencyCode: currencyCode)
             }
             .sheet(item: $transactionToEdit) { transaction in
-                EditTransactionSheet(transaction: transaction, categories: categories)
+                EditTransactionSheet(transaction: transaction, categories: categories, currencyCode: currencyCode)
             }
             .overlay {
                 if allTransactions.isEmpty {
@@ -140,6 +140,7 @@ struct TransactionLogView: View {
 struct TransactionRow: View {
     let transaction: Transaction
     let runningBalance: Decimal
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 8) {
@@ -193,6 +194,7 @@ struct AddTransactionSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let categories: [BudgetCategory]
+    var currencyCode: String = "USD"
 
     @State private var date = Date()
     @State private var description = ""
@@ -305,6 +307,7 @@ struct EditTransactionSheet: View {
 
     let transaction: Transaction
     let categories: [BudgetCategory]
+    var currencyCode: String = "USD"
 
     @State private var date: Date
     @State private var description: String
@@ -313,9 +316,10 @@ struct EditTransactionSheet: View {
     @State private var transactionType: TransactionType
     @State private var notes: String
 
-    init(transaction: Transaction, categories: [BudgetCategory]) {
+    init(transaction: Transaction, categories: [BudgetCategory], currencyCode: String = "USD") {
         self.transaction = transaction
         self.categories = categories
+        self.currencyCode = currencyCode
 
         // Initialize state from transaction
         _date = State(initialValue: transaction.date)

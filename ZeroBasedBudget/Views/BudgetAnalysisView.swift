@@ -86,11 +86,11 @@ struct BudgetAnalysisView: View {
                         if selectedChartType == .bar {
                             BarChartSection(categoryComparisons: categoryComparisons)
                         } else {
-                            DonutChartSection(categoryComparisons: categoryComparisons)
+                            DonutChartSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode)
                         }
 
                         // Detailed List Section
-                        DetailedListSection(categoryComparisons: categoryComparisons)
+                        DetailedListSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode)
                     }
                 }
                 .padding()
@@ -172,13 +172,15 @@ struct SummarySection: View {
                 SummaryCard(
                     title: "Total Budgeted",
                     amount: totalBudgeted,
-                    color: .appAccent
+                    color: .appAccent,
+                    currencyCode: currencyCode
                 )
 
                 SummaryCard(
                     title: "Total Actual",
                     amount: totalActual,
-                    color: totalActual > totalBudgeted ? .appError : .appSuccess
+                    color: totalActual > totalBudgeted ? .appError : .appSuccess,
+                    currencyCode: currencyCode
                 )
             }
 
@@ -186,7 +188,8 @@ struct SummarySection: View {
                 title: totalDifference >= 0 ? "Under Budget" : "Over Budget",
                 amount: abs(totalDifference),
                 color: totalDifference >= 0 ? .appSuccess : .appError,
-                isFullWidth: true
+                isFullWidth: true,
+                currencyCode: currencyCode
             )
         }
         .padding()
@@ -200,6 +203,7 @@ struct SummaryCard: View {
     let amount: Decimal
     let color: Color
     var isFullWidth: Bool = false
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 4) {
@@ -264,6 +268,7 @@ struct BarChartSection: View {
 
 struct DonutChartSection: View {
     let categoryComparisons: [CategoryComparison]
+    var currencyCode: String = "USD"
 
     private let maxCategories = 10
 
@@ -409,6 +414,7 @@ struct DonutChartData: Identifiable {
 
 struct DetailedListSection: View {
     let categoryComparisons: [CategoryComparison]
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 12) {
@@ -418,7 +424,7 @@ struct DetailedListSection: View {
 
             VStack(spacing: 12) {
                 ForEach(categoryComparisons) { comparison in
-                    CategoryComparisonRow(comparison: comparison)
+                    CategoryComparisonRow(comparison: comparison, currencyCode: currencyCode)
                 }
             }
         }
@@ -427,6 +433,7 @@ struct DetailedListSection: View {
 
 struct CategoryComparisonRow: View {
     let comparison: CategoryComparison
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -452,7 +459,8 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Budgeted",
                     value: comparison.budgeted,
-                    color: .primary
+                    color: .primary,
+                    currencyCode: currencyCode
                 )
 
                 Divider()
@@ -460,7 +468,8 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Actual",
                     value: comparison.actual,
-                    color: comparison.isOverBudget ? .appError : .appSuccess
+                    color: comparison.isOverBudget ? .appError : .appSuccess,
+                    currencyCode: currencyCode
                 )
 
                 Divider()
@@ -468,7 +477,8 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Difference",
                     value: comparison.difference,
-                    color: comparison.difference >= 0 ? .appSuccess : .appError
+                    color: comparison.difference >= 0 ? .appSuccess : .appError,
+                    currencyCode: currencyCode
                 )
 
                 Divider()
@@ -496,6 +506,7 @@ struct MetricColumn: View {
     let title: String
     let value: Decimal
     let color: Color
+    var currencyCode: String = "USD"
 
     var body: some View {
         VStack(spacing: 4) {

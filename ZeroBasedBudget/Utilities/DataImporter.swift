@@ -79,14 +79,11 @@ struct DataImporter {
         }
 
         // Import monthly budgets
-        var monthlyBudgetMap: [UUID: MonthlyBudget] = [:]
         for budgetExport in export.monthlyBudgets {
-            let monthlyBudget = MonthlyBudget(yearMonth: budgetExport.yearMonth)
-            monthlyBudget.id = budgetExport.id
-            monthlyBudget.createdDate = budgetExport.createdDate
+            let monthlyBudget = MonthlyBudget(month: budgetExport.month, startingBalance: budgetExport.startingBalance)
+            monthlyBudget.notes = budgetExport.notes
 
             modelContext.insert(monthlyBudget)
-            monthlyBudgetMap[monthlyBudget.id] = monthlyBudget
         }
 
         // Import categories
@@ -94,16 +91,18 @@ struct DataImporter {
         for categoryExport in export.categories {
             let category = BudgetCategory(
                 name: categoryExport.name,
-                amount: categoryExport.amount,
-                yearMonth: categoryExport.yearMonth
+                budgetedAmount: categoryExport.budgetedAmount,
+                categoryType: categoryExport.categoryType,
+                colorHex: categoryExport.colorHex,
+                dueDate: categoryExport.dueDate
             )
-            category.id = categoryExport.id
-            category.notes = categoryExport.notes
-            category.isRecurring = categoryExport.isRecurring
-            category.createdDate = categoryExport.createdDate
-            category.dueDate = categoryExport.dueDate
-            category.notificationEnabled = categoryExport.notificationEnabled
-            category.notificationSchedule = categoryExport.notificationSchedule
+            category.dueDayOfMonth = categoryExport.dueDayOfMonth
+            category.isLastDayOfMonth = categoryExport.isLastDayOfMonth
+            category.notify7DaysBefore = categoryExport.notify7DaysBefore
+            category.notify2DaysBefore = categoryExport.notify2DaysBefore
+            category.notifyOnDueDate = categoryExport.notifyOnDueDate
+            category.notifyCustomDays = categoryExport.notifyCustomDays
+            category.customDaysCount = categoryExport.customDaysCount
 
             modelContext.insert(category)
             categoryMap[category.name] = category
@@ -111,19 +110,21 @@ struct DataImporter {
 
         // Import transactions
         for transactionExport in export.transactions {
+            // Find category if exists
+            var category: BudgetCategory? = nil
+            if let categoryName = transactionExport.categoryName {
+                category = categoryMap[categoryName]
+            }
+
             let transaction = Transaction(
-                amount: transactionExport.amount,
-                type: transactionExport.type == "income" ? .income : .expense,
                 date: transactionExport.date,
-                notes: transactionExport.notes
+                amount: transactionExport.amount,
+                description: transactionExport.transactionDescription,
+                type: transactionExport.type == "income" ? .income : .expense,
+                category: category
             )
             transaction.id = transactionExport.id
-
-            // Link to category if exists
-            if let categoryName = transactionExport.categoryName,
-               let category = categoryMap[categoryName] {
-                transaction.category = category
-            }
+            transaction.notes = transactionExport.notes
 
             modelContext.insert(transaction)
         }

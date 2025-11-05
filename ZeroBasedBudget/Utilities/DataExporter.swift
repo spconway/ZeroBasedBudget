@@ -17,22 +17,18 @@ struct DataExporter {
     /// Export budget categories for a specific month to CSV format
     /// - Parameters:
     ///   - categories: Budget categories to export
-    ///   - yearMonth: Year-month identifier (e.g., "2025-11")
     /// - Returns: CSV data that can be saved or shared
-    static func exportCategoriesCSV(categories: [BudgetCategory], yearMonth: String) -> Data? {
-        var csv = "Category,Type,Amount,DueDate,NotificationEnabled\n"
-
-        let dateFormatter = ISO8601DateFormatter()
-        dateFormatter.formatOptions = [.withFullDate]
+    static func exportCategoriesCSV(categories: [BudgetCategory]) -> Data? {
+        var csv = "Category,Type,Amount,DueDayOfMonth,NotificationsEnabled\n"
 
         for category in categories {
             let name = escapeCSV(category.name)
-            let type = category.isRecurring ? "Recurring" : "One-time"
-            let amount = formatDecimal(category.amount)
-            let dueDate = category.dueDate.map { dateFormatter.string(from: $0) } ?? ""
-            let notifications = category.notificationEnabled ? "true" : "false"
+            let type = category.categoryType
+            let amount = formatDecimal(category.budgetedAmount)
+            let dueDayOfMonth = category.dueDayOfMonth.map { String($0) } ?? ""
+            let notifications = (category.notify7DaysBefore || category.notify2DaysBefore || category.notifyOnDueDate) ? "true" : "false"
 
-            csv += "\(name),\(type),\(amount),\(dueDate),\(notifications)\n"
+            csv += "\(name),\(type),\(amount),\(dueDayOfMonth),\(notifications)\n"
         }
 
         return csv.data(using: .utf8)
@@ -110,7 +106,7 @@ struct AccountExport: Codable {
     let createdDate: Date
     let notes: String?
 
-    init(from account: Account) {
+    nonisolated init(from account: Account) {
         self.id = account.id
         self.name = account.name
         self.balance = account.balance
@@ -122,28 +118,32 @@ struct AccountExport: Codable {
 
 /// Category export structure (Codable version of BudgetCategory model)
 struct CategoryExport: Codable {
-    let id: UUID
     let name: String
-    let amount: Decimal
-    let notes: String?
-    let isRecurring: Bool
-    let createdDate: Date
+    let budgetedAmount: Decimal
+    let categoryType: String
+    let colorHex: String
     let dueDate: Date?
-    let notificationEnabled: Bool
-    let notificationSchedule: String?
-    let yearMonth: String
+    let dueDayOfMonth: Int?
+    let isLastDayOfMonth: Bool
+    let notify7DaysBefore: Bool
+    let notify2DaysBefore: Bool
+    let notifyOnDueDate: Bool
+    let notifyCustomDays: Bool
+    let customDaysCount: Int
 
-    init(from category: BudgetCategory) {
-        self.id = category.id
+    nonisolated init(from category: BudgetCategory) {
         self.name = category.name
-        self.amount = category.amount
-        self.notes = category.notes
-        self.isRecurring = category.isRecurring
-        self.createdDate = category.createdDate
+        self.budgetedAmount = category.budgetedAmount
+        self.categoryType = category.categoryType
+        self.colorHex = category.colorHex
         self.dueDate = category.dueDate
-        self.notificationEnabled = category.notificationEnabled
-        self.notificationSchedule = category.notificationSchedule
-        self.yearMonth = category.yearMonth
+        self.dueDayOfMonth = category.dueDayOfMonth
+        self.isLastDayOfMonth = category.isLastDayOfMonth
+        self.notify7DaysBefore = category.notify7DaysBefore
+        self.notify2DaysBefore = category.notify2DaysBefore
+        self.notifyOnDueDate = category.notifyOnDueDate
+        self.notifyCustomDays = category.notifyCustomDays
+        self.customDaysCount = category.customDaysCount
     }
 }
 
@@ -153,14 +153,16 @@ struct TransactionExport: Codable {
     let amount: Decimal
     let type: String
     let date: Date
+    let transactionDescription: String
     let notes: String?
     let categoryName: String?
 
-    init(from transaction: Transaction) {
+    nonisolated init(from transaction: Transaction) {
         self.id = transaction.id
         self.amount = transaction.amount
         self.type = transaction.type == .income ? "income" : "expense"
         self.date = transaction.date
+        self.transactionDescription = transaction.transactionDescription
         self.notes = transaction.notes
         self.categoryName = transaction.category?.name
     }
@@ -168,13 +170,13 @@ struct TransactionExport: Codable {
 
 /// Monthly budget export structure (Codable version of MonthlyBudget model)
 struct MonthlyBudgetExport: Codable {
-    let id: UUID
-    let yearMonth: String
-    let createdDate: Date
+    let month: Date
+    let startingBalance: Decimal
+    let notes: String?
 
-    init(from monthlyBudget: MonthlyBudget) {
-        self.id = monthlyBudget.id
-        self.yearMonth = monthlyBudget.yearMonth
-        self.createdDate = monthlyBudget.createdDate
+    nonisolated init(from monthlyBudget: MonthlyBudget) {
+        self.month = monthlyBudget.month
+        self.startingBalance = monthlyBudget.startingBalance
+        self.notes = monthlyBudget.notes
     }
 }
