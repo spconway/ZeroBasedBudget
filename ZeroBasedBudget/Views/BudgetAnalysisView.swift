@@ -34,11 +34,11 @@ struct BudgetAnalysisView: View {
 
     // Summary totals
     private var totalBudgeted: Decimal {
-        categoryComparisons.reduce(Decimal.zero) { $0 + $1.budgeted }
+        categoryComparisons.appErroruce(Decimal.zero) { $0 + $1.budgeted }
     }
 
     private var totalActual: Decimal {
-        categoryComparisons.reduce(Decimal.zero) { $0 + $1.actual }
+        categoryComparisons.appErroruce(Decimal.zero) { $0 + $1.actual }
     }
 
     private var totalDifference: Decimal {
@@ -166,20 +166,20 @@ struct SummarySection: View {
                 SummaryCard(
                     title: "Total Budgeted",
                     amount: totalBudgeted,
-                    color: .blue
+                    color: .appAccent
                 )
 
                 SummaryCard(
                     title: "Total Actual",
                     amount: totalActual,
-                    color: totalActual > totalBudgeted ? .red : .green
+                    color: totalActual > totalBudgeted ? .appError : .appSuccess
                 )
             }
 
             SummaryCard(
                 title: totalDifference >= 0 ? "Under Budget" : "Over Budget",
                 amount: abs(totalDifference),
-                color: totalDifference >= 0 ? .green : .red,
+                color: totalDifference >= 0 ? .appSuccess : .appError,
                 isFullWidth: true
             )
         }
@@ -230,7 +230,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.budgeted as NSDecimalNumber))
                     )
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.appAccent)
                     .position(by: .value("Type", "Budgeted"))
 
                     // Actual bar
@@ -238,7 +238,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.actual as NSDecimalNumber))
                     )
-                    .foregroundStyle(comparison.isOverBudget ? .red : .green)
+                    .foregroundStyle(comparison.isOverBudget ? .appError : .appSuccess)
                     .position(by: .value("Type", "Actual"))
                 }
             }
@@ -281,7 +281,7 @@ struct DonutChartSection: View {
         let sortedByAmount = categoriesWithSpending.sorted { $0.actual > $1.actual }
         let topCategories = Array(sortedByAmount.prefix(maxCategories - 1))
         let otherCategories = Array(sortedByAmount.dropFirst(maxCategories - 1))
-        let otherTotal = otherCategories.reduce(Decimal.zero) { $0 + $1.actual }
+        let otherTotal = otherCategories.appErroruce(Decimal.zero) { $0 + $1.actual }
 
         var result = topCategories.map { comparison in
             DonutChartData(
@@ -303,7 +303,7 @@ struct DonutChartSection: View {
     }
 
     private var totalSpending: Decimal {
-        chartData.reduce(Decimal.zero) { $0 + $1.amount }
+        chartData.appErroruce(Decimal.zero) { $0 + $1.amount }
     }
 
     var body: some View {
@@ -438,7 +438,7 @@ struct CategoryComparisonRow: View {
                 Spacer()
 
                 Image(systemName: comparison.isOverBudget ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                    .foregroundStyle(comparison.isOverBudget ? .red : .green)
+                    .foregroundStyle(comparison.isOverBudget ? .appError : .appSuccess)
             }
 
             // Metrics grid
@@ -454,7 +454,7 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Actual",
                     value: comparison.actual,
-                    color: comparison.isOverBudget ? .red : .green
+                    color: comparison.isOverBudget ? .appError : .appSuccess
                 )
 
                 Divider()
@@ -462,7 +462,7 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Difference",
                     value: comparison.difference,
-                    color: comparison.difference >= 0 ? .green : .red
+                    color: comparison.difference >= 0 ? .appSuccess : .appError
                 )
 
                 Divider()
@@ -474,7 +474,7 @@ struct CategoryComparisonRow: View {
 
                     Text(comparison.percentageUsedFormatted)
                         .font(.body.bold())
-                        .foregroundStyle(comparison.percentageUsed > 1.0 ? .red : .primary)
+                        .foregroundStyle(comparison.percentageUsed > 1.0 ? .appError : .primary)
                 }
                 .frame(maxWidth: .infinity)
             }

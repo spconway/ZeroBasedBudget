@@ -72,7 +72,7 @@ struct TransactionLogView: View {
                                 Spacer()
                                 Image(systemName: "arrow.right.circle.fill")
                                     .font(.title2)
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(.appAccent)
                             }
                         }
                         .buttonStyle(.plain)
@@ -156,7 +156,7 @@ struct TransactionRow: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(transaction.amount, format: .currency(code: "USD"))
                         .font(.body.bold())
-                        .foregroundStyle(transaction.type == .income ? .green : .red)
+                        .foregroundStyle(transaction.type == .income ? .appSuccess : .appError)
 
                     Text(transaction.type.rawValue.capitalized)
                         .font(.caption)
@@ -172,7 +172,7 @@ struct TransactionRow: View {
                 Spacer()
                 Text(runningBalance, format: .currency(code: "USD"))
                     .font(.caption.bold())
-                    .foregroundStyle(runningBalance >= 0 ? .green : .red)
+                    .foregroundStyle(runningBalance >= 0 ? .appSuccess : .appError)
             }
             .padding(.top, 4)
         }
@@ -223,7 +223,7 @@ struct AddTransactionSheet: View {
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(.appError)
                     }
                 }
 
@@ -245,7 +245,7 @@ struct AddTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(.appWarning)
                     }
                 }
 
@@ -348,7 +348,7 @@ struct EditTransactionSheet: View {
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(.appError)
                     }
                 }
 
@@ -370,7 +370,7 @@ struct EditTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(.orange)
+                            .foregroundStyle(.appWarning)
                     }
                 }
 
