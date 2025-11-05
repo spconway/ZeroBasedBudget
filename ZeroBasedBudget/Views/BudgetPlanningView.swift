@@ -14,6 +14,7 @@ struct BudgetPlanningView: View {
     @Query private var allTransactions: [Transaction]
     @Query private var allMonthlyBudgets: [MonthlyBudget]
     @Query private var allAccounts: [Account]  // NEW: Query accounts for YNAB-style budgeting
+    @Query private var settings: [AppSettings]
 
     // State for selected month/year
     @State private var selectedMonth: Date = Date()
@@ -39,6 +40,11 @@ struct BudgetPlanningView: View {
     struct UndoAction {
         let categoryChanges: [(category: BudgetCategory, previousAmount: Decimal)]
         let actionDescription: String
+    }
+
+    // Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
     }
 
     // Computed property to filter categories by type
@@ -207,7 +213,8 @@ struct BudgetPlanningView: View {
                 Section {
                     ReadyToAssignBanner(
                         amount: readyToAssign,
-                        color: readyToAssignColor
+                        color: readyToAssignColor,
+                        currencyCode: currencyCode
                     )
                 }
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
@@ -243,7 +250,7 @@ struct BudgetPlanningView: View {
                         }
 
                         LabeledContent("Total Fixed") {
-                            Text(totalFixedExpenses, format: .currency(code: "USD"))
+                            Text(totalFixedExpenses, format: .currency(code: currencyCode))
                                 .fontWeight(.semibold)
                         }
                     }
@@ -279,7 +286,7 @@ struct BudgetPlanningView: View {
                         }
 
                         LabeledContent("Total Variable") {
-                            Text(totalVariableExpenses, format: .currency(code: "USD"))
+                            Text(totalVariableExpenses, format: .currency(code: currencyCode))
                                 .fontWeight(.semibold)
                         }
                     }
@@ -315,7 +322,7 @@ struct BudgetPlanningView: View {
                         }
 
                         LabeledContent("Total Quarterly") {
-                            Text(totalQuarterlyExpenses, format: .currency(code: "USD"))
+                            Text(totalQuarterlyExpenses, format: .currency(code: currencyCode))
                                 .fontWeight(.semibold)
                         }
                     }
@@ -324,12 +331,12 @@ struct BudgetPlanningView: View {
                 // Budget Summary Section
                 Section {
                     LabeledContent("Total Assigned") {
-                        Text(totalAssigned, format: .currency(code: "USD"))
+                        Text(totalAssigned, format: .currency(code: currencyCode))
                             .foregroundStyle(.secondary)
                     }
 
                     LabeledContent("Ready to Assign") {
-                        Text(readyToAssign, format: .currency(code: "USD"))
+                        Text(readyToAssign, format: .currency(code: currencyCode))
                             .fontWeight(.bold)
                             .foregroundStyle(readyToAssignColor)
                     }
@@ -342,7 +349,7 @@ struct BudgetPlanningView: View {
                                 .foregroundStyle(.secondary)
                             Spacer()
                             HStack(spacing: 4) {
-                                Text(comparison.amount, format: .currency(code: "USD"))
+                                Text(comparison.amount, format: .currency(code: currencyCode))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
 
@@ -384,7 +391,7 @@ struct BudgetPlanningView: View {
                             Image(systemName: "exclamationmark.circle.fill")
                                 .foregroundStyle(Color.appWarning)
                                 .font(.title3)
-                            Text("Assign \(readyToAssign, format: .currency(code: "USD")) to categories")
+                            Text("Assign \(readyToAssign, format: .currency(code: currencyCode)) to categories")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.appWarning)
                             Spacer()
@@ -395,7 +402,7 @@ struct BudgetPlanningView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundStyle(Color.appError)
                                 .font(.title3)
-                            Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: "USD"))")
+                            Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: currencyCode))")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.appError)
                             Spacer()
@@ -479,7 +486,7 @@ struct BudgetPlanningView: View {
             } message: {
                 if let unassigned = previousMonthReadyToAssign {
                     Text("""
-                    You have \(unassigned.formatted(.currency(code: "USD"))) unassigned in this month.
+                    You have \(unassigned.formatted(.currency(code: currencyCode))) unassigned in this month.
 
                     • Carry Forward: Add this money to next month's starting balance
                     • Leave Behind: Keep it in this month (you can assign it later)
@@ -547,7 +554,7 @@ struct BudgetPlanningView: View {
         try? modelContext.save()
 
         // Set up undo
-        let formattedAmount = assignedAmount.formatted(.currency(code: "USD"))
+        let formattedAmount = assignedAmount.formatted(.currency(code: currencyCode))
         undoAction = UndoAction(
             categoryChanges: [(category, previousAmount)],
             actionDescription: "Assigned \(formattedAmount) to \(category.name)"
@@ -572,7 +579,7 @@ struct BudgetPlanningView: View {
         try? modelContext.save()
 
         // Set up undo
-        let formattedAmount = assignedTotal.formatted(.currency(code: "USD"))
+        let formattedAmount = assignedTotal.formatted(.currency(code: currencyCode))
         undoAction = UndoAction(
             categoryChanges: previousAmounts,
             actionDescription: "Assigned \(formattedAmount) evenly"
@@ -650,7 +657,8 @@ struct BudgetPlanningView: View {
                     notify2DaysBefore: category.notify2DaysBefore,
                     notifyOnDueDate: category.notifyOnDueDate,
                     notifyCustomDays: category.notifyCustomDays,
-                    customDaysCount: category.customDaysCount
+                    customDaysCount: category.customDaysCount,
+                    currencyCode: currencyCode
                 )
             }
         }
@@ -691,7 +699,8 @@ struct BudgetPlanningView: View {
                     notify2DaysBefore: notify2DaysBefore,
                     notifyOnDueDate: notifyOnDueDate,
                     notifyCustomDays: notifyCustomDays,
-                    customDaysCount: customDaysCount
+                    customDaysCount: customDaysCount,
+                    currencyCode: currencyCode
                 )
             } else {
                 // Cancel notifications if due date was removed
@@ -833,7 +842,7 @@ struct CategoryRow: View {
 
                     Spacer()
 
-                    Text(category.budgetedAmount, format: .currency(code: "USD"))
+                    Text(category.budgetedAmount, format: .currency(code: currencyCode))
                         .foregroundStyle(.secondary)
 
                     Image(systemName: "chevron.right")
@@ -853,7 +862,7 @@ struct CategoryRow: View {
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Quick assign \(readyToAssign, format: .currency(code: "USD")) to \(category.name)")
+                .accessibilityLabel("Quick assign \(readyToAssign, format: .currency(code: currencyCode)) to \(category.name)")
             }
         }
     }
@@ -929,7 +938,7 @@ struct AddCategorySheet: View {
                     TextField("Category Name", text: $categoryName)
 
                     LabeledContent("Budgeted Amount") {
-                        TextField("Amount", value: $budgetedAmount, format: .currency(code: "USD"))
+                        TextField("Amount", value: $budgetedAmount, format: .currency(code: currencyCode))
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
                     }
@@ -1111,7 +1120,7 @@ struct EditCategorySheet: View {
                     }
 
                     LabeledContent("Budgeted Amount") {
-                        TextField("Amount", value: $budgetedAmount, format: .currency(code: "USD"))
+                        TextField("Amount", value: $budgetedAmount, format: .currency(code: currencyCode))
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
                     }

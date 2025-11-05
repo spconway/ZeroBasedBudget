@@ -12,12 +12,18 @@ struct TransactionLogView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
+    @Query private var settings: [AppSettings]
 
     @Binding var selectedTab: Int
 
     @State private var searchText = ""
     @State private var showingAddSheet = false
     @State private var transactionToEdit: Transaction?
+
+    // Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
+    }
 
     // Filtered transactions based on search
     private var filteredTransactions: [Transaction] {
@@ -154,7 +160,7 @@ struct TransactionRow: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(transaction.amount, format: .currency(code: "USD"))
+                    Text(transaction.amount, format: .currency(code: currencyCode))
                         .font(.body.bold())
                         .foregroundStyle(transaction.type == .income ? Color.appSuccess : Color.appError)
 
@@ -170,7 +176,7 @@ struct TransactionRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text(runningBalance, format: .currency(code: "USD"))
+                Text(runningBalance, format: .currency(code: currencyCode))
                     .font(.caption.bold())
                     .foregroundStyle(runningBalance >= 0 ? Color.appSuccess : Color.appError)
             }
@@ -217,7 +223,7 @@ struct AddTransactionSheet: View {
                 }
 
                 Section("Amount") {
-                    TextField("Amount", value: $amount, format: .currency(code: "USD"))
+                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
 
                     if amount <= 0 {
@@ -342,7 +348,7 @@ struct EditTransactionSheet: View {
                 }
 
                 Section("Amount") {
-                    TextField("Amount", value: $amount, format: .currency(code: "USD"))
+                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
 
                     if amount <= 0 {

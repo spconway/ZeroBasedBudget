@@ -10,6 +10,7 @@ import SwiftUI
 /// Reusable row component for displaying account information in a list
 struct AccountRow: View {
     let account: Account
+    var currencyCode: String = "USD"
 
     var body: some View {
         HStack {
@@ -26,7 +27,7 @@ struct AccountRow: View {
 
             Spacer()
 
-            Text(account.balance, format: .currency(code: "USD"))
+            Text(account.balance, format: .currency(code: currencyCode))
                 .font(.body.monospacedDigit())
                 .foregroundStyle(account.balance >= 0 ? Color.primary : Color.red)
         }

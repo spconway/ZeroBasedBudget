@@ -14,6 +14,7 @@ import SwiftUI
 struct ReadyToAssignBanner: View {
     let amount: Decimal
     let color: Color
+    var currencyCode: String = "USD"
 
     var body: some View {
         HStack {
@@ -22,7 +23,7 @@ struct ReadyToAssignBanner: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                Text(amount, format: .currency(code: "USD"))
+                Text(amount, format: .currency(code: currencyCode))
                     .font(.title2.bold())
                     .foregroundStyle(color)
             }

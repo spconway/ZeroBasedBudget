@@ -18,9 +18,15 @@ struct BudgetAnalysisView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
+    @Query private var settings: [AppSettings]
 
     @State private var selectedMonth = Date()
     @State private var selectedChartType: ChartType = .bar
+
+    // Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
+    }
 
     // Generate category comparisons for selected month
     private var categoryComparisons: [CategoryComparison] {
@@ -201,7 +207,7 @@ struct SummaryCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text(amount, format: .currency(code: "USD"))
+            Text(amount, format: .currency(code: currencyCode))
                 .font(isFullWidth ? .title2.bold() : .headline.bold())
                 .foregroundStyle(color)
         }
@@ -352,7 +358,7 @@ struct DonutChartSection: View {
                                 Text("Total")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                Text(totalSpending, format: .currency(code: "USD"))
+                                Text(totalSpending, format: .currency(code: currencyCode))
                                     .font(.title2.bold())
                             }
                             .position(x: frame.midX, y: frame.midY)
@@ -373,7 +379,7 @@ struct DonutChartSection: View {
                                         .font(.caption)
                                         .lineLimit(1)
 
-                                    Text(data.amount, format: .currency(code: "USD"))
+                                    Text(data.amount, format: .currency(code: currencyCode))
                                         .font(.caption2.bold())
                                         .foregroundStyle(.secondary)
                                 }
@@ -497,7 +503,7 @@ struct MetricColumn: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text(value, format: .currency(code: "USD"))
+            Text(value, format: .currency(code: currencyCode))
                 .font(.body.bold())
                 .foregroundStyle(color)
         }

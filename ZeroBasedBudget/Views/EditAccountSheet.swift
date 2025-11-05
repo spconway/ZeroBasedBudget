@@ -6,11 +6,18 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Sheet for editing an existing account
 struct EditAccountSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Query private var settings: [AppSettings]
     @Bindable var account: Account
+
+    /// Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
+    }
 
     /// Available account types
     private let accountTypes: [String?] = [
@@ -33,7 +40,7 @@ struct EditAccountSheet: View {
                 }
 
                 Section {
-                    TextField("Balance", value: $account.balance, format: .currency(code: "USD"))
+                    TextField("Balance", value: $account.balance, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                 } header: {
                     Text("Current Balance")

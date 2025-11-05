@@ -36,12 +36,26 @@ final class AppSettings {
     /// Enable notifications globally
     var notificationsEnabled: Bool
 
+    /// Default notification schedule for new categories
+    /// Options: "7-day", "2-day", "on-date", "custom"
+    var defaultNotificationSchedule: String
+
+    /// Number format preference (decimal/thousand separators)
+    /// Options: "1,234.56", "1.234,56", "1 234,56"
+    var numberFormat: String
+
+    /// Allow negative category amounts (over-budget)
+    var allowNegativeCategoryAmounts: Bool
+
     init(
         colorSchemePreference: String = "system",
         currencyCode: String = "USD",
         dateFormat: String = "MM/DD/YYYY",
         monthStartDate: Int = 1,
-        notificationsEnabled: Bool = true
+        notificationsEnabled: Bool = true,
+        defaultNotificationSchedule: String = "on-date",
+        numberFormat: String = "1,234.56",
+        allowNegativeCategoryAmounts: Bool = true
     ) {
         self.id = UUID()
         self.createdDate = Date()
@@ -51,5 +65,8 @@ final class AppSettings {
         self.dateFormat = dateFormat
         self.monthStartDate = monthStartDate
         self.notificationsEnabled = notificationsEnabled
+        self.defaultNotificationSchedule = defaultNotificationSchedule
+        self.numberFormat = numberFormat
+        self.allowNegativeCategoryAmounts = allowNegativeCategoryAmounts
     }
 }

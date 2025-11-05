@@ -15,9 +15,15 @@ import SwiftData
 struct AccountsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Account.createdDate, order: .forward) private var allAccounts: [Account]
+    @Query private var settings: [AppSettings]
 
     @State private var showingAddSheet = false
     @State private var editingAccount: Account?
+
+    /// Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
+    }
 
     /// Calculate total across all accounts
     private var totalAccountBalances: Decimal {
@@ -33,7 +39,7 @@ struct AccountsView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
-                    Text(totalAccountBalances, format: .currency(code: "USD"))
+                    Text(totalAccountBalances, format: .currency(code: currencyCode))
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
                 }
@@ -73,7 +79,7 @@ struct AccountsView: View {
                     // Accounts list
                     List {
                         ForEach(allAccounts) { account in
-                            AccountRow(account: account)
+                            AccountRow(account: account, currencyCode: currencyCode)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     editingAccount = account

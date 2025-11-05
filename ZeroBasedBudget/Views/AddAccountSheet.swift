@@ -6,15 +6,22 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Sheet for adding a new account
 struct AddAccountSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Query private var settings: [AppSettings]
     let onSave: (String, Decimal, String?) -> Void
 
     @State private var accountName = ""
     @State private var accountBalance: Decimal = 0
     @State private var accountType: String? = nil
+
+    /// Currency code from settings
+    private var currencyCode: String {
+        settings.first?.currencyCode ?? "USD"
+    }
 
     /// Available account types
     private let accountTypes: [String?] = [
@@ -37,7 +44,7 @@ struct AddAccountSheet: View {
                 }
 
                 Section {
-                    TextField("Balance", value: $accountBalance, format: .currency(code: "USD"))
+                    TextField("Balance", value: $accountBalance, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                 } header: {
                     Text("Current Balance")

@@ -48,6 +48,7 @@ class NotificationManager {
     ///   - notifyOnDueDate: Schedule notification on due date
     ///   - notifyCustomDays: Schedule notification custom days before
     ///   - customDaysCount: Number of days before for custom notification
+    ///   - currencyCode: Currency code for formatting amount (e.g., "USD", "EUR")
     func scheduleNotifications(
         for categoryID: UUID,
         categoryName: String,
@@ -57,7 +58,8 @@ class NotificationManager {
         notify2DaysBefore: Bool,
         notifyOnDueDate: Bool,
         notifyCustomDays: Bool,
-        customDaysCount: Int
+        customDaysCount: Int,
+        currencyCode: String = "USD"
     ) async {
         // Cancel any existing notifications for this category
         await cancelNotification(for: categoryID)
@@ -73,7 +75,8 @@ class NotificationManager {
                 budgetedAmount: budgetedAmount,
                 notificationDate: notificationDate,
                 dueDate: dueDate,
-                type: .sevenDaysBefore
+                type: .sevenDaysBefore,
+                currencyCode: currencyCode
             )
             notificationCount += 1
         }
@@ -86,7 +89,8 @@ class NotificationManager {
                 budgetedAmount: budgetedAmount,
                 notificationDate: notificationDate,
                 dueDate: dueDate,
-                type: .twoDaysBefore
+                type: .twoDaysBefore,
+                currencyCode: currencyCode
             )
             notificationCount += 1
         }
@@ -99,7 +103,8 @@ class NotificationManager {
                 budgetedAmount: budgetedAmount,
                 notificationDate: dueDate,
                 dueDate: dueDate,
-                type: .onDueDate
+                type: .onDueDate,
+                currencyCode: currencyCode
             )
             notificationCount += 1
         }
@@ -112,7 +117,8 @@ class NotificationManager {
                 budgetedAmount: budgetedAmount,
                 notificationDate: notificationDate,
                 dueDate: dueDate,
-                type: .customDays(customDaysCount)
+                type: .customDays(customDaysCount),
+                currencyCode: currencyCode
             )
             notificationCount += 1
         }
@@ -127,14 +133,15 @@ class NotificationManager {
         budgetedAmount: Decimal,
         notificationDate: Date,
         dueDate: Date,
-        type: NotificationType
+        type: NotificationType,
+        currencyCode: String
     ) async {
         // Create notification identifier
         let identifier = notificationIdentifier(for: categoryID, type: type)
 
         // Create notification content
         let content = UNMutableNotificationContent()
-        let formattedAmount = budgetedAmount.formatted(.currency(code: "USD"))
+        let formattedAmount = budgetedAmount.formatted(.currency(code: currencyCode))
 
         switch type {
         case .sevenDaysBefore:
