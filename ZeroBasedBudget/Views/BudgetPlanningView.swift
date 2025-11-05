@@ -13,12 +13,12 @@ struct BudgetPlanningView: View {
     @Query private var allCategories: [BudgetCategory]
     @Query private var allTransactions: [Transaction]
     @Query private var allMonthlyBudgets: [MonthlyBudget]
+    @Query private var allAccounts: [Account]  // NEW: Query accounts for YNAB-style budgeting
 
     // State for selected month/year
     @State private var selectedMonth: Date = Date()
 
-    // State for YNAB-style "Ready to Assign" - starting balance (money you have RIGHT NOW)
-    @State private var startingBalance: Decimal = 0
+    // NOTE: startingBalance removed in Enhancement 3.1 - now use Account balances instead
 
     // State for month navigation (Enhancement 3.3)
     @State private var showingMonthSwitchAlert = false
@@ -91,35 +91,29 @@ struct BudgetPlanningView: View {
     }
 
     /// Calculate Ready to Assign for a specific month
+    /// NOTE: Enhancement 3.1 - With account-based budgeting, this now uses global account balances
+    /// Previous month calculations are no longer accurate with this model
     private func calculateReadyToAssign(for month: Date) -> Decimal {
-        let budget = getOrCreateMonthlyBudget(for: month)
-        let income = BudgetCalculations.calculateTotalIncome(in: month, from: allTransactions)
-        let assigned = allCategories.reduce(0) { $0 + $1.budgetedAmount }
-        return (budget.startingBalance + income) - assigned
+        // NEW: Use account balances instead of per-month starting balance
+        return totalAccountBalances - allCategories.reduce(0) { $0 + $1.budgetedAmount }
     }
 
     /// Get previous month's Ready to Assign for comparison
+    /// NOTE: Enhancement 3.1 - DEPRECATED with account-based budgeting
+    /// Account balances are global, not per-month, so historical comparisons don't apply
     private var previousMonthComparison: (month: String, amount: Decimal)? {
-        guard let prevMonth = Calendar.current.date(byAdding: .month, value: -1, to: selectedMonth) else {
-            return nil
-        }
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM yyyy"
-        let monthName = formatter.string(from: prevMonth)
-
-        // Only show if previous month's budget exists
-        guard allMonthlyBudgets.contains(where: { normalizeToFirstOfMonth($0.month) == normalizeToFirstOfMonth(prevMonth) }) else {
-            return nil
-        }
-
-        let prevReadyToAssign = calculateReadyToAssign(for: prevMonth)
-        return (monthName, prevReadyToAssign)
+        // Disabled in Enhancement 3.1 - not compatible with account-based budgeting
+        return nil
     }
 
     // MARK: - YNAB-Style Computed Properties
 
-    // Total income from transactions for the selected month
+    // NEW: Total balance across all accounts (source of truth for YNAB budgeting)
+    private var totalAccountBalances: Decimal {
+        allAccounts.reduce(0) { $0 + $1.balance }
+    }
+
+    // Total income from transactions for the selected month (kept for reference/future use)
     private var totalIncome: Decimal {
         BudgetCalculations.calculateTotalIncome(in: selectedMonth, from: allTransactions)
     }
@@ -129,23 +123,10 @@ struct BudgetPlanningView: View {
         allCategories.reduce(0) { $0 + $1.budgetedAmount }
     }
 
-    // Ready to Assign = money available to budget (goal: $0)
-    // Formula: (Starting Balance + Income This Period) - Total Assigned
+    // NEW Ready to Assign calculation: Total accounts - Total assigned
+    // YNAB Principle: Budget only money that exists in accounts RIGHT NOW
     private var readyToAssign: Decimal {
-        (startingBalance + totalIncome) - totalAssigned
-    }
-
-    // Total available money (for progress indicator)
-    private var totalAvailableMoney: Decimal {
-        startingBalance + totalIncome
-    }
-
-    // Assignment progress (0.0 to 1.0)
-    private var assignmentProgress: Double {
-        guard totalAvailableMoney > 0 else { return 0 }
-        let progress = Double(truncating: totalAssigned as NSDecimalNumber) /
-                      Double(truncating: totalAvailableMoney as NSDecimalNumber)
-        return min(max(progress, 0), 1.0)
+        totalAccountBalances - totalAssigned
     }
 
     // Color coding for Ready to Assign
@@ -222,110 +203,15 @@ struct BudgetPlanningView: View {
                 }
                 .listRowBackground(Color.clear)
 
-                // YNAB-Style "Ready to Assign" Section
+                // NEW: Simple Ready to Assign Banner (Enhancement 3.1)
                 Section {
-                    LabeledContent("Starting Balance") {
-                        TextField("Amount", value: $startingBalance, format: .currency(code: "USD"))
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                            .onChange(of: startingBalance) { oldValue, newValue in
-                                // Auto-save starting balance changes (Enhancement 3.3)
-                                saveCurrentMonthBudget()
-                            }
-                    }
-
-                    LabeledContent("Total Income (This Period)") {
-                        Text(totalIncome, format: .currency(code: "USD"))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    LabeledContent("Total Assigned") {
-                        Text(totalAssigned, format: .currency(code: "USD"))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Divider()
-
-                    // Prominent Ready to Assign Display (Enhancement 3.1)
-                    VStack(spacing: 12) {
-                        // Large amount display
-                        VStack(spacing: 4) {
-                            Text("Ready to Assign")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-
-                            Text(readyToAssign, format: .currency(code: "USD"))
-                                .font(.system(size: 48, weight: .bold, design: .rounded))
-                                .foregroundStyle(readyToAssignColor)
-                                .minimumScaleFactor(0.5)
-                                .lineLimit(1)
-                        }
-
-                        // Progress bar
-                        VStack(alignment: .leading, spacing: 4) {
-                            GeometryReader { geometry in
-                                ZStack(alignment: .leading) {
-                                    // Background track
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(height: 16)
-
-                                    // Progress fill
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .fill(readyToAssign == 0 ? Color.green : Color.blue)
-                                        .frame(width: geometry.size.width * assignmentProgress, height: 16)
-                                        .animation(.smooth, value: assignmentProgress)
-                                }
-                            }
-                            .frame(height: 16)
-
-                            HStack {
-                                Text("\(Int(assignmentProgress * 100))% assigned")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Text(totalAvailableMoney, format: .currency(code: "USD"))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
-                        // Assign All Remaining button (Enhancement 3.2)
-                        if readyToAssign > 0 && !allCategories.isEmpty {
-                            Button(action: assignAllRemaining) {
-                                HStack {
-                                    Image(systemName: "arrow.down.circle.fill")
-                                        .font(.body)
-                                    Text("Assign All Remaining Evenly")
-                                        .fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(Color.blue)
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Assign all remaining \(readyToAssign, format: .currency(code: "USD")) evenly across all categories")
-                        }
-                    }
-                    .padding(.vertical, 8)
-                    .accessibilityLabel("Ready to Assign: \(readyToAssign, format: .currency(code: "USD")). \(readyToAssignStatus)")
-                } header: {
-                    HStack {
-                        Text("Ready to Assign")
-                        Spacer()
-                        Button(action: { showingReadyToAssignInfo = true }) {
-                            Image(systemName: "info.circle")
-                                .foregroundStyle(.blue)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                } footer: {
-                    Text("Budget only money you have RIGHT NOW. Goal: Assign all money until Ready to Assign = $0.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    ReadyToAssignBanner(
+                        amount: readyToAssign,
+                        color: readyToAssignColor
+                    )
                 }
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                .listRowBackground(Color.clear)
 
                 // Fixed Expenses Section
                 Section(header: HStack {
@@ -531,9 +417,9 @@ struct BudgetPlanningView: View {
             .navigationTitle("Budget Planning")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                // Load the current month's budget data when view appears (Enhancement 3.3)
-                let budget = getOrCreateMonthlyBudget(for: selectedMonth)
-                startingBalance = budget.startingBalance
+                // NOTE: Enhancement 3.1 - Account balances now persist globally, no need to load per-month
+                // Budget data still created for month tracking
+                _ = getOrCreateMonthlyBudget(for: selectedMonth)
             }
             .sheet(isPresented: $showingAddCategory) {
                 AddCategorySheet(categoryType: newCategoryType, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
@@ -863,9 +749,10 @@ struct BudgetPlanningView: View {
     }
 
     /// Save the current month's budget data
+    /// NOTE: Enhancement 3.1 - No longer saves startingBalance (using Account balances instead)
     private func saveCurrentMonthBudget() {
-        let budget = getOrCreateMonthlyBudget(for: selectedMonth)
-        budget.startingBalance = startingBalance
+        // Method kept for compatibility but no longer saves startingBalance
+        // Account balances are now the source of truth and persist globally
         try? modelContext.save()
     }
 
@@ -873,23 +760,19 @@ struct BudgetPlanningView: View {
     private func performMonthSwitch(to newMonth: Date) {
         selectedMonth = newMonth
 
-        // Load the new month's starting balance
-        let budget = getOrCreateMonthlyBudget(for: newMonth)
-        startingBalance = budget.startingBalance
+        // NOTE: Enhancement 3.1 - Account balances persist globally, no per-month loading needed
+        _ = getOrCreateMonthlyBudget(for: newMonth)
     }
 
     /// Carry forward unassigned money to the next month
+    /// NOTE: Enhancement 3.1 - With account-based budgeting, money automatically carries forward
+    /// since account balances persist globally across months
     private func carryForwardToNextMonth() {
         guard let newMonth = pendingMonth else { return }
 
-        // Get the new month's budget (or create it)
-        let nextMonthBudget = getOrCreateMonthlyBudget(for: newMonth)
-
-        // Add current month's unassigned money to next month's starting balance
-        nextMonthBudget.startingBalance += readyToAssign
-        try? modelContext.save()
-
-        // Now switch to the new month
+        // With account-based budgeting, unassigned money is already reflected in account balances
+        // No need to manually add to next month's starting balance
+        // Simply switch to the new month
         performMonthSwitch(to: newMonth)
 
         // Clear pending state
