@@ -156,7 +156,7 @@ struct TransactionRow: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(transaction.amount, format: .currency(code: "USD"))
                         .font(.body.bold())
-                        .foregroundStyle(transaction.type == .income ? .appSuccess : .appError)
+                        .foregroundStyle(transaction.type == .income ? Color.appSuccess : Color.appError)
 
                     Text(transaction.type.rawValue.capitalized)
                         .font(.caption)
@@ -172,7 +172,7 @@ struct TransactionRow: View {
                 Spacer()
                 Text(runningBalance, format: .currency(code: "USD"))
                     .font(.caption.bold())
-                    .foregroundStyle(runningBalance >= 0 ? .appSuccess : .appError)
+                    .foregroundStyle(runningBalance >= 0 ? Color.appSuccess : Color.appError)
             }
             .padding(.top, 4)
         }

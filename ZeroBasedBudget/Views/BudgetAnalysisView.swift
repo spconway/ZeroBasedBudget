@@ -238,7 +238,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.actual as NSDecimalNumber))
                     )
-                    .foregroundStyle(comparison.isOverBudget ? .appError : .appSuccess)
+                    .foregroundStyle(comparison.isOverBudget ? Color.appError : Color.appSuccess)
                     .position(by: .value("Type", "Actual"))
                 }
             }
@@ -474,7 +474,7 @@ struct CategoryComparisonRow: View {
 
                     Text(comparison.percentageUsedFormatted)
                         .font(.body.bold())
-                        .foregroundStyle(comparison.percentageUsed > 1.0 ? .appError : .primary)
+                        .foregroundStyle(comparison.percentageUsed > 1.0 ? Color.appError : Color.primary)
                 }
                 .frame(maxWidth: .infinity)
             }
