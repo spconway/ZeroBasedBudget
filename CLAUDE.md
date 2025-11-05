@@ -222,11 +222,18 @@ This implementation provides full YNAB-correct account-transaction integration w
 
 ### 🟢 Priority 3: New Features (v1.5.0 Planned)
 
-#### Enhancement 4.1: Date-Grouped Transaction List
+#### Enhancement 4.1: Date-Grouped Transaction List ✅ COMPLETED
+
+**Status**: ✅ **COMPLETED** - Implemented November 5, 2025
+**Commit**: Pending
 
 **Objective**: Improve transaction readability by grouping transactions into date sections with clear visual separation.
 
-**Current State**: All transactions displayed in flat list sorted by date (newest first).
+**Implementation Summary**:
+- ✅ Transactions grouped by date using `Dictionary(grouping:)`
+- ✅ Section headers with relative date formatting ("Today", "Yesterday", "3 days ago")
+- ✅ Preserves all existing functionality (search, edit, delete, swipe actions)
+- ✅ Clean visual hierarchy with date sections
 
 **Proposed Design**:
 ```
@@ -532,25 +539,26 @@ private func deleteTransaction(_ transaction: Transaction) {
 
 ## Active Development
 
-**Current Focus**: 🐛 v1.5.0 Critical Bug Fixes - Ready to Assign Double-Counting Fixed!
-**Status**: Ready to commit bug fixes
+**Current Focus**: 🎉 v1.5.0 Development COMPLETE - Ready for Testing!
+**Status**: Ready to commit final enhancement and test in simulator
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting (startingBalance field added)
-2. [2025-11-05] ✅ **Bug 1.1 RESOLVED**: Full account-transaction integration (Option 1) - completes Enhancement 4.2
-3. [2025-11-05] 📋 **v1.5.0 Planning**: Identified bugs and enhancements for v1.5.0
-4. [2025-11-05] ✅ **v1.4.0 RELEASED**: All three enhancements complete (Accounts, Dark Mode, Settings)
-5. [2025-11-05] ✅ **Completed Enhancement 3.3**: Full dark mode support with manual toggle
+1. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list with relative dates
+2. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting (commit: 7154b66)
+3. [2025-11-05] ✅ **Bug 1.1 RESOLVED**: Full account-transaction integration (commit: c16fa6c) + Enhancement 4.2
+4. [2025-11-05] 📋 **v1.5.0 Planning**: Identified bugs and enhancements for v1.5.0
+5. [2025-11-05] ✅ **v1.4.0 RELEASED**: All three enhancements complete (Accounts, Dark Mode, Settings)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Bug 1.1 COMPLETE** ✅ - Account-transaction integration (commit: c16fa6c)
-2. **Bug 1.2 COMPLETE** ✅ - Ready to Assign double-counting fix (ready to commit)
-3. **Enhancement 4.2 COMPLETE** ✅ - Completed as part of Bug 1.1 resolution
-4. **Remaining Work**: Enhancement 4.1 (Date-Grouped Transaction List) - estimated 2-3 hours
-5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-6. Next Steps: Commit Bug 1.2 fixes → Test in simulator → Implement Enhancement 4.1 → Release v1.5.0
+1. **v1.5.0 ALL FEATURES COMPLETE** ✅ 🎉
+2. **Bug 1.1 COMPLETE** ✅ - Account-transaction integration (commit: c16fa6c)
+3. **Bug 1.2 COMPLETE** ✅ - Ready to Assign double-counting fix (commit: 7154b66)
+4. **Enhancement 4.1 COMPLETE** ✅ - Date-grouped transaction list (ready to commit)
+5. **Enhancement 4.2 COMPLETE** ✅ - Completed as part of Bug 1.1 resolution
+6. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+7. Next Steps: Commit Enhancement 4.1 → Test thoroughly in simulator → Release v1.5.0
 
 ## Git Commit Strategy
 

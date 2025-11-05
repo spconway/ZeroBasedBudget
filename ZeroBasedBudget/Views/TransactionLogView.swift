@@ -55,9 +55,40 @@ struct TransactionLogView: View {
         }
     }
 
+    // Group transactions by date (newest first)
+    private var groupedTransactions: [(Date, [(Transaction, Decimal)])] {
+        let grouped = Dictionary(grouping: transactionsWithBalance.reversed()) { transaction in
+            Calendar.current.startOfDay(for: transaction.0.date)
+        }
+        return grouped.sorted { $0.key > $1.key }  // Newest dates first
+    }
+
     // Check if there are any income transactions to show budget reminder
     private var hasIncomeTransactions: Bool {
         allTransactions.contains { $0.type == .income }
+    }
+
+    // Format date with relative labels (Today, Yesterday, etc.)
+    private func formatSectionDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let transactionDate = calendar.startOfDay(for: date)
+
+        if transactionDate == today {
+            return "Today"
+        } else if let yesterday = calendar.date(byAdding: .day, value: -1, to: today),
+                  transactionDate == yesterday {
+            return "Yesterday"
+        } else if let daysAgo = calendar.dateComponents([.day], from: transactionDate, to: today).day,
+                  daysAgo < 7 {
+            return "\(daysAgo) days ago"
+        } else {
+            // Standard date format for older transactions
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .none
+            return formatter.string(from: date)
+        }
     }
 
     var body: some View {
@@ -88,19 +119,27 @@ struct TransactionLogView: View {
                     }
                 }
 
-                // Display transactions in reverse chronological order with running balance
-                ForEach(transactionsWithBalance.reversed(), id: \.0.id) { (transaction, balance) in
-                    TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode)
-                        .onTapGesture {
-                            transactionToEdit = transaction
+                // Display transactions grouped by date
+                ForEach(groupedTransactions, id: \.0) { date, transactions in
+                    Section {
+                        ForEach(transactions, id: \.0.id) { transaction, balance in
+                            TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode)
+                                .onTapGesture {
+                                    transactionToEdit = transaction
+                                }
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        deleteTransaction(transaction)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                         }
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                deleteTransaction(transaction)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
+                    } header: {
+                        Text(formatSectionDate(date))
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                    }
                 }
             }
             .navigationTitle("Transactions")
