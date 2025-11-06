@@ -208,6 +208,87 @@ final class ThemeManagerTests: XCTestCase {
         XCTAssertEqual(themeType.description, "Calm, professional fintech")
     }
 
+    // MARK: - Individual Theme Tests
+
+    func testNeonLedgerThemeProperties() {
+        // When: Creating Neon Ledger theme
+        let theme = NeonLedgerTheme()
+
+        // Then: Should have correct properties
+        XCTAssertEqual(theme.name, "Neon Ledger")
+        XCTAssertEqual(theme.identifier, "neonLedger")
+        XCTAssertEqual(theme.description, "Cyberpunk with neon accents")
+        XCTAssertNotNil(theme.colors)
+        XCTAssertNotNil(theme.typography)
+        XCTAssertNotNil(theme.spacing)
+        XCTAssertNotNil(theme.radius)
+    }
+
+    func testMidnightMintThemeProperties() {
+        // When: Creating Midnight Mint theme
+        let theme = MidnightMintTheme()
+
+        // Then: Should have correct properties
+        XCTAssertEqual(theme.name, "Midnight Mint")
+        XCTAssertEqual(theme.identifier, "midnightMint")
+        XCTAssertEqual(theme.description, "Calm, professional fintech")
+        XCTAssertNotNil(theme.colors)
+        XCTAssertNotNil(theme.typography)
+        XCTAssertNotNil(theme.spacing)
+        XCTAssertNotNil(theme.radius)
+    }
+
+    func testUltravioletSlateThemeProperties() {
+        // When: Creating Ultraviolet Slate theme
+        let theme = UltravioletSlateTheme()
+
+        // Then: Should have correct properties
+        XCTAssertEqual(theme.name, "Ultraviolet Slate")
+        XCTAssertEqual(theme.identifier, "ultravioletSlate")
+        XCTAssertEqual(theme.description, "Bold, energetic design")
+        XCTAssertNotNil(theme.colors)
+        XCTAssertNotNil(theme.typography)
+        XCTAssertNotNil(theme.spacing)
+        XCTAssertNotNil(theme.radius)
+    }
+
+    func testThemeRegistryContainsAllThemes() {
+        // When: Accessing available themes
+        let themes = ThemeManager.availableThemes
+
+        // Then: Should contain all three themes
+        XCTAssertEqual(themes.count, 3)
+        XCTAssertTrue(themes.contains { $0.identifier == "neonLedger" })
+        XCTAssertTrue(themes.contains { $0.identifier == "midnightMint" })
+        XCTAssertTrue(themes.contains { $0.identifier == "ultravioletSlate" })
+    }
+
+    func testThemeTypeAllCasesContainsAllThemes() {
+        // When: Accessing all theme types
+        let types = ThemeType.allCases
+
+        // Then: Should contain all three themes
+        XCTAssertEqual(types.count, 3)
+        XCTAssertTrue(types.contains(.neonLedger))
+        XCTAssertTrue(types.contains(.midnightMint))
+        XCTAssertTrue(types.contains(.ultravioletSlate))
+    }
+
+    func testThemeManagerCanSwitchBetweenAllThemes() {
+        // Given: ThemeManager with default theme
+        let manager = ThemeManager()
+
+        // When: Switching between all themes
+        manager.setTheme(identifier: "neonLedger")
+        XCTAssertEqual(manager.currentTheme.identifier, "neonLedger")
+
+        manager.setTheme(identifier: "midnightMint")
+        XCTAssertEqual(manager.currentTheme.identifier, "midnightMint")
+
+        manager.setTheme(identifier: "ultravioletSlate")
+        XCTAssertEqual(manager.currentTheme.identifier, "ultravioletSlate")
+    }
+
     // MARK: - Color Hex Extension Tests
 
     func testColorHexInit6Digits() {

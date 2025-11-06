@@ -32,10 +32,9 @@ final class ThemeManager {
 
     /// All available themes
     static let availableThemes: [Theme] = [
-        MidnightMintTheme()
-        // Future themes will be added here:
-        // NeonLedgerTheme(),
-        // UltravioletSlateTheme()
+        NeonLedgerTheme(),
+        MidnightMintTheme(),
+        UltravioletSlateTheme()
     ]
 
     /// Get theme by identifier
@@ -106,18 +105,21 @@ final class ThemeManager {
 
 /// Enum for type-safe theme selection in UI
 enum ThemeType: String, CaseIterable, Identifiable {
+    case neonLedger = "neonLedger"
     case midnightMint = "midnightMint"
-    // Future themes:
-    // case neonLedger = "neonLedger"
-    // case ultravioletSlate = "ultravioletSlate"
+    case ultravioletSlate = "ultravioletSlate"
 
     var id: String { rawValue }
 
     /// Get Theme instance for this type
     var theme: Theme {
         switch self {
+        case .neonLedger:
+            return NeonLedgerTheme()
         case .midnightMint:
             return MidnightMintTheme()
+        case .ultravioletSlate:
+            return UltravioletSlateTheme()
         }
     }
 
