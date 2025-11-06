@@ -187,38 +187,7 @@ struct BudgetPlanningView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Month Indicator Section
-                Section {
-                    HStack {
-                        Button(action: previousMonth) {
-                            Image(systemName: "chevron.left")
-                                .font(.title3)
-                                .iconAccent()
-                        }
-                        .buttonStyle(.plain)
-
-                        Spacer()
-
-                        Text(monthYearText)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(theme.colors.textPrimary)
-
-                        Spacer()
-
-                        Button(action: nextMonth) {
-                            Image(systemName: "chevron.right")
-                                .font(.title3)
-                                .iconAccent()
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.vertical, 8)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
-                }
-                .listRowBackground(theme.colors.surface)
-
-                // NEW: Simple Ready to Assign Banner (Enhancement 3.1)
+                // Ready to Assign Banner (now first element after nav bar)
                 Section {
                     ReadyToAssignBanner(
                         amount: readyToAssign,
@@ -453,10 +422,37 @@ struct BudgetPlanningView: View {
             .scrollContentBackground(.hidden)
             .background(theme.colors.background)
             .listSectionSpacing(0)
-            .navigationTitle("Budget Planning")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(theme.colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                // Previous month button (leading)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: previousMonth) {
+                        Image(systemName: "chevron.left")
+                            .font(.headline)
+                            .iconAccent()
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                }
+
+                // Month/Year display (center)
+                ToolbarItem(placement: .principal) {
+                    Text(monthYearText)
+                        .font(theme.typography.headline)
+                        .foregroundStyle(theme.colors.primary)
+                }
+
+                // Next month button (trailing)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: nextMonth) {
+                        Image(systemName: "chevron.right")
+                            .font(.headline)
+                            .iconAccent()
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                }
+            }
             .onAppear {
                 // NOTE: Enhancement 3.1 - Account balances now persist globally, no need to load per-month
                 // Budget data still created for month tracking
