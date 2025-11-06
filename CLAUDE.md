@@ -105,22 +105,25 @@ ZeroBasedBudget/
 - ✅ Enhancement 7.1: Replaced relative transaction dates with absolute dates ("Nov 5" instead of "2 days ago")
 - ✅ Enhancement 7.2: Added category spending progress indicators with color-coded visual feedback
 - ✅ Enhancement 8.1: Theme management infrastructure with SwiftUI Environment integration
+- ✅ Enhancement 8.2: Implemented three visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate)
 - ✅ Added: formatTransactionSectionDate() utility function with locale support
 - ✅ Added: CategoryProgressBar reusable component with green/yellow/red color coding
 - ✅ Added: Progress bars to all category cards in BudgetPlanningView
 - ✅ Added: Theme protocol defining complete theme contract (colors, typography, spacing, radius)
 - ✅ Added: ThemeManager @Observable class for centralized theme state management
 - ✅ Added: ThemeEnvironment for SwiftUI @Environment(\.theme) integration
-- ✅ Added: MidnightMintTheme as default theme implementation (from design tokens)
+- ✅ Added: NeonLedgerTheme (cyberpunk with electric teal and magenta accents)
+- ✅ Added: MidnightMintTheme as default theme (calm fintech with seafoam mint accents)
+- ✅ Added: UltravioletSlateTheme (bold design with deep violet and cyan accents)
 - ✅ Added: ThemePicker UI component for Settings with color previews
 - ✅ Added: Visual Theme section in Settings view
 - ✅ Added: AppSettings.selectedTheme for theme persistence
 - ✅ Added: RootView for theme injection at app level
-- ✅ Added: 20 unit tests for ThemeManager (initialization, switching, persistence, registry)
+- ✅ Added: 26 unit tests for themes (20 infrastructure + 6 theme-specific tests)
 - ✅ Added: 4 unit tests for date formatting (current year, different year, year boundary edge cases)
 - ✅ Improved: Transaction list temporal clarity and scannability
 - ✅ Improved: Category spending visibility with at-a-glance progress indicators
-- ✅ Infrastructure: Foundation ready for Enhancement 8.2 (three visual themes implementation)
+- ✅ Complete: Full theme system with three selectable visual themes
 
 **v1.6.0:**
 - ✅ Added: Comprehensive unit testing suite (110 tests across 10 files)
@@ -260,12 +263,45 @@ ZeroBasedBudget/
 
 #### Enhancement 8.2: Implement Three Visual Themes from Design Assets
 
-**Status**: 🔄 **PENDING**
+**Status**: ✅ **COMPLETE** (November 6, 2025)
 **Version**: v1.7.0 (Theme System Implementation)
-**Priority**: High (Completes theme system)
-**Planned Start**: After Enhancement 8.1
+**Commit**: `df4adf9` - feat: implement three visual themes (Enhancement 8.2)
 
-**Objective**: Implement the three complete visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate) from the `Designs/` folder, making them selectable in the Settings tab. Each theme provides a distinct aesthetic while maintaining YNAB principles and WCAG AA accessibility standards.
+**Completed**: Implemented complete three-theme system with Neon Ledger, Midnight Mint, and Ultraviolet Slate. All themes use design tokens from Designs/ folder and are selectable in Settings.
+
+**Implementation Summary**:
+- ✅ Created NeonLedgerTheme.swift (cyberpunk with electric teal and magenta accents)
+- ✅ Created UltravioletSlateTheme.swift (bold design with deep violet and cyan accents)
+- ✅ MidnightMintTheme.swift already exists as default theme
+- ✅ Updated ThemeManager.availableThemes registry with all 3 themes
+- ✅ Updated ThemeType enum with all 3 theme cases (neonLedger, midnightMint, ultravioletSlate)
+- ✅ Theme picker now displays all three themes with color previews
+- ✅ Added 6 new unit tests for theme properties and switching
+- ✅ All themes WCAG AA compliant (verified in design specifications)
+- ✅ Theme switching instant with smooth animations
+- ✅ Theme persistence works across all three themes
+- ✅ YNAB visual hierarchy maintained in all themes
+
+**Themes Implemented**:
+1. **Neon Ledger**: Cyberpunk financial ledger with electric teal (#00E5CC) and magenta (#FF006E) accents on pure black base
+2. **Midnight Mint** (Default): Calm, professional fintech with seafoam mint (#3BFFB4) accents on blue-tinted black base
+3. **Ultraviolet Slate**: Bold, energetic design with deep violet (#6366F1) and vivid cyan (#22D3EE) accents on charcoal base
+
+**Files Created**:
+- ZeroBasedBudget/Utilities/Theme/NeonLedgerTheme.swift (94 lines)
+- ZeroBasedBudget/Utilities/Theme/UltravioletSlateTheme.swift (94 lines)
+
+**Files Modified**:
+- ZeroBasedBudget/Utilities/Theme/ThemeManager.swift (added all themes to registry, updated ThemeType enum)
+- ZeroBasedBudgetTests/Utilities/ThemeManagerTests.swift (added 6 theme-specific tests)
+
+**Total Test Suite**: 140 tests (114 original + 26 theme tests)
+
+**Theme system complete. All three visual themes available for user selection in Settings > Visual Theme.**
+
+---
+
+#### Enhancement 8.2: ARCHIVED SPECIFICATION (See Above for Completion Summary)
 
 **YNAB Alignment Check**: ✅ **Compliant** - All three themes maintain prominent "Ready to Assign" banner, proper visual hierarchy, and YNAB-first design principles. Color coding for income/expenses preserved across all themes.
 
@@ -537,23 +573,24 @@ enum ThemeType {
 ## Active Development
 
 **Current Focus**: v1.7.0 Development - UX Improvements & Theme Management
-**Status**: v1.7.0 in progress; Enhancements 7.1, 7.2, 8.1 complete; 134 unit tests passing (114 existing + 20 theme tests)
+**Status**: v1.7.0 near completion; Enhancements 7.1, 7.2, 8.1, 8.2 complete; 140 unit tests passing (114 original + 26 theme tests)
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-06] ✅ **Enhancement 8.1 COMPLETE**: Theme management infrastructure with SwiftUI Environment integration (v1.7.0)
-2. [2025-11-06] ✅ **Enhancement 7.2 COMPLETE**: Category spending progress indicators (v1.7.0)
-3. [2025-11-06] ✅ **Enhancement 7.1 COMPLETE**: Absolute transaction dates with locale support (v1.7.0)
-4. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
-5. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
+1. [2025-11-06] ✅ **Enhancement 8.2 COMPLETE**: Three visual themes implemented (Neon Ledger, Midnight Mint, Ultraviolet Slate) - v1.7.0
+2. [2025-11-06] ✅ **Enhancement 8.1 COMPLETE**: Theme management infrastructure with SwiftUI Environment integration (v1.7.0)
+3. [2025-11-06] ✅ **Enhancement 7.2 COMPLETE**: Category spending progress indicators (v1.7.0)
+4. [2025-11-06] ✅ **Enhancement 7.1 COMPLETE**: Absolute transaction dates with locale support (v1.7.0)
+5. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Test Suite Status**: ✅ All 134 tests passing (114 existing + 20 theme tests, verified November 6, 2025)
-2. **Theme Infrastructure**: ✅ Theme management system complete (Enhancement 8.1)
-3. **Design Assets**: ✅ Three complete visual themes available in Designs/ folder
-4. **Current Priority**: Continue v1.7.0 enhancements - Next: Enhancement 8.2 (Implement Three Visual Themes)
-5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+1. **Test Suite Status**: ✅ All 140 tests passing (114 original + 26 theme tests, verified November 6, 2025)
+2. **Theme System**: ✅ Complete with three visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate)
+3. **Theme Infrastructure**: ✅ Theme management system complete (Enhancement 8.1)
+4. **Theme Implementation**: ✅ All three visual themes implemented and selectable (Enhancement 8.2)
+5. **Current Priority**: v1.7.0 nearly complete - consider releasing or continuing with additional enhancements
+6. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy
 
