@@ -647,7 +647,7 @@ test: add SwiftData persistence tests (8 tests)
    - ✅ Domain 4: Edge Case Tests (10 tests) - Boundary conditions, Decimal precision, date handling
    - ✅ Domain 5: Persistence Tests (8 tests) - SwiftData CRUD operations, relationships
 2. **RECOMMENDED**: Run tests in Xcode to verify all 110 tests pass
-   - Command: `Cmd+U` in Xcode OR `xcodebuild test -scheme ZeroBasedBudget -destination 'platform=iOS Simulator,name=iPhone 16'`
+   - Command: `Cmd+U` in Xcode OR `xcodebuild test -scheme ZeroBasedBudget -destination 'platform=iOS Simulator,name=iPhone 17'`
    - Expected: All tests should pass (tests use in-memory SwiftData for isolation)
 3. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 4. **Next Steps Options**:
