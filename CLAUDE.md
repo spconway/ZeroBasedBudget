@@ -152,509 +152,821 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🟢 Priority 3: Testing & Quality Assurance (v1.6.0 Planned)
+### 🟡 Priority 2: UX Improvements (v1.7.0 Planned)
 
-#### Enhancement 5.1: Add XCTest Framework for Unit Testing
+#### Enhancement 7.1: Replace Relative Transaction Dates with Absolute Dates
 
-**Status**: ✅ **COMPLETE**
-**Version**: v1.6.0 (Testing Infrastructure)
-**Priority**: High (Foundation for quality assurance)
-**Completed**: November 5, 2025
+**Status**: 🔄 **PENDING**
+**Version**: v1.7.0 (UX Polish)
+**Priority**: Medium (User experience improvement)
+**Planned Start**: Next available session
 
-**Objective**: Establish comprehensive unit testing infrastructure using XCTest to ensure code quality, prevent regressions, and validate YNAB methodology compliance.
+**Objective**: Replace relative date labels ("Today", "Yesterday", "2 days ago") with absolute date formats ("Nov 5, 2025") in transaction list section headers to provide clearer temporal context and improve scannability.
 
-**YNAB Alignment Check**: ✅ **Critical** - Tests will validate YNAB calculations (Ready to Assign, account balances, transaction flows) to prevent methodology violations.
+**YNAB Alignment Check**: ✅ **Neutral** - Does not affect YNAB methodology; purely a UI presentation change.
+
+**Current Behavior**:
+- TransactionLogView groups transactions by date
+- Section headers use relative date strings: "Today", "Yesterday", "2 days ago", "3 days ago", etc.
+- Created in v1.5.0 as part of Enhancement 4.1
+
+**Proposed Behavior**:
+- Section headers use absolute date format: "Nov 5, 2025", "Nov 4, 2025", "Nov 3, 2025", etc.
+- Format adapts to locale settings (US: "Nov 5, 2025", Europe: "5 Nov 2025")
+- Current year can be omitted for brevity if within same calendar year
+- Maintains date grouping logic (transactions grouped by calendar day)
 
 **Implementation Approach**:
 
-**Phase 1: Test Target Setup**
-1. Add XCTest test target to Xcode project
-2. Configure test target with access to main app code
-3. Set up test bundle structure following iOS best practices
-4. Configure SwiftData in-memory test container for isolated testing
+**Phase 1: Create Date Formatting Utility**
+1. Add new date formatter to `BudgetCalculations.swift` or create `DateFormatters.swift`
+2. Implement `formatTransactionSectionDate(_ date: Date) -> String` function
+3. Support multiple format options:
+   - Full: "November 5, 2025"
+   - Medium (recommended): "Nov 5, 2025"
+   - Short: "Nov 5" (for current year only)
+4. Respect user's locale and calendar settings
+5. Add unit tests for date formatting edge cases
 
-**Phase 2: Test Infrastructure**
-1. Create base test classes with common setup/teardown
-2. Implement test data factory helpers for models
-3. Set up mock ModelContext for SwiftData testing
-4. Create test fixtures with known data scenarios
-
-**Phase 3: CI/CD Integration** (Future)
-1. Configure Xcode test schemes for automated testing
-2. Set up GitHub Actions for PR test validation (optional)
-3. Add test coverage reporting
-
-**Files to Create**:
-- `ZeroBasedBudgetTests/` (New test target directory)
-  - `ZeroBasedBudgetTests.swift` - Main test file with infrastructure
-  - `Helpers/TestDataFactory.swift` - Test data generation helpers
-  - `Helpers/TestHelpers.swift` - Common test utilities
-  - `Models/` - Model test files (see Enhancement 5.2)
-  - `Utilities/` - Utility test files (see Enhancement 5.2)
-  - `YNAB/` - YNAB methodology test files (see Enhancement 5.2)
+**Phase 2: Update TransactionLogView**
+1. Locate section header rendering code in `TransactionLogView.swift`
+2. Replace relative date calculation with absolute date formatter
+3. Maintain existing grouping logic (group by calendar day)
+4. Test with transactions spanning multiple months and years
+5. Verify proper sorting (newest to oldest)
 
 **Files to Modify**:
-- `ZeroBasedBudget.xcodeproj` - Add test target configuration
-- `ZeroBasedBudgetApp.swift` - Add test-friendly ModelContainer initialization
+- `ZeroBasedBudget/Views/TransactionLogView.swift` - Update section header date display
+- `ZeroBasedBudget/Utilities/BudgetCalculations.swift` (or new `DateFormatters.swift`) - Add date formatting function
+
+**Files to Create** (optional):
+- `ZeroBasedBudget/Utilities/DateFormatters.swift` - Centralized date formatting utilities (if not added to BudgetCalculations)
+- `ZeroBasedBudgetTests/Utilities/DateFormattersTests.swift` - Unit tests for date formatting
 
 **Design Considerations**:
-1. **Test Isolation**: Use in-memory SwiftData container to prevent test pollution
-2. **Decimal Testing**: Create custom XCTest assertions for Decimal equality with precision
-3. **Date Testing**: Use fixed dates in tests to avoid time-dependent failures
-4. **YNAB Validation**: Every financial calculation test must validate YNAB methodology
-5. **Test Naming**: Use descriptive names following pattern: `test_whatIsBeingTested_whenCondition_thenExpectedResult()`
-6. **Test Organization**: Group tests by domain (Models, Utilities, YNAB, Edge Cases)
-7. **Performance Testing**: Include performance tests for transaction-heavy operations
-8. **Accessibility Testing**: Validate accessibility labels and traits (future)
+1. **Locale Awareness**: Use `Date.FormatStyle` for automatic locale support
+2. **Year Display**: Omit year for dates in current calendar year to reduce visual clutter
+3. **Consistency**: Use same format throughout app (consider using in other views if applicable)
+4. **Performance**: Cache DateFormatter instances to avoid repeated creation
+5. **Accessibility**: Ensure VoiceOver announces dates naturally
+6. **Testing**: Test with different locales (US, UK, Europe, Asia) and calendar systems
 
-**Test Infrastructure Code Example**:
+**Code Example**:
 ```swift
-// ZeroBasedBudgetTests.swift
-import XCTest
-import SwiftData
-@testable import ZeroBasedBudget
+// In DateFormatters.swift or BudgetCalculations.swift
+extension Date {
+    /// Format date for transaction section headers (e.g., "Nov 5, 2025")
+    func transactionSectionDateString() -> String {
+        let calendar = Calendar.current
+        let now = Date()
 
-class ZeroBasedBudgetTests: XCTestCase {
-    var modelContainer: ModelContainer!
-    var modelContext: ModelContext!
+        // Check if date is in current year
+        let dateYear = calendar.component(.year, from: self)
+        let currentYear = calendar.component(.year, from: now)
 
-    override func setUpWithError() throws {
-        // Create in-memory container for isolated testing
-        let schema = Schema([
-            Account.self,
-            Transaction.self,
-            BudgetCategory.self,
-            MonthlyBudget.self,
-            AppSettings.self
-        ])
-
-        let configuration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: true,  // Key: isolated test data
-            cloudKitDatabase: .none
-        )
-
-        modelContainer = try ModelContainer(
-            for: schema,
-            configurations: [configuration]
-        )
-
-        modelContext = ModelContext(modelContainer)
-    }
-
-    override func tearDownWithError() throws {
-        modelContainer = nil
-        modelContext = nil
-    }
-
-    // MARK: - Custom Assertions
-
-    /// Assert Decimal values are equal with 2 decimal place precision
-    func assertDecimalEqual(
-        _ actual: Decimal,
-        _ expected: Decimal,
-        accuracy: Decimal = 0.01,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        let difference = abs(actual - expected)
-        XCTAssertLessThanOrEqual(
-            difference,
-            accuracy,
-            "Expected \(expected), got \(actual) (difference: \(difference))",
-            file: file,
-            line: line
-        )
+        if dateYear == currentYear {
+            // Omit year for current year: "Nov 5"
+            return self.formatted(.dateTime.month(.abbreviated).day())
+        } else {
+            // Include year for other years: "Nov 5, 2025"
+            return self.formatted(.dateTime.month(.abbreviated).day().year())
+        }
     }
 }
 
-// TestDataFactory.swift
-enum TestDataFactory {
-    /// Create test account with default values
-    static func createAccount(
-        name: String = "Test Account",
-        balance: Decimal = 1000,
-        accountType: String? = "Checking"
-    ) -> Account {
-        Account(name: name, balance: balance, accountType: accountType)
-    }
-
-    /// Create test transaction with default values
-    static func createTransaction(
-        date: Date = Date(),
-        amount: Decimal = 50,
-        description: String = "Test Transaction",
-        type: TransactionType = .expense,
-        category: BudgetCategory? = nil,
-        account: Account? = nil
-    ) -> Transaction {
-        Transaction(
-            date: date,
-            amount: amount,
-            description: description,
-            type: type,
-            category: category,
-            account: account
-        )
-    }
-
-    /// Create test budget category with default values
-    static func createCategory(
-        name: String = "Test Category",
-        budgetedAmount: Decimal = 200,
-        categoryType: String = "Variable",
-        colorHex: String = "#FF0000"
-    ) -> BudgetCategory {
-        BudgetCategory(
-            name: name,
-            budgetedAmount: budgetedAmount,
-            categoryType: categoryType,
-            colorHex: colorHex
-        )
+// In TransactionLogView.swift
+Section(header: Text(date.transactionSectionDateString())) {
+    ForEach(transactionsForDate) { transaction in
+        TransactionRow(transaction: transaction)
     }
 }
 ```
 
 **Testing Checklist**:
-- [x] Test target builds successfully
-- [x] Tests can import main app code
-- [x] In-memory SwiftData container works correctly
-- [x] Test data factories create valid models
-- [x] Custom Decimal assertions work correctly
-- [x] Tests run in isolation (no cross-contamination)
-- [x] All tests pass on fresh project clone (2 sample tests: 0.041s total)
-- [x] Test execution time is reasonable (< 30 seconds for full suite)
+- [ ] Date formatter handles current year (omits year)
+- [ ] Date formatter handles past years (includes year)
+- [ ] Date formatter handles future years (includes year)
+- [ ] Format respects user's locale settings
+- [ ] Section headers display correctly for all grouped dates
+- [ ] No performance degradation with large transaction lists
+- [ ] VoiceOver announces dates naturally
+- [ ] Tested with multiple locales (US, UK, Germany, Japan)
+- [ ] Year boundary transitions work correctly (Dec 31 → Jan 1)
+- [ ] Month boundary transitions work correctly
 
 **Acceptance Criteria**:
-- XCTest target added to project and builds successfully
-- Test infrastructure supports in-memory SwiftData testing
-- Test data factories simplify test case creation
-- Custom Decimal assertion helpers available for financial tests
-- All created tests pass without errors
-- Tests run in complete isolation (no shared state between tests)
-- Test naming convention documented and followed
-- Foundation ready for comprehensive test suite (Enhancement 5.2)
+- Transaction section headers display absolute dates (e.g., "Nov 5, 2025")
+- Year is omitted for dates in current calendar year (e.g., "Nov 5")
+- Format adapts to user's locale and calendar settings
+- No change to transaction grouping logic (still grouped by calendar day)
+- VoiceOver accessibility maintained
+- No performance regression with large transaction lists
+- All existing tests still pass
+- New unit tests added for date formatting utility
 
-**Estimated Complexity**: Medium (4-6 hours - Xcode configuration + infrastructure code)
+**Estimated Complexity**: Low (1-2 hours - simple date formatting change)
+
+**Dependencies**: None (independent UX improvement)
+
+---
+
+#### Enhancement 7.2: Add Category Spending Progress Indicators
+
+**Status**: 🔄 **PENDING**
+**Version**: v1.7.0 (UX Enhancement)
+**Priority**: Medium (Visual feedback improvement)
+**Planned Start**: After Enhancement 7.1
+
+**Objective**: Add visual progress bars to budget category cards showing spending progress against budgeted amounts, providing immediate visual feedback on category status and helping users quickly identify overspending or available funds.
+
+**YNAB Alignment Check**: ✅ **Compliant** - Reinforces YNAB principle of tracking spending against budgeted amounts. Progress bars show how much of the allocated money has been spent, encouraging mindful spending awareness.
+
+**Current Behavior**:
+- Category cards show budgeted amount and text description of spending
+- Users must read text to understand spending status
+- No immediate visual indicator of progress toward budget limit
+
+**Proposed Behavior**:
+- Each category card displays a horizontal progress bar
+- Progress bar fills based on: `actualSpent / budgetedAmount`
+- Color coding indicates status:
+  - **Green** (0-75%): Healthy spending, within budget
+  - **Yellow** (75-100%): Approaching limit, caution advised
+  - **Red** (>100%): Overspent, exceeds budget
+- Progress bar animates smoothly when transactions are added
+- Maintains existing category card layout and information
+
+**Implementation Approach**:
+
+**Phase 1: Create Progress Bar Component**
+1. Create reusable `CategoryProgressBar` SwiftUI view component
+2. Accept parameters: `spent: Decimal`, `budgeted: Decimal`
+3. Calculate percentage: `Double(truncating: spent / budgeted as NSNumber)`
+4. Implement color logic based on percentage thresholds
+5. Add smooth animation using `.animation(.spring())`
+6. Handle edge cases:
+   - `budgeted == 0` → Show empty bar or hide component
+   - `spent < 0` (refunds) → Show negative indicator or clamp to 0
+   - `spent > budgeted` → Fill 100% and show overflow indicator
+
+**Phase 2: Integrate into BudgetPlanningView**
+1. Modify category card in `BudgetPlanningView.swift`
+2. Add `CategoryProgressBar` below budgeted amount text
+3. Pass `actualSpent` and `budgetedAmount` from category
+4. Use existing `BudgetCalculations.calculateActualSpending()` function
+5. Ensure proper spacing and alignment within card
+6. Test with various spending scenarios
+
+**Phase 3: Refinements**
+1. Add haptic feedback when category reaches 100%
+2. Consider adding percentage label (e.g., "65%") for accessibility
+3. Ensure VoiceOver announces progress status
+4. Test with Dynamic Type (large text sizes)
+
+**Files to Create**:
+- `ZeroBasedBudget/Views/Components/CategoryProgressBar.swift` - Reusable progress bar component
+- `ZeroBasedBudgetTests/Views/CategoryProgressBarTests.swift` - Unit tests for progress bar logic (optional)
+
+**Files to Modify**:
+- `ZeroBasedBudget/Views/BudgetPlanningView.swift` - Integrate progress bar into category cards
+- `ZeroBasedBudget/Utilities/AppColors.swift` - Add progress bar color definitions (if not using existing semantic colors)
+
+**Design Considerations**:
+1. **Visual Hierarchy**: Progress bar should be subtle, not dominate the card
+2. **Color Accessibility**: Use WCAG AA compliant colors for progress bar
+3. **Animation**: Use spring animation for smooth, natural feel
+4. **Edge Cases**: Handle $0 budgeted categories gracefully (YNAB allows this)
+5. **Performance**: Ensure progress bar doesn't cause lag with many categories
+6. **Consistency**: Match existing app visual style and theme
+7. **YNAB Principle**: Progress shows spending, not assignment (spending ≠ budgeting)
+
+**Code Example**:
+```swift
+// CategoryProgressBar.swift
+struct CategoryProgressBar: View {
+    let spent: Decimal
+    let budgeted: Decimal
+
+    private var percentage: Double {
+        guard budgeted > 0 else { return 0 }
+        let value = Double(truncating: (spent / budgeted) as NSNumber)
+        return min(max(value, 0), 1.0) // Clamp between 0 and 1
+    }
+
+    private var progressColor: Color {
+        if percentage >= 1.0 {
+            return .red // Overspent
+        } else if percentage >= 0.75 {
+            return .orange // Approaching limit
+        } else {
+            return .green // Healthy
+        }
+    }
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                // Background track
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(height: 6)
+
+                // Progress fill
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(progressColor)
+                    .frame(width: geometry.size.width * percentage, height: 6)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: percentage)
+            }
+        }
+        .frame(height: 6)
+        .accessibilityLabel("Spending progress")
+        .accessibilityValue("\(Int(percentage * 100))% of budget used")
+    }
+}
+
+// In BudgetPlanningView.swift - Category Card
+VStack(alignment: .leading, spacing: 8) {
+    Text(category.name)
+        .font(.headline)
+
+    Text(category.budgetedAmount, format: .currency(code: "USD"))
+        .font(.subheadline)
+        .foregroundColor(.secondary)
+
+    // NEW: Progress bar
+    CategoryProgressBar(
+        spent: BudgetCalculations.calculateActualSpending(
+            for: category,
+            in: transactions
+        ),
+        budgeted: category.budgetedAmount
+    )
+    .padding(.top, 4)
+}
+```
+
+**Testing Checklist**:
+- [ ] Progress bar displays correctly for 0% spending
+- [ ] Progress bar displays correctly for partial spending (25%, 50%, 75%)
+- [ ] Progress bar displays correctly at 100% spending
+- [ ] Progress bar handles overspending (>100%) gracefully
+- [ ] Color transitions occur at correct thresholds (75%, 100%)
+- [ ] Animation is smooth and performant
+- [ ] Handles $0 budgeted categories (YNAB principle)
+- [ ] Handles negative spending (refunds) correctly
+- [ ] VoiceOver announces progress status
+- [ ] Works with Dynamic Type (large text sizes)
+- [ ] No performance degradation with many categories
+- [ ] Visual consistency with app theme
+
+**Acceptance Criteria**:
+- Progress bar component created and reusable
+- Progress bars integrated into all category cards in BudgetPlanningView
+- Color coding implemented: green (0-75%), yellow (75-100%), red (>100%)
+- Smooth animation when spending changes
+- Edge cases handled: $0 budget, negative spending, overspending
+- WCAG AA color contrast compliance maintained
+- VoiceOver accessibility support for progress status
+- All existing tests pass
+- No performance regression with large category lists
+- Visual design consistent with existing app aesthetic
+
+**Estimated Complexity**: Medium (3-4 hours - component creation, integration, edge case handling, testing)
+
+**Dependencies**: None (independent UX improvement)
+
+---
+
+### 🟢 Priority 3: New Features (v1.7.0 Planned)
+
+#### Enhancement 8.1: Theme Management Infrastructure
+
+**Status**: 🔄 **PENDING**
+**Version**: v1.7.0 (Theme System Foundation)
+**Priority**: High (Foundation for Enhancement 8.2)
+**Planned Start**: After Enhancement 7.2
+
+**Objective**: Create a centralized theme management system with SwiftUI Environment integration, enabling dynamic theme switching throughout the app. This infrastructure will support the three visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate) and provide a foundation for future theme additions.
+
+**YNAB Alignment Check**: ✅ **Neutral** - Theming is purely aesthetic and does not affect YNAB methodology or calculations.
+
+**Current Behavior**:
+- App uses hardcoded colors defined in `AppColors.swift`
+- No centralized theme system
+- No ability to switch themes dynamically
+- Dark mode toggle exists but limited to light/dark, not full themes
+
+**Proposed Behavior**:
+- Centralized `ThemeManager` class manages current theme
+- Themes defined as protocols with concrete implementations
+- SwiftUI Environment integration for global theme access
+- Theme selection persisted in `AppSettings` model
+- Smooth transitions between themes with animations
+- Settings tab provides theme picker UI
+
+**Implementation Approach**:
+
+**Phase 1: Define Theme Protocol and Infrastructure**
+1. Create `Theme` protocol defining all required colors, typography, spacing
+2. Create `ThemeManager` @Observable class for theme state management
+3. Add `selectedTheme` property to `AppSettings.swift` model
+4. Create `ThemeEnvironmentKey` for SwiftUI Environment integration
+5. Implement theme persistence (save/load from AppSettings)
+
+**Phase 2: Settings Integration**
+1. Modify `SettingsView.swift` to add "Theme" section
+2. Create theme picker UI with radio buttons or segmented control
+3. Display theme previews (color swatches + name + description)
+4. Bind theme selection to ThemeManager
+5. Save selection to AppSettings model
+6. Test theme switching in Settings
+
+**Phase 3: App-Wide Integration**
+1. Modify `ZeroBasedBudgetApp.swift` to inject ThemeManager into environment
+2. Create `@Environment(\.theme)` accessor for views
+3. Document theme usage pattern for future development
+4. Ensure all views can access theme via Environment
+
+**Files to Create**:
+- `ZeroBasedBudget/Utilities/Theme/Theme.swift` - Theme protocol definition
+- `ZeroBasedBudget/Utilities/Theme/ThemeManager.swift` - Theme management class
+- `ZeroBasedBudget/Utilities/Theme/ThemeEnvironment.swift` - SwiftUI Environment integration
+- `ZeroBasedBudget/Views/Components/ThemePicker.swift` - Theme selection UI component
+- `ZeroBasedBudgetTests/Utilities/ThemeManagerTests.swift` - Unit tests for theme management
+
+**Files to Modify**:
+- `ZeroBasedBudget/Models/AppSettings.swift` - Add `selectedTheme` property
+- `ZeroBasedBudget/Views/SettingsView.swift` - Add Theme section with picker
+- `ZeroBasedBudget/ZeroBasedBudgetApp.swift` - Inject ThemeManager into environment
+
+**Design Considerations**:
+1. **Performance**: Theme switching should be instant (< 100ms)
+2. **Persistence**: Theme selection must survive app restarts
+3. **Type Safety**: Use enums for theme selection, not strings
+4. **Extensibility**: Make it easy to add new themes in the future
+5. **Testing**: Theme manager should be easily testable in unit tests
+6. **Environment**: Use SwiftUI Environment for clean, declarative access
+7. **Animation**: Consider smooth color transitions when switching themes
+8. **Default**: Default theme should be sensible (recommend Midnight Mint for broad appeal)
+
+**Code Example**:
+```swift
+// Theme.swift - Protocol defining theme contract
+protocol Theme {
+    var name: String { get }
+    var colors: ThemeColors { get }
+    var typography: ThemeTypography { get }
+    var spacing: ThemeSpacing { get }
+    var radius: ThemeRadius { get }
+}
+
+struct ThemeColors {
+    let background: Color
+    let surface: Color
+    let surfaceElevated: Color
+    let primary: Color
+    let onPrimary: Color
+    let accent: Color
+    let success: Color
+    let warning: Color
+    let error: Color
+    let textPrimary: Color
+    let textSecondary: Color
+    let border: Color
+    let readyToAssignBackground: Color
+    let readyToAssignText: Color
+    // ... other semantic colors
+}
+
+struct ThemeTypography {
+    let largeTitle: Font
+    let title: Font
+    let headline: Font
+    let body: Font
+    let caption: Font
+}
+
+struct ThemeSpacing {
+    let xs: CGFloat
+    let sm: CGFloat
+    let md: CGFloat
+    let lg: CGFloat
+    let xl: CGFloat
+}
+
+struct ThemeRadius {
+    let sm: CGFloat
+    let md: CGFloat
+    let lg: CGFloat
+    let xl: CGFloat
+}
+
+// ThemeManager.swift - Observable theme management
+@Observable
+class ThemeManager {
+    var currentTheme: Theme {
+        didSet {
+            saveThemePreference()
+        }
+    }
+
+    init() {
+        // Load saved theme preference or use default
+        self.currentTheme = ThemeManager.loadThemePreference()
+    }
+
+    func setTheme(_ theme: Theme) {
+        currentTheme = theme
+    }
+
+    private func saveThemePreference() {
+        // Save to AppSettings via SwiftData
+    }
+
+    private static func loadThemePreference() -> Theme {
+        // Load from AppSettings or return default
+        return MidnightMintTheme() // Default
+    }
+}
+
+// ThemeEnvironment.swift - SwiftUI Environment integration
+private struct ThemeEnvironmentKey: EnvironmentKey {
+    static let defaultValue: Theme = MidnightMintTheme()
+}
+
+extension EnvironmentValues {
+    var theme: Theme {
+        get { self[ThemeEnvironmentKey.self] }
+        set { self[ThemeEnvironmentKey.self] = newValue }
+    }
+}
+
+// In ZeroBasedBudgetApp.swift
+@main
+struct ZeroBasedBudgetApp: App {
+    @State private var themeManager = ThemeManager()
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environment(\.theme, themeManager.currentTheme)
+        }
+    }
+}
+
+// Usage in any view
+struct SomeView: View {
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        Text("Hello")
+            .foregroundColor(theme.colors.textPrimary)
+            .background(theme.colors.surface)
+    }
+}
+```
+
+**AppSettings Model Update**:
+```swift
+// In AppSettings.swift
+@Model
+class AppSettings {
+    var colorSchemePreference: String = "system" // Existing
+    var currencyCode: String = "USD"            // Existing
+    var selectedTheme: String = "midnightMint"  // NEW: "neonLedger", "midnightMint", "ultravioletSlate"
+    // ... other properties
+}
+```
+
+**Testing Checklist**:
+- [ ] Theme protocol defines all required properties
+- [ ] ThemeManager initializes with default theme
+- [ ] ThemeManager loads saved theme preference on init
+- [ ] Theme selection persists across app restarts
+- [ ] Theme switching updates immediately in all views
+- [ ] SwiftUI Environment provides theme access in views
+- [ ] Theme picker UI displays all available themes
+- [ ] Theme picker selection updates ThemeManager
+- [ ] No memory leaks with theme switching
+- [ ] Unit tests cover theme management logic
+- [ ] All existing tests still pass
+
+**Acceptance Criteria**:
+- Theme protocol defined with all necessary properties (colors, typography, spacing, radius)
+- ThemeManager class created with Observable support
+- Theme selection persisted in AppSettings model
+- SwiftUI Environment integration complete (`@Environment(\.theme)`)
+- Settings tab includes Theme section with picker UI
+- Theme selection immediately updates app appearance
+- Default theme set (Midnight Mint recommended)
+- All existing app functionality still works
+- Unit tests added for ThemeManager
+- Documentation added for theme usage pattern
+- Foundation ready for Enhancement 8.2 (theme implementations)
+
+**Estimated Complexity**: High (6-8 hours - infrastructure design, SwiftUI integration, persistence, testing)
 
 **Dependencies**: None (independent infrastructure work)
 
-**Next Enhancement**: Enhancement 5.2 (Comprehensive Test Suite Implementation)
+**Next Enhancement**: Enhancement 8.2 (Implement Three Visual Themes) - depends on this infrastructure
 
 ---
 
-#### Enhancement 5.2: Comprehensive Test Suite Implementation
+#### Enhancement 8.2: Implement Three Visual Themes from Design Assets
 
-**Status**: ✅ **COMPLETE**
-**Version**: v1.6.0 (Testing Infrastructure)
-**Priority**: High (Prevents regressions and validates YNAB methodology)
-**Completed**: November 5, 2025
+**Status**: 🔄 **PENDING**
+**Version**: v1.7.0 (Theme System Implementation)
+**Priority**: High (Completes theme system)
+**Planned Start**: After Enhancement 8.1
 
-**Objective**: Implement comprehensive unit test coverage across all models, utilities, and YNAB business logic to ensure code correctness, prevent regressions, and validate methodology compliance.
+**Objective**: Implement the three complete visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate) from the `Designs/` folder, making them selectable in the Settings tab. Each theme provides a distinct aesthetic while maintaining YNAB principles and WCAG AA accessibility standards.
 
-**YNAB Alignment Check**: ✅ **Critical** - Dedicated test category validates all YNAB calculations and principles.
+**YNAB Alignment Check**: ✅ **Compliant** - All three themes maintain prominent "Ready to Assign" banner, proper visual hierarchy, and YNAB-first design principles. Color coding for income/expenses preserved across all themes.
 
-**Test Organization Strategy**:
-Tests are organized into 7 domains, each implemented as a separate test file:
+**Design Assets Available**:
+All three themes have complete design tokens and mockups in `Designs/` folder:
 
-```
-ZeroBasedBudgetTests/
-├── Models/
-│   ├── AccountTests.swift          # Account model tests (10 tests)
-│   ├── TransactionTests.swift      # Transaction model tests (12 tests)
-│   ├── BudgetCategoryTests.swift   # Category model tests (15 tests)
-│   ├── MonthlyBudgetTests.swift    # Monthly budget tests (5 tests)
-│   └── AppSettingsTests.swift      # Settings model tests (6 tests)
-├── Utilities/
-│   ├── BudgetCalculationsTests.swift   # Calculation utility tests (18 tests)
-│   └── ValidationHelpersTests.swift    # Validation utility tests (14 tests)
-├── YNAB/
-│   └── YNABMethodologyTests.swift      # YNAB principle tests (12 tests)
-├── EdgeCases/
-│   └── EdgeCaseTests.swift             # Edge case and boundary tests (10 tests)
-└── Persistence/
-    └── SwiftDataPersistenceTests.swift # Data persistence tests (8 tests)
+1. **Neon Ledger** (`Designs/NeonLedger/`)
+   - Personality: Cyberpunk financial ledger with neon accents
+   - Colors: Pure black base (#0A0A0A), electric teal primary (#00E5CC), magenta accent (#FF006E)
+   - Features: Neon glows, high contrast, futuristic aesthetic
+   - Complete SwiftUI implementation already available in `Theme.swift`
+   - WCAG AA compliant contrast ratios validated
 
-Total: 110 individual unit tests across 10 test files
-```
+2. **Midnight Mint** (`Designs/MidnightMint/`)
+   - Personality: Calm, professional modern fintech
+   - Colors: Blue-tinted black base (#0B0E11), seafoam mint primary (#3BFFB4), soft teal accent (#14B8A6)
+   - Features: Restrained gradients, subtle elevations, trustworthy feel
+   - WCAG AA compliant, design tokens available
 
-**Implementation Approach**: Implement test files incrementally, one domain at a time, in the order listed below. Each test file should be committed independently after verification.
+3. **Ultraviolet Slate** (`Designs/UltravioletSlate/`)
+   - Personality: Bold, energetic with saturated colors
+   - Colors: Charcoal base (#1A1A1F), deep violet primary (#6366F1), vivid cyan accent (#22D3EE)
+   - Features: Thin hairline borders, geometric structure, high energy
+   - WCAG AA compliant, design tokens available
 
----
+**Implementation Approach**:
 
-### Domain 1: Model Tests (48 tests across 5 files)
+**Phase 1: Implement Neon Ledger Theme**
+1. Create `NeonLedgerTheme.swift` conforming to `Theme` protocol
+2. Import color values from `Designs/NeonLedger/tokens.json`
+3. Use existing `Designs/NeonLedger/Theme.swift` as reference
+4. Define all required colors, typography, spacing, radius
+5. Add neon glow effects using `.shadow()` modifiers
+6. Test with all app views (Accounts, Budget, Transactions, Analysis, Settings)
+7. Verify WCAG AA contrast compliance
 
-**File: `Models/AccountTests.swift` (10 tests)**
-- [ ] `test_accountInitialization_withValidData_createsAccountSuccessfully()`
-- [ ] `test_accountInitialization_withZeroBalance_setsStartingBalanceToZero()`
-- [ ] `test_accountInitialization_withNegativeBalance_allowsNegativeForCreditCards()`
-- [ ] `test_startingBalance_afterInitialization_matchesInitialBalance()`
-- [ ] `test_balanceUpdate_afterIncome_increasesCorrectly()`
-- [ ] `test_balanceUpdate_afterExpense_decreasesCorrectly()`
-- [ ] `test_transactions_relationship_inverseMaintainsIntegrity()`
-- [ ] `test_accountType_whenOptional_allowsNilValues()`
-- [ ] `test_createdDate_afterInit_isRecentDate()`
-- [ ] `test_decimalPrecision_forBalance_maintainsTwoDecimalPlaces()`
+**Phase 2: Implement Midnight Mint Theme**
+1. Create `MidnightMintTheme.swift` conforming to `Theme` protocol
+2. Import color values from `Designs/MidnightMint/tokens.json`
+3. Define all required colors, typography, spacing, radius
+4. Implement subtle gradients for Ready to Assign banner
+5. Test with all app views
+6. Verify WCAG AA contrast compliance
 
-**File: `Models/TransactionTests.swift` (12 tests)**
-- [ ] `test_transactionInitialization_withValidData_createsSuccessfully()`
-- [ ] `test_transactionAmount_withDecimal_maintainsPrecision()`
-- [ ] `test_transactionType_income_createdCorrectly()`
-- [ ] `test_transactionType_expense_createdCorrectly()`
-- [ ] `test_categoryRelationship_whenOptional_allowsNil()`
-- [ ] `test_categoryRelationship_whenSet_linksCorrectly()`
-- [ ] `test_accountRelationship_whenOptional_allowsNil()`
-- [ ] `test_accountRelationship_whenSet_linksCorrectly()`
-- [ ] `test_receiptImageData_whenOptional_allowsNilAndData()`
-- [ ] `test_transactionDescription_whenValid_storesCorrectly()`
-- [ ] `test_transactionDate_withSpecificDate_storesExactTime()`
-- [ ] `test_idUniqueness_forMultipleTransactions_generatesUniqueIDs()`
+**Phase 3: Implement Ultraviolet Slate Theme**
+1. Create `UltravioletSlateTheme.swift` conforming to `Theme` protocol
+2. Import color values from `Designs/UltravioletSlate/tokens.json`
+3. Define all required colors, typography, spacing, radius
+4. Implement thin hairline borders (1px) on cards
+5. Test with all app views
+6. Verify WCAG AA contrast compliance
 
-**File: `Models/BudgetCategoryTests.swift` (15 tests)**
-- [ ] `test_categoryInitialization_withValidData_createsSuccessfully()`
-- [ ] `test_budgetedAmount_withZero_allowsYNABPrinciple()`
-- [ ] `test_budgetedAmount_withDecimal_maintainsPrecision()`
-- [ ] `test_uniqueName_constraint_preventsDuplicates()`
-- [ ] `test_categoryType_withValidTypes_storesCorrectly()`
-- [ ] `test_dueDayOfMonth_whenSet_calculatesEffectiveDueDate()`
-- [ ] `test_dueDayOfMonth_whenInvalid_clampsToLastDayOfMonth()`
-- [ ] `test_isLastDayOfMonth_whenTrue_calculatesLastDay()`
-- [ ] `test_effectiveDueDate_withDueDayOfMonth_calculatesCurrentMonth()`
-- [ ] `test_effectiveDueDate_withLegacyDueDate_extractsDay()`
-- [ ] `test_effectiveDueDate_whenNone_returnsNil()`
-- [ ] `test_notificationSettings_defaultValues_setCorrectly()`
-- [ ] `test_notificationID_afterInit_isUnique()`
-- [ ] `test_transactions_cascadeDelete_deletesChildTransactions()`
-- [ ] `test_lastDayOfCurrentMonth_forFebruary_calculatesCorrectly()`
+**Phase 4: Update ThemeManager**
+1. Register all three themes with ThemeManager
+2. Create theme enum: `case neonLedger, midnightMint, ultravioletSlate`
+3. Update theme picker to show all three options with previews
+4. Add theme descriptions and personality traits to UI
+5. Test theme switching between all three themes
 
-**File: `Models/MonthlyBudgetTests.swift` (5 tests)**
-- [ ] `test_monthlyBudgetInit_withValidData_createsSuccessfully()`
-- [ ] `test_startingBalance_withDecimal_maintainsPrecision()`
-- [ ] `test_startingBalance_withZero_allowsYNABStartingPoint()`
-- [ ] `test_month_storesFirstDayOfMonth_correctly()`
-- [ ] `test_notes_whenOptional_allowsNilAndStrings()`
-
-**File: `Models/AppSettingsTests.swift` (6 tests)**
-- [ ] `test_appSettingsInit_withDefaults_createsCorrectly()`
-- [ ] `test_colorSchemePreference_validValues_storesCorrectly()`
-- [ ] `test_currencyCode_multipleFormats_storesAllSupported()`
-- [ ] `test_monthStartDate_validRange_clampsBetween1And31()`
-- [ ] `test_notificationsEnabled_toggle_updatesCorrectly()`
-- [ ] `test_lastModifiedDate_afterUpdate_updatesTimestamp()`
-
----
-
-### Domain 2: Utility Tests (32 tests across 2 files)
-
-**File: `Utilities/BudgetCalculationsTests.swift` (18 tests)**
-- [ ] `test_startOfMonth_forAnyDate_returnsFirstDayAtMidnight()`
-- [ ] `test_endOfMonth_forAnyDate_returnsLastDayOfMonth()`
-- [ ] `test_endOfMonth_february_handlesLeapYears()`
-- [ ] `test_isDate_inMonth_whenSameMonth_returnsTrue()`
-- [ ] `test_isDate_inMonth_whenDifferentMonth_returnsFalse()`
-- [ ] `test_transactionsInMonth_filtersCorrectly_forGivenMonth()`
-- [ ] `test_transactionsInMonth_excludes_transactionsOutsideMonth()`
-- [ ] `test_transactionsForCategory_filtersCorrectly_byCategory()`
-- [ ] `test_calculateActualSpending_sumExpenses_excludesIncome()`
-- [ ] `test_calculateActualSpending_withNoTransactions_returnsZero()`
-- [ ] `test_calculateTotalIncome_sumIncome_excludesExpenses()`
-- [ ] `test_calculateTotalIncome_withNoIncome_returnsZero()`
-- [ ] `test_calculateTotalExpenses_sumExpenses_excludesIncome()`
-- [ ] `test_generateCategoryComparisons_createsComparisons_forAllCategories()`
-- [ ] `test_generateCategoryComparisons_filtersByCategoryType_correctly()`
-- [ ] `test_totalBudgeted_sumsBudgetedAmounts_forCategoryType()`
-- [ ] `test_totalActual_sumsActualSpending_forCategoryType()`
-- [ ] `test_calculateRunningBalance_withMixedTransactions_calculatesCorrectly()`
-
-**File: `Utilities/ValidationHelpersTests.swift` (14 tests)**
-- [ ] `test_isValidName_withEmptyString_returnsFalse()`
-- [ ] `test_isValidName_withWhitespaceOnly_returnsFalse()`
-- [ ] `test_isValidName_withValidName_returnsTrue()`
-- [ ] `test_isValidCategoryName_withTooLong_returnsFalse()`
-- [ ] `test_isValidCategoryName_withValid_returnsTrue()`
-- [ ] `test_isValidDescription_withTooLong_returnsFalse()`
-- [ ] `test_isValidDescription_withValid_returnsTrue()`
-- [ ] `test_isValidAmount_withPositive_returnsTrue()`
-- [ ] `test_isValidAmount_withZero_returnsFalse()`
-- [ ] `test_isValidNonNegativeAmount_withZero_returnsTrue()`
-- [ ] `test_isReasonableAmount_withinRange_returnsTrue()`
-- [ ] `test_isReasonableAmount_exceedsMax_returnsFalse()`
-- [ ] `test_formatCurrency_withDecimal_formatsCorrectly()`
-- [ ] `test_formatPercentage_withDouble_formatsCorrectly()`
-
----
-
-### Domain 3: YNAB Methodology Tests (12 tests in 1 file)
-
-**File: `YNAB/YNABMethodologyTests.swift` (12 tests)**
-
-**Critical YNAB Principles to Validate:**
-- [ ] `test_readyToAssign_calculation_usesStartingBalancePlusIncome()`
-      - Validates: Ready to Assign = Sum(startingBalance) + Sum(income) - Sum(budgeted)
-      - Ensures no double-counting of expenses
-- [ ] `test_readyToAssign_afterExpense_remainsUnchanged()`
-      - Validates: Spending doesn't reduce Ready to Assign (only budgeting does)
-- [ ] `test_readyToAssign_afterIncome_increases()`
-      - Validates: Income increases Ready to Assign for assignment
-- [ ] `test_readyToAssign_afterBudgeting_decreases()`
-      - Validates: Assigning money reduces Ready to Assign
-- [ ] `test_accountBalance_afterExpense_decreasesCorrectly()`
-      - Validates: Expenses reduce account balance (separate from budgeting)
-- [ ] `test_accountBalance_afterIncome_increasesCorrectly()`
-      - Validates: Income increases account balance
-- [ ] `test_zeroBudgetedCategory_allowed_followsYNAB()`
-      - Validates: Categories can have $0 budgeted (tracked but unfunded)
-- [ ] `test_incomeThroughTransactions_notPreBudgeted_followsYNAB()`
-      - Validates: Income logged via transactions, not pre-budgeted
-- [ ] `test_budgetOnlyAvailableMoney_notFutureIncome_followsYNAB()`
-      - Validates: Only budget money that exists today
-- [ ] `test_transactionAccountLink_updatesBalance_maintainsIntegrity()`
-      - Validates: Transaction-account relationship maintains balance integrity
-- [ ] `test_multipleAccounts_totalBalance_sumsCorrectly()`
-      - Validates: Sum of all accounts = total available money
-- [ ] `test_categorySpending_doesNotAffectReadyToAssign_onlyBudgeting()`
-      - Validates: Spending from category doesn't change Ready to Assign
-
----
-
-### Domain 4: Edge Case & Boundary Tests (10 tests in 1 file)
-
-**File: `EdgeCases/EdgeCaseTests.swift` (10 tests)**
-- [ ] `test_decimalPrecision_verySmallAmounts_maintainsAccuracy()`
-- [ ] `test_decimalPrecision_veryLargeAmounts_noOverflow()`
-- [ ] `test_decimalArithmetic_repeatedOperations_noRoundingErrors()`
-- [ ] `test_dateCalculation_monthBoundary_handlesCorrectly()`
-- [ ] `test_dateCalculation_yearBoundary_handlesCorrectly()`
-- [ ] `test_negativeBalance_creditCards_allowsAndCalculates()`
-- [ ] `test_zeroTransaction_allowed_handlesGracefully()`
-- [ ] `test_massiveTransactionCount_performance_acceptable()`
-- [ ] `test_categoryDueDate_february29_handlesLeapYear()`
-- [ ] `test_categoryDueDate_day31_in30DayMonth_clampsCorrectly()`
-
----
-
-### Domain 5: Data Persistence Tests (8 tests in 1 file)
-
-**File: `Persistence/SwiftDataPersistenceTests.swift` (8 tests)**
-- [ ] `test_accountCRUD_createReadUpdateDelete_worksCorrectly()`
-- [ ] `test_transactionCRUD_createReadUpdateDelete_worksCorrectly()`
-- [ ] `test_categoryCRUD_createReadUpdateDelete_worksCorrectly()`
-- [ ] `test_cascadeDelete_category_deletesChildTransactions()`
-- [ ] `test_nullifyDelete_account_nullifiesTransactionReferences()`
-- [ ] `test_uniqueConstraint_categoryName_preventsDuplicates()`
-- [ ] `test_relationships_accountTransaction_maintainsIntegrity()`
-- [ ] `test_inMemoryContainer_isolation_preventsTestContamination()`
-
----
+**Phase 5: Apply Themes to All Views**
+1. Update all views to use `@Environment(\.theme)` instead of hardcoded colors
+2. Replace `AppColors` references with `theme.colors`
+3. Test each view with all three themes
+4. Ensure Ready to Assign banner prominence in all themes
+5. Verify income/expense color coding consistency
 
 **Files to Create**:
-All 10 test files listed above (110 individual tests total)
+- `ZeroBasedBudget/Utilities/Theme/NeonLedgerTheme.swift` - Neon Ledger theme implementation
+- `ZeroBasedBudget/Utilities/Theme/MidnightMintTheme.swift` - Midnight Mint theme implementation
+- `ZeroBasedBudget/Utilities/Theme/UltravioletSlateTheme.swift` - Ultraviolet Slate theme implementation
+- `ZeroBasedBudgetTests/Utilities/NeonLedgerThemeTests.swift` - Unit tests for Neon Ledger theme
+- `ZeroBasedBudgetTests/Utilities/MidnightMintThemeTests.swift` - Unit tests for Midnight Mint theme
+- `ZeroBasedBudgetTests/Utilities/UltravioletSlateThemeTests.swift` - Unit tests for Ultraviolet Slate theme
 
 **Files to Modify**:
-None (tests are isolated in test target)
+- `ZeroBasedBudget/Utilities/Theme/ThemeManager.swift` - Register all three themes
+- `ZeroBasedBudget/Views/SettingsView.swift` - Update theme picker with all themes
+- **ALL VIEW FILES** - Replace hardcoded colors with `@Environment(\.theme)`:
+  - `AccountsView.swift`
+  - `BudgetPlanningView.swift`
+  - `ReadyToAssignBanner.swift`
+  - `TransactionLogView.swift`
+  - `BudgetAnalysisView.swift`
+  - `SettingsView.swift`
+  - All component views (AccountRow, TransactionRow, etc.)
 
 **Design Considerations**:
-1. **Test Naming**: Follow Given-When-Then pattern: `test_whatIsBeingTested_whenCondition_thenExpectedResult()`
-2. **Test Independence**: Each test must run in isolation, no shared state between tests
-3. **Decimal Precision**: Use custom `assertDecimalEqual()` helper for all monetary comparisons
-4. **Fixed Dates**: Use fixed dates in tests (e.g., `Date(timeIntervalSince1970: 1699200000)`) to avoid time-dependent failures
-5. **YNAB Validation**: Every financial test must include comment explaining YNAB principle being validated
-6. **Test Data**: Use TestDataFactory helpers for consistent test data creation
-7. **Arrange-Act-Assert**: Structure all tests with clear AAA pattern
-8. **Performance**: Mark performance-critical tests with `measure` blocks
-9. **Edge Cases**: Explicitly test boundary conditions (zero, negative, very large values)
-10. **Documentation**: Each test file should have header comment explaining domain coverage
+1. **Color Mapping**: Map design token colors to Theme protocol properties semantically
+2. **Consistency**: Ensure each theme maintains visual consistency across all views
+3. **Accessibility**: All themes must pass WCAG AA contrast requirements (verified in design docs)
+4. **YNAB Principles**: Ready to Assign banner must be prominent in all themes
+5. **Performance**: Theme switching should be instant with no lag
+6. **Testing**: Test all themes with real user data (transactions, categories, accounts)
+7. **Default**: Set Midnight Mint as default theme (broadest appeal, professional)
+8. **Documentation**: Document color usage patterns for each theme
+
+**Color Mapping Example**:
+```swift
+// MidnightMintTheme.swift
+struct MidnightMintTheme: Theme {
+    let name = "Midnight Mint"
+
+    let colors = ThemeColors(
+        background: Color(hex: "0B0E11"),           // Near-black with blue tint
+        surface: Color(hex: "14181C"),              // Elevated surface
+        surfaceElevated: Color(hex: "1C2128"),      // Further elevated
+        primary: Color(hex: "3BFFB4"),              // Seafoam mint
+        onPrimary: Color(hex: "0B0E11"),            // Dark text on mint
+        accent: Color(hex: "14B8A6"),               // Soft teal
+        success: Color(hex: "10B981"),              // Pine green (income)
+        warning: Color(hex: "F59E0B"),              // Warm orange
+        error: Color(hex: "EF4444"),                // Coral red (expenses)
+        textPrimary: Color(hex: "FFFFFF"),          // White text
+        textSecondary: Color(hex: "9CA3AF"),        // Gray text
+        border: Color(hex: "2A3138"),               // Subtle borders
+        readyToAssignBackground: Color(hex: "3BFFB4"), // Mint banner
+        readyToAssignText: Color(hex: "0B0E11")     // Dark text on mint
+    )
+
+    let typography = ThemeTypography(
+        largeTitle: .system(size: 34, weight: .bold, design: .default),
+        title: .system(size: 28, weight: .bold, design: .default),
+        headline: .system(size: 17, weight: .semibold, design: .default),
+        body: .system(size: 17, weight: .regular, design: .default),
+        caption: .system(size: 12, weight: .regular, design: .default)
+    )
+
+    let spacing = ThemeSpacing(
+        xs: 4,
+        sm: 8,
+        md: 16,
+        lg: 24,
+        xl: 32
+    )
+
+    let radius = ThemeRadius(
+        sm: 8,
+        md: 12,
+        lg: 20,
+        xl: 28
+    )
+}
+
+// Extension for hex color support
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let r, g, b: Double
+        r = Double((int >> 16) & 0xFF) / 255.0
+        g = Double((int >> 8) & 0xFF) / 255.0
+        b = Double(int & 0xFF) / 255.0
+        self.init(red: r, green: g, blue: b)
+    }
+}
+```
+
+**Theme Picker UI Example**:
+```swift
+// In SettingsView.swift - Theme Section
+Section("Theme") {
+    ForEach([ThemeType.neonLedger, .midnightMint, .ultravioletSlate], id: \.self) { themeType in
+        Button(action: {
+            themeManager.setTheme(themeType.theme)
+        }) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(themeType.theme.name)
+                        .font(.headline)
+                    Text(themeType.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                // Color preview swatches
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(themeType.theme.colors.primary)
+                        .frame(width: 20, height: 20)
+                    Circle()
+                        .fill(themeType.theme.colors.accent)
+                        .frame(width: 20, height: 20)
+                }
+
+                // Checkmark if selected
+                if themeManager.currentTheme.name == themeType.theme.name {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.blue)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+enum ThemeType {
+    case neonLedger
+    case midnightMint
+    case ultravioletSlate
+
+    var theme: Theme {
+        switch self {
+        case .neonLedger: return NeonLedgerTheme()
+        case .midnightMint: return MidnightMintTheme()
+        case .ultravioletSlate: return UltravioletSlateTheme()
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .neonLedger: return "Cyberpunk with neon accents"
+        case .midnightMint: return "Calm, professional fintech"
+        case .ultravioletSlate: return "Bold, energetic design"
+        }
+    }
+}
+```
 
 **Testing Checklist**:
-- [ ] All 110 tests implemented and passing
-- [ ] All tests follow naming convention
-- [ ] All tests use TestDataFactory for data creation
-- [ ] All monetary tests use assertDecimalEqual()
-- [ ] All YNAB tests include methodology validation comments
-- [ ] No test interdependencies (all tests run in isolation)
-- [ ] All edge cases covered (boundaries, negative values, etc.)
-- [ ] Performance tests for transaction-heavy operations
-- [ ] SwiftData persistence tests verify CRUD operations
-- [ ] Full test suite runs in < 30 seconds
-- [ ] Code coverage report shows >80% coverage for models and utilities
-- [ ] All tests pass on CI/CD (if configured)
+- [ ] Neon Ledger theme implemented with all colors from design tokens
+- [ ] Midnight Mint theme implemented with all colors from design tokens
+- [ ] Ultraviolet Slate theme implemented with all colors from design tokens
+- [ ] All three themes registered with ThemeManager
+- [ ] Theme picker displays all three themes with previews
+- [ ] Theme switching works instantly between all themes
+- [ ] Ready to Assign banner prominent in all three themes
+- [ ] Income/expense color coding consistent across themes
+- [ ] All views updated to use `@Environment(\.theme)`
+- [ ] WCAG AA contrast compliance verified for all themes
+- [ ] Neon glow effects work in Neon Ledger theme
+- [ ] Hairline borders work in Ultraviolet Slate theme
+- [ ] Theme selection persists across app restarts
+- [ ] No color bleeding or visual artifacts during theme switching
+- [ ] VoiceOver announces theme names correctly
+- [ ] All 110 unit tests still pass with theme system
+- [ ] Performance: Theme switching completes in < 100ms
 
 **Acceptance Criteria**:
-- All 110 unit tests implemented across 10 test files
-- All tests pass without errors or failures
-- Test suite provides comprehensive coverage of:
-  - All 5 SwiftData models (Account, Transaction, BudgetCategory, MonthlyBudget, AppSettings)
-  - All 2 utility classes (BudgetCalculations, ValidationHelpers)
-  - All YNAB methodology calculations and principles
-  - Edge cases and boundary conditions
-  - SwiftData persistence operations
-- Test suite runs in reasonable time (< 30 seconds)
-- Test code follows FIRST principles (Fast, Independent, Repeatable, Self-validating, Timely)
-- Each test has clear, descriptive name following convention
-- All financial calculations validated against YNAB methodology
-- Code coverage >80% for models and utilities
-- Documentation added to CLAUDE.md for running tests
+- All three themes (Neon Ledger, Midnight Mint, Ultraviolet Slate) fully implemented
+- Each theme conforms to Theme protocol with complete color/typography definitions
+- Theme picker in Settings tab displays all three themes with descriptions and previews
+- User can select any theme and selection persists across app restarts
+- All app views use theme colors via `@Environment(\.theme)` (no hardcoded colors)
+- YNAB principles maintained: Ready to Assign banner prominent in all themes
+- WCAG AA accessibility compliance verified for all three themes
+- Theme switching is instant with smooth visual transitions
+- Color coding for income/expenses consistent across all themes
+- All existing functionality works with all three themes
+- All 110 unit tests pass
+- Performance meets requirements (< 100ms theme switch)
+- Documentation updated with theme usage examples
 
-**Estimated Complexity**: High (20-25 hours - 110 tests across 10 files, ~12 minutes per test including validation)
+**Estimated Complexity**: Very High (12-16 hours - three complete theme implementations, view migration, testing across all themes)
 
 **Dependencies**:
-- **REQUIRED**: Enhancement 5.1 (XCTest Framework) must be completed first
-- Infrastructure code (TestDataFactory, base test class, custom assertions) needed
-
-**Implementation Strategy**:
-Implement incrementally in domain order:
-1. Domain 1: Models (48 tests) - Start here, foundational
-2. Domain 2: Utilities (32 tests) - Build on model tests
-3. Domain 3: YNAB (12 tests) - Validate methodology (most critical)
-4. Domain 4: Edge Cases (10 tests) - Catch boundary issues
-5. Domain 5: Persistence (8 tests) - Validate SwiftData operations
-
-**Commit after each domain** with descriptive message:
-```
-test: add comprehensive model tests (48 tests)
-test: add utility function tests (32 tests)
-test: add YNAB methodology validation tests (12 tests)
-test: add edge case and boundary tests (10 tests)
-test: add SwiftData persistence tests (8 tests)
-```
+- **REQUIRED**: Enhancement 8.1 (Theme Management Infrastructure) must be completed first
+- Design assets in `Designs/` folder (already available)
 
 **Version Planning**:
-- **v1.6.0**: Complete test infrastructure and comprehensive test suite
-- Provides foundation for TDD (Test-Driven Development) in future features
-- Enables confident refactoring with regression protection
+- **v1.7.0**: Complete theme system with all three visual themes
+- Provides foundation for future theme additions
+- Significantly enhances user experience and app appeal
 
 ---
 
 ## Active Development
 
-**Current Focus**: ✅ **v1.6.0 COMPLETE** - Comprehensive Unit Testing Suite (110 tests)
-**Status**: v1.5.0 production ready; v1.6.0 test suite complete and ready for validation
+**Current Focus**: v1.7.0 Planning - UX Improvements & Theme Management
+**Status**: v1.6.0 complete (110 unit tests passing); ready for new feature development
 
 **Recent Significant Changes** (last 5):
 1. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
-2. [2025-11-05] ✅ **Enhancement 5.2 COMPLETE**: All test domains implemented (Models, Utilities, YNAB, EdgeCases, Persistence)
-3. [2025-11-05] ✅ **Enhancement 5.1 COMPLETE**: XCTest framework infrastructure with in-memory SwiftData testing
-4. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list (commit: b2cc82b)
-5. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting (commit: 7154b66)
+2. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
+3. [2025-11-05] ✅ **Test Suite Complete**: All tests passing (Models, Utilities, YNAB, EdgeCases, Persistence)
+4. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list with relative dates
+5. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting bug
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **v1.6.0 STATUS**: ✅ **COMPLETE** - 110 comprehensive unit tests implemented
-   - ✅ Domain 1: Model Tests (48 tests) - AccountTests, TransactionTests, BudgetCategoryTests, MonthlyBudgetTests, AppSettingsTests
-   - ✅ Domain 2: Utility Tests (32 tests) - BudgetCalculationsTests, ValidationHelpersTests
-   - ✅ Domain 3: YNAB Methodology Tests (12 tests) - **CRITICAL** - Validates all YNAB principles
-   - ✅ Domain 4: Edge Case Tests (10 tests) - Boundary conditions, Decimal precision, date handling
-   - ✅ Domain 5: Persistence Tests (8 tests) - SwiftData CRUD operations, relationships
-2. **RECOMMENDED**: Run tests in Xcode to verify all 110 tests pass
-   - Command: `Cmd+U` in Xcode OR `xcodebuild test -scheme ZeroBasedBudget -destination 'platform=iOS Simulator,name=iPhone 17'`
-   - Expected: All tests should pass (tests use in-memory SwiftData for isolation)
-3. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-4. **Next Steps Options**:
-   - Option A: Run tests in Xcode and verify all pass
-   - Option B: Test v1.5.0 app functionality in simulator
-   - Option C: Begin new feature development (backlog available)
-   - Option D: User provides new requirements/priorities
+1. **Test Suite Status**: ✅ All 110 tests passing (verified November 5, 2025)
+2. **Design Assets**: ✅ Three complete visual themes available in Designs/ folder
+3. **Current Priority**: Begin v1.7.0 enhancements (see Active Issues & Enhancement Backlog below)
+4. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy
 
