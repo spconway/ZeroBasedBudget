@@ -1,0 +1,164 @@
+<svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="390" height="844" fill="#0A0A0A"/>
+
+  <!-- Status Bar -->
+  <g id="status-bar">
+    <text x="20" y="30" fill="#FFFFFF" font-family="SF Pro Text" font-size="14" font-weight="600">9:41</text>
+    <text x="350" y="30" fill="#FFFFFF" font-family="SF Pro Text" font-size="14">100%</text>
+  </g>
+
+  <!-- Navigation Bar -->
+  <g id="nav-bar">
+    <text x="20" y="80" fill="#FFFFFF" font-family="SF Pro Display" font-size="34" font-weight="700">Analysis</text>
+  </g>
+
+  <!-- Month Selector -->
+  <g id="month-selector">
+    <rect x="16" y="105" width="358" height="48" rx="12" fill="#121212"/>
+    <path d="M30 125 L38 133 L30 141" stroke="#999999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="195" y="135" fill="#FFFFFF" font-family="SF Pro Text" font-size="18" font-weight="600" text-anchor="middle">November 2025</text>
+    <path d="M360 141 L352 133 L360 125" stroke="#999999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+
+  <!-- Spending Distribution Card -->
+  <g id="donut-chart-card">
+    <rect x="16" y="173" width="358" height="320" rx="12" fill="#121212"/>
+    <text x="28" y="200" fill="#FFFFFF" font-family="SF Pro Text" font-size="18" font-weight="700">Spending Distribution</text>
+
+    <!-- Donut Chart (Simplified) -->
+    <g id="donut-chart" transform="translate(195, 300)">
+      <!-- Background Circle -->
+      <circle cx="0" cy="0" r="70" fill="none" stroke="#2A2A2A" stroke-width="28"/>
+
+      <!-- Rent (largest slice) -->
+      <circle cx="0" cy="0" r="70" fill="none" stroke="#FF006E" stroke-width="28"
+              stroke-dasharray="219 439" stroke-dashoffset="0" opacity="0.9"/>
+
+      <!-- Groceries -->
+      <circle cx="0" cy="0" r="70" fill="none" stroke="#00E5CC" stroke-width="28"
+              stroke-dasharray="109 439" stroke-dashoffset="-219" opacity="0.9"/>
+
+      <!-- Utilities -->
+      <circle cx="0" cy="0" r="70" fill="none" stroke="#FFB800" stroke-width="28"
+              stroke-dasharray="66 439" stroke-dashoffset="-328" opacity="0.9"/>
+
+      <!-- Dining -->
+      <circle cx="0" cy="0" r="70" fill="none" stroke="#7C3AED" stroke-width="28"
+              stroke-dasharray="45 439" stroke-dashoffset="-394" opacity="0.9"/>
+
+      <!-- Center Text -->
+      <text x="0" y="-5" fill="#999999" font-family="SF Pro Text" font-size="12" text-anchor="middle">Total</text>
+      <text x="0" y="15" fill="#FFFFFF" font-family="SF Pro Display" font-size="20" font-weight="700" text-anchor="middle">$2,245</text>
+    </g>
+
+    <!-- Legend -->
+    <g id="legend" transform="translate(28, 410)">
+      <!-- Rent -->
+      <rect x="0" y="0" width="4" height="16" rx="2" fill="#FF006E"/>
+      <text x="12" y="12" fill="#FFFFFF" font-family="SF Pro Text" font-size="14">Rent</text>
+      <text x="150" y="12" fill="#999999" font-family="SF Pro Text" font-size="14">$1,500 (67%)</text>
+
+      <!-- Groceries -->
+      <rect x="0" y="24" width="4" height="16" rx="2" fill="#00E5CC"/>
+      <text x="12" y="36" fill="#FFFFFF" font-family="SF Pro Text" font-size="14">Groceries</text>
+      <text x="150" y="36" fill="#999999" font-family="SF Pro Text" font-size="14">$285 (13%)</text>
+
+      <!-- Utilities -->
+      <rect x="0" y="48" width="4" height="16" rx="2" fill="#FFB800"/>
+      <text x="12" y="60" fill="#FFFFFF" font-family="SF Pro Text" font-size="14">Utilities</text>
+      <text x="150" y="60" fill="#999999" font-family="SF Pro Text" font-size="14">$145 (6%)</text>
+
+      <!-- Dining Out -->
+      <rect x="180" y="0" width="4" height="16" rx="2" fill="#7C3AED"/>
+      <text x="192" y="12" fill="#FFFFFF" font-family="SF Pro Text" font-size="14">Dining Out</text>
+      <text x="300" y="12" fill="#999999" font-family="SF Pro Text" font-size="14">$142 (6%)</text>
+    </g>
+  </g>
+
+  <!-- Budget vs Actual Card -->
+  <g id="bar-chart-card">
+    <rect x="16" y="513" width="358" height="220" rx="12" fill="#121212"/>
+    <text x="28" y="540" fill="#FFFFFF" font-family="SF Pro Text" font-size="18" font-weight="700">Budget vs Actual</text>
+
+    <!-- Bar Chart Legend -->
+    <g id="bar-legend" transform="translate(240, 532)">
+      <rect x="0" y="0" width="12" height="12" rx="2" fill="#7C3AED"/>
+      <text x="18" y="10" fill="#999999" font-family="SF Pro Text" font-size="12">Budgeted</text>
+      <rect x="75" y="0" width="12" height="12" rx="2" fill="#00E5CC"/>
+      <text x="93" y="10" fill="#00E5CC" font-family="SF Pro Text" font-size="12">Actual</text>
+    </g>
+
+    <!-- Bars -->
+    <g id="bars" transform="translate(28, 570)">
+      <!-- Groceries -->
+      <text x="0" y="18" fill="#999999" font-family="SF Pro Text" font-size="12">Groceries</text>
+      <rect x="70" y="8" width="150" height="16" rx="4" fill="#2A2A2A"/>
+      <rect x="70" y="8" width="150" height="16" rx="4" fill="#7C3AED" opacity="0.4"/>
+      <rect x="70" y="8" width="106" height="16" rx="4" fill="#00E5CC"/>
+      <text x="230" y="20" fill="#00E5CC" font-family="SF Pro Text" font-size="12">$285/$400</text>
+
+      <!-- Dining Out -->
+      <text x="0" y="52" fill="#999999" font-family="SF Pro Text" font-size="12">Dining</text>
+      <rect x="70" y="42" width="75" height="16" rx="4" fill="#2A2A2A"/>
+      <rect x="70" y="42" width="75" height="16" rx="4" fill="#7C3AED" opacity="0.4"/>
+      <rect x="70" y="42" width="53" height="16" rx="4" fill="#00E5CC"/>
+      <text x="230" y="54" fill="#00E5CC" font-family="SF Pro Text" font-size="12">$142/$200</text>
+
+      <!-- Utilities -->
+      <text x="0" y="86" fill="#999999" font-family="SF Pro Text" font-size="12">Utilities</text>
+      <rect x="70" y="76" width="56" height="16" rx="4" fill="#2A2A2A"/>
+      <rect x="70" y="76" width="56" height="16" rx="4" fill="#7C3AED" opacity="0.4"/>
+      <rect x="70" y="76" width="54" height="16" rx="4" fill="#00E5CC"/>
+      <text x="230" y="88" fill="#00E5CC" font-family="SF Pro Text" font-size="12">$145/$150</text>
+
+      <!-- Subscriptions -->
+      <text x="0" y="120" fill="#999999" font-family="SF Pro Text" font-size="12">Subscriptions</text>
+      <rect x="70" y="110" width="17" height="16" rx="4" fill="#2A2A2A"/>
+      <rect x="70" y="110" width="17" height="16" rx="4" fill="#7C3AED" opacity="0.4"/>
+      <rect x="70" y="110" width="15" height="16" rx="4" fill="#00E5CC"/>
+      <text x="230" y="122" fill="#00E5CC" font-family="SF Pro Text" font-size="12">$15/$45</text>
+    </g>
+  </g>
+
+  <!-- Tab Bar -->
+  <g id="tab-bar">
+    <rect y="760" width="390" height="84" fill="#121212"/>
+    <rect y="760" width="390" height="1" fill="#2A2A2A"/>
+
+    <!-- Accounts Tab -->
+    <g id="tab-accounts">
+      <circle cx="39" cy="785" r="10" fill="#999999" opacity="0.5"/>
+      <text x="39" y="820" fill="#999999" font-family="SF Pro Text" font-size="10" text-anchor="middle">Accounts</text>
+    </g>
+
+    <!-- Budget Tab -->
+    <g id="tab-budget">
+      <rect x="110" y="775" width="20" height="20" rx="4" fill="#999999" opacity="0.5"/>
+      <text x="120" y="820" fill="#999999" font-family="SF Pro Text" font-size="10" text-anchor="middle">Budget</text>
+    </g>
+
+    <!-- Transactions Tab -->
+    <g id="tab-transactions">
+      <rect x="186" y="775" width="20" height="3" fill="#999999" opacity="0.5"/>
+      <rect x="186" y="782" width="20" height="3" fill="#999999" opacity="0.5"/>
+      <rect x="186" y="789" width="20" height="3" fill="#999999" opacity="0.5"/>
+      <text x="196" y="820" fill="#999999" font-family="SF Pro Text" font-size="10" text-anchor="middle">Transactions</text>
+    </g>
+
+    <!-- Analysis Tab (Active) -->
+    <g id="tab-analysis">
+      <circle cx="273" cy="785" r="10" fill="#00E5CC" opacity="0.2"/>
+      <circle cx="268" cy="782" r="4" fill="#00E5CC"/>
+      <circle cx="278" cy="788" r="6" fill="#00E5CC"/>
+      <circle cx="273" cy="785" r="3" fill="#00E5CC"/>
+      <text x="273" y="820" fill="#00E5CC" font-family="SF Pro Text" font-size="10" font-weight="600" text-anchor="middle">Analysis</text>
+    </g>
+
+    <!-- Settings Tab -->
+    <g id="tab-settings">
+      <circle cx="351" cy="785" r="10" fill="#999999" opacity="0.5"/>
+      <text x="351" y="820" fill="#999999" font-family="SF Pro Text" font-size="10" text-anchor="middle">Settings</text>
+    </g>
+  </g>
+</svg>
