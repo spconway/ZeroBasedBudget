@@ -97,6 +97,89 @@ final class BudgetCalculationsTests: ZeroBasedBudgetTests {
         XCTAssertFalse(BudgetCalculations.isDate(juneDate, inMonth: differentYearDate))
     }
 
+    // MARK: - Date Formatting Tests
+
+    /// Test: formatTransactionSectionDate omits year for current year
+    func test_formatTransactionSectionDate_currentYear_omitsYear() throws {
+        // Arrange
+        let calendar = Calendar.current
+        let currentYear = calendar.component(.year, from: Date())
+        let currentYearDate = Date.from(year: currentYear, month: 6, day: 15)
+
+        // Act
+        let formatted = BudgetCalculations.formatTransactionSectionDate(currentYearDate)
+
+        // Assert
+        // For current year, format should be like "Jun 15" without year
+        XCTAssertFalse(formatted.contains(String(currentYear)),
+                      "Current year date should not include year in formatted string")
+        XCTAssertTrue(formatted.contains("Jun") || formatted.contains("6"),
+                     "Should contain month abbreviation or number")
+        XCTAssertTrue(formatted.contains("15"),
+                     "Should contain day number")
+    }
+
+    /// Test: formatTransactionSectionDate includes year for different year
+    func test_formatTransactionSectionDate_differentYear_includesYear() throws {
+        // Arrange
+        let calendar = Calendar.current
+        let currentYear = calendar.component(.year, from: Date())
+        let differentYear = currentYear - 1  // Last year
+        let differentYearDate = Date.from(year: differentYear, month: 6, day: 15)
+
+        // Act
+        let formatted = BudgetCalculations.formatTransactionSectionDate(differentYearDate)
+
+        // Assert
+        // For different year, format should include year like "Jun 15, 2023"
+        XCTAssertTrue(formatted.contains(String(differentYear)),
+                     "Different year date should include year in formatted string")
+        XCTAssertTrue(formatted.contains("Jun") || formatted.contains("6"),
+                     "Should contain month abbreviation or number")
+        XCTAssertTrue(formatted.contains("15"),
+                     "Should contain day number")
+    }
+
+    /// Test: formatTransactionSectionDate includes year for future year
+    func test_formatTransactionSectionDate_futureYear_includesYear() throws {
+        // Arrange
+        let calendar = Calendar.current
+        let currentYear = calendar.component(.year, from: Date())
+        let futureYear = currentYear + 1  // Next year
+        let futureYearDate = Date.from(year: futureYear, month: 6, day: 15)
+
+        // Act
+        let formatted = BudgetCalculations.formatTransactionSectionDate(futureYearDate)
+
+        // Assert
+        // For future year, format should include year like "Jun 15, 2026"
+        XCTAssertTrue(formatted.contains(String(futureYear)),
+                     "Future year date should include year in formatted string")
+    }
+
+    /// Test: formatTransactionSectionDate handles year boundary correctly
+    func test_formatTransactionSectionDate_yearBoundary_formatsCorrectly() throws {
+        // Arrange
+        let calendar = Calendar.current
+        let currentYear = calendar.component(.year, from: Date())
+
+        // December 31 of current year
+        let dec31CurrentYear = Date.from(year: currentYear, month: 12, day: 31)
+
+        // January 1 of previous year
+        let jan1PreviousYear = Date.from(year: currentYear - 1, month: 1, day: 1)
+
+        // Act
+        let dec31Formatted = BudgetCalculations.formatTransactionSectionDate(dec31CurrentYear)
+        let jan1Formatted = BudgetCalculations.formatTransactionSectionDate(jan1PreviousYear)
+
+        // Assert
+        XCTAssertFalse(dec31Formatted.contains(String(currentYear)),
+                      "Current year (Dec 31) should not include year")
+        XCTAssertTrue(jan1Formatted.contains(String(currentYear - 1)),
+                     "Previous year (Jan 1) should include year")
+    }
+
     // MARK: - Transaction Filtering Tests
 
     /// Test: Filters transactions in month correctly
