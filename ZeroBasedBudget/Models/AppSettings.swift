@@ -24,6 +24,9 @@ final class AppSettings {
     /// Dark mode preference: "system", "light", or "dark"
     var colorSchemePreference: String
 
+    /// Selected visual theme identifier (e.g., "midnightMint", "neonLedger", "ultravioletSlate")
+    var selectedTheme: String
+
     /// Currency code (e.g., "USD", "EUR", "GBP")
     var currencyCode: String
 
@@ -49,6 +52,7 @@ final class AppSettings {
 
     init(
         colorSchemePreference: String = "system",
+        selectedTheme: String = "midnightMint",
         currencyCode: String = "USD",
         dateFormat: String = "MM/DD/YYYY",
         monthStartDate: Int = 1,
@@ -61,6 +65,7 @@ final class AppSettings {
         self.createdDate = Date()
         self.lastModifiedDate = Date()
         self.colorSchemePreference = colorSchemePreference
+        self.selectedTheme = selectedTheme
         self.currencyCode = currencyCode
         self.dateFormat = dateFormat
         self.monthStartDate = monthStartDate

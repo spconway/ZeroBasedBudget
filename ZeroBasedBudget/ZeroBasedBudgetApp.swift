@@ -59,7 +59,7 @@ struct ZeroBasedBudgetApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .task {
                     // Request notification permissions on app launch
                     await requestNotificationPermissions()
@@ -78,5 +78,46 @@ struct ZeroBasedBudgetApp: App {
         } else {
             print("⚠️ Notification permissions denied")
         }
+    }
+}
+
+// MARK: - Root View (Theme Injection)
+
+/// Root view that handles theme initialization and injection
+struct RootView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var settings: [AppSettings]
+
+    @State private var themeManager: ThemeManager?
+
+    /// Get or create singleton settings
+    private var appSettings: AppSettings {
+        if let existing = settings.first {
+            return existing
+        } else {
+            let newSettings = AppSettings()
+            modelContext.insert(newSettings)
+            return newSettings
+        }
+    }
+
+    var body: some View {
+        Group {
+            if let themeManager = themeManager {
+                ContentView()
+                    .environment(\.theme, themeManager.currentTheme)
+            } else {
+                // Loading state (brief flash while theme initializes)
+                Color.clear
+                    .onAppear {
+                        initializeTheme()
+                    }
+            }
+        }
+    }
+
+    /// Initialize theme manager from AppSettings
+    private func initializeTheme() {
+        themeManager = ThemeManager(appSettings: appSettings, modelContext: modelContext)
     }
 }

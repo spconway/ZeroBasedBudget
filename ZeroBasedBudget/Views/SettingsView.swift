@@ -48,6 +48,11 @@ struct SettingsView: View {
         }
     }
 
+    /// Theme manager for theme selection
+    private var themeManager: ThemeManager {
+        ThemeManager(appSettings: appSettings, modelContext: modelContext)
+    }
+
     /// Available currency codes
     private let currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "CNY", "INR", "MXN"]
 
@@ -62,6 +67,9 @@ struct SettingsView: View {
             List {
                 // MARK: - Appearance Section
                 appearanceSection
+
+                // MARK: - Theme Section
+                themeSection
 
                 // MARK: - Currency & Formatting Section
                 currencyFormattingSection
@@ -135,6 +143,16 @@ struct SettingsView: View {
             Text("Appearance")
         } footer: {
             Text("Choose your preferred color scheme. System will match your device settings.")
+        }
+    }
+
+    private var themeSection: some View {
+        Section {
+            ThemePicker(themeManager: themeManager)
+        } header: {
+            Text("Visual Theme")
+        } footer: {
+            Text("Choose your preferred visual theme. Theme changes apply instantly throughout the app.")
         }
     }
 
