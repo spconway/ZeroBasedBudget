@@ -14,7 +14,7 @@ enum ValidationHelpers {
 
     /// Validates that a string is not empty after trimming whitespace
     static func isValidName(_ name: String) -> Bool {
-        !name.trimmingCharacters(in: .whitespaces).isEmpty
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     /// Validates category name (not empty, reasonable length)

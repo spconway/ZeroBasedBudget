@@ -86,19 +86,28 @@ final class BudgetCategory {
         let now = Date()
 
         // Get current month and year
-        var components = calendar.dateComponents([.year, .month], from: now)
-        components.day = day
+        let monthComponents = calendar.dateComponents([.year, .month], from: now)
+
+        // Get the maximum day in this month
+        guard let firstDayOfMonth = calendar.date(from: monthComponents),
+              let range = calendar.range(of: .day, in: .month, for: firstDayOfMonth) else {
+            return now
+        }
+
+        let maxDay = range.upperBound - 1 // upperBound is exclusive, so subtract 1
+
+        // Clamp day to valid range (1 to last day of month)
+        let clampedDay = min(max(day, 1), maxDay)
+
+        // Create date components with clamped day
+        var components = monthComponents
+        components.day = clampedDay
         components.hour = 0
         components.minute = 0
         components.second = 0
 
-        // Create date, clamping to valid days (e.g., Feb 31 → Feb 28/29)
-        if let date = calendar.date(from: components) {
-            return date
-        } else {
-            // If day doesn't exist in month (e.g., Feb 30), use last day of month
-            return lastDayOfCurrentMonth()
-        }
+        // Create date - should always succeed now with clamped value
+        return calendar.date(from: components) ?? now
     }
 
     /// Calculate the last day of the current month
