@@ -245,6 +245,11 @@ struct BudgetPlanningView: View {
                             CategoryRow(
                                 category: category,
                                 readyToAssign: readyToAssign,
+                                actualSpent: BudgetCalculations.calculateActualSpending(
+                                    for: category,
+                                    in: selectedMonth,
+                                    from: allTransactions
+                                ),
                                 onEdit: {
                                     editingCategory = category
                                 },
@@ -282,6 +287,11 @@ struct BudgetPlanningView: View {
                             CategoryRow(
                                 category: category,
                                 readyToAssign: readyToAssign,
+                                actualSpent: BudgetCalculations.calculateActualSpending(
+                                    for: category,
+                                    in: selectedMonth,
+                                    from: allTransactions
+                                ),
                                 onEdit: {
                                     editingCategory = category
                                 },
@@ -319,6 +329,11 @@ struct BudgetPlanningView: View {
                             CategoryRow(
                                 category: category,
                                 readyToAssign: readyToAssign,
+                                actualSpent: BudgetCalculations.calculateActualSpending(
+                                    for: category,
+                                    in: selectedMonth,
+                                    from: allTransactions
+                                ),
                                 onEdit: {
                                     editingCategory = category
                                 },
@@ -816,6 +831,7 @@ struct BudgetPlanningView: View {
 struct CategoryRow: View {
     let category: BudgetCategory
     let readyToAssign: Decimal
+    let actualSpent: Decimal  // NEW: Enhancement 7.2 - Track actual spending
     let onEdit: () -> Void
     let onQuickAssign: () -> Void
     var currencyCode: String = "USD"
@@ -841,7 +857,7 @@ struct CategoryRow: View {
                         .fill(Color(hex: category.colorHex))
                         .frame(width: 12, height: 12)
 
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(category.name)
                             .foregroundStyle(.primary)
 
@@ -850,6 +866,10 @@ struct CategoryRow: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+
+                        // NEW: Enhancement 7.2 - Progress bar showing spending
+                        CategoryProgressBar(spent: actualSpent, budgeted: category.budgetedAmount)
+                            .frame(height: 6)
                     }
 
                     Spacer()

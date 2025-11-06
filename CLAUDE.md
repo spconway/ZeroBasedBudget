@@ -101,7 +101,17 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
-**v1.6.0 (Current):**
+**v1.7.0 (Current - In Progress):**
+- ✅ Enhancement 7.1: Replaced relative transaction dates with absolute dates ("Nov 5" instead of "2 days ago")
+- ✅ Enhancement 7.2: Added category spending progress indicators with color-coded visual feedback
+- ✅ Added: formatTransactionSectionDate() utility function with locale support
+- ✅ Added: CategoryProgressBar reusable component with green/yellow/red color coding
+- ✅ Added: Progress bars to all category cards in BudgetPlanningView
+- ✅ Added: 4 unit tests for date formatting (current year, different year, year boundary edge cases)
+- ✅ Improved: Transaction list temporal clarity and scannability
+- ✅ Improved: Category spending visibility with at-a-glance progress indicators
+
+**v1.6.0:**
 - ✅ Added: Comprehensive unit testing suite (110 tests across 10 files)
 - ✅ Added: XCTest framework infrastructure with in-memory SwiftData testing
 - ✅ Added: TestDataFactory for consistent test data creation
@@ -152,288 +162,46 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🟡 Priority 2: UX Improvements (v1.7.0 Planned)
+### 🟡 Priority 2: UX Improvements (v1.7.0 In Progress)
 
 #### Enhancement 7.1: Replace Relative Transaction Dates with Absolute Dates
 
-**Status**: 🔄 **PENDING**
+**Status**: ✅ **COMPLETE** (November 6, 2025)
 **Version**: v1.7.0 (UX Polish)
-**Priority**: Medium (User experience improvement)
-**Planned Start**: Next available session
+**Commit**: `d408390` - feat: replace relative transaction dates with absolute dates
 
-**Objective**: Replace relative date labels ("Today", "Yesterday", "2 days ago") with absolute date formats ("Nov 5, 2025") in transaction list section headers to provide clearer temporal context and improve scannability.
+**Completed**: Replaced relative date labels with absolute date formats in transaction list section headers.
 
-**YNAB Alignment Check**: ✅ **Neutral** - Does not affect YNAB methodology; purely a UI presentation change.
-
-**Current Behavior**:
-- TransactionLogView groups transactions by date
-- Section headers use relative date strings: "Today", "Yesterday", "2 days ago", "3 days ago", etc.
-- Created in v1.5.0 as part of Enhancement 4.1
-
-**Proposed Behavior**:
-- Section headers use absolute date format: "Nov 5, 2025", "Nov 4, 2025", "Nov 3, 2025", etc.
-- Format adapts to locale settings (US: "Nov 5, 2025", Europe: "5 Nov 2025")
-- Current year can be omitted for brevity if within same calendar year
-- Maintains date grouping logic (transactions grouped by calendar day)
-
-**Implementation Approach**:
-
-**Phase 1: Create Date Formatting Utility**
-1. Add new date formatter to `BudgetCalculations.swift` or create `DateFormatters.swift`
-2. Implement `formatTransactionSectionDate(_ date: Date) -> String` function
-3. Support multiple format options:
-   - Full: "November 5, 2025"
-   - Medium (recommended): "Nov 5, 2025"
-   - Short: "Nov 5" (for current year only)
-4. Respect user's locale and calendar settings
-5. Add unit tests for date formatting edge cases
-
-**Phase 2: Update TransactionLogView**
-1. Locate section header rendering code in `TransactionLogView.swift`
-2. Replace relative date calculation with absolute date formatter
-3. Maintain existing grouping logic (group by calendar day)
-4. Test with transactions spanning multiple months and years
-5. Verify proper sorting (newest to oldest)
-
-**Files to Modify**:
-- `ZeroBasedBudget/Views/TransactionLogView.swift` - Update section header date display
-- `ZeroBasedBudget/Utilities/BudgetCalculations.swift` (or new `DateFormatters.swift`) - Add date formatting function
-
-**Files to Create** (optional):
-- `ZeroBasedBudget/Utilities/DateFormatters.swift` - Centralized date formatting utilities (if not added to BudgetCalculations)
-- `ZeroBasedBudgetTests/Utilities/DateFormattersTests.swift` - Unit tests for date formatting
-
-**Design Considerations**:
-1. **Locale Awareness**: Use `Date.FormatStyle` for automatic locale support
-2. **Year Display**: Omit year for dates in current calendar year to reduce visual clutter
-3. **Consistency**: Use same format throughout app (consider using in other views if applicable)
-4. **Performance**: Cache DateFormatter instances to avoid repeated creation
-5. **Accessibility**: Ensure VoiceOver announces dates naturally
-6. **Testing**: Test with different locales (US, UK, Europe, Asia) and calendar systems
-
-**Code Example**:
-```swift
-// In DateFormatters.swift or BudgetCalculations.swift
-extension Date {
-    /// Format date for transaction section headers (e.g., "Nov 5, 2025")
-    func transactionSectionDateString() -> String {
-        let calendar = Calendar.current
-        let now = Date()
-
-        // Check if date is in current year
-        let dateYear = calendar.component(.year, from: self)
-        let currentYear = calendar.component(.year, from: now)
-
-        if dateYear == currentYear {
-            // Omit year for current year: "Nov 5"
-            return self.formatted(.dateTime.month(.abbreviated).day())
-        } else {
-            // Include year for other years: "Nov 5, 2025"
-            return self.formatted(.dateTime.month(.abbreviated).day().year())
-        }
-    }
-}
-
-// In TransactionLogView.swift
-Section(header: Text(date.transactionSectionDateString())) {
-    ForEach(transactionsForDate) { transaction in
-        TransactionRow(transaction: transaction)
-    }
-}
-```
-
-**Testing Checklist**:
-- [ ] Date formatter handles current year (omits year)
-- [ ] Date formatter handles past years (includes year)
-- [ ] Date formatter handles future years (includes year)
-- [ ] Format respects user's locale settings
-- [ ] Section headers display correctly for all grouped dates
-- [ ] No performance degradation with large transaction lists
-- [ ] VoiceOver announces dates naturally
-- [ ] Tested with multiple locales (US, UK, Germany, Japan)
-- [ ] Year boundary transitions work correctly (Dec 31 → Jan 1)
-- [ ] Month boundary transitions work correctly
-
-**Acceptance Criteria**:
-- Transaction section headers display absolute dates (e.g., "Nov 5, 2025")
-- Year is omitted for dates in current calendar year (e.g., "Nov 5")
-- Format adapts to user's locale and calendar settings
-- No change to transaction grouping logic (still grouped by calendar day)
-- VoiceOver accessibility maintained
-- No performance regression with large transaction lists
-- All existing tests still pass
-- New unit tests added for date formatting utility
-
-**Estimated Complexity**: Low (1-2 hours - simple date formatting change)
-
-**Dependencies**: None (independent UX improvement)
+**Implementation Summary**:
+- ✅ Added `formatTransactionSectionDate()` to BudgetCalculations.swift
+- ✅ Updated TransactionLogView to use absolute dates
+- ✅ Removed old `formatSectionDate()` function
+- ✅ Added 4 unit tests for date formatting (current year, different year, future year, year boundary)
+- ✅ Locale-aware formatting using Date.FormatStyle
+- ✅ Year omitted for current calendar year ("Nov 5"), included for other years ("Nov 5, 2025")
+- ✅ VoiceOver accessibility maintained
 
 ---
 
 #### Enhancement 7.2: Add Category Spending Progress Indicators
 
-**Status**: 🔄 **PENDING**
+**Status**: ✅ **COMPLETE** (November 6, 2025)
 **Version**: v1.7.0 (UX Enhancement)
-**Priority**: Medium (Visual feedback improvement)
-**Planned Start**: After Enhancement 7.1
+**Commit**: `00042b2` - feat: add category spending progress indicators
 
-**Objective**: Add visual progress bars to budget category cards showing spending progress against budgeted amounts, providing immediate visual feedback on category status and helping users quickly identify overspending or available funds.
+**Completed**: Added visual progress bars to all budget category cards with color-coded spending feedback.
 
-**YNAB Alignment Check**: ✅ **Compliant** - Reinforces YNAB principle of tracking spending against budgeted amounts. Progress bars show how much of the allocated money has been spent, encouraging mindful spending awareness.
+**Implementation Summary**:
+- ✅ Created CategoryProgressBar reusable SwiftUI component
+- ✅ Color-coded progress: Green (0-75%), Yellow (75-100%), Red (>100%)
+- ✅ Integrated into all category cards (Fixed, Variable, Quarterly expenses)
+- ✅ Uses BudgetCalculations.calculateActualSpending() for accurate data
+- ✅ Smooth spring animation for progress updates
+- ✅ Edge case handling: $0 budget, negative spending, overspending
+- ✅ VoiceOver accessibility with progress announcements
+- ✅ Created Views/Components/ directory for reusable UI components
+- ✅ Multiple preview scenarios for testing
 
-**Current Behavior**:
-- Category cards show budgeted amount and text description of spending
-- Users must read text to understand spending status
-- No immediate visual indicator of progress toward budget limit
-
-**Proposed Behavior**:
-- Each category card displays a horizontal progress bar
-- Progress bar fills based on: `actualSpent / budgetedAmount`
-- Color coding indicates status:
-  - **Green** (0-75%): Healthy spending, within budget
-  - **Yellow** (75-100%): Approaching limit, caution advised
-  - **Red** (>100%): Overspent, exceeds budget
-- Progress bar animates smoothly when transactions are added
-- Maintains existing category card layout and information
-
-**Implementation Approach**:
-
-**Phase 1: Create Progress Bar Component**
-1. Create reusable `CategoryProgressBar` SwiftUI view component
-2. Accept parameters: `spent: Decimal`, `budgeted: Decimal`
-3. Calculate percentage: `Double(truncating: spent / budgeted as NSNumber)`
-4. Implement color logic based on percentage thresholds
-5. Add smooth animation using `.animation(.spring())`
-6. Handle edge cases:
-   - `budgeted == 0` → Show empty bar or hide component
-   - `spent < 0` (refunds) → Show negative indicator or clamp to 0
-   - `spent > budgeted` → Fill 100% and show overflow indicator
-
-**Phase 2: Integrate into BudgetPlanningView**
-1. Modify category card in `BudgetPlanningView.swift`
-2. Add `CategoryProgressBar` below budgeted amount text
-3. Pass `actualSpent` and `budgetedAmount` from category
-4. Use existing `BudgetCalculations.calculateActualSpending()` function
-5. Ensure proper spacing and alignment within card
-6. Test with various spending scenarios
-
-**Phase 3: Refinements**
-1. Add haptic feedback when category reaches 100%
-2. Consider adding percentage label (e.g., "65%") for accessibility
-3. Ensure VoiceOver announces progress status
-4. Test with Dynamic Type (large text sizes)
-
-**Files to Create**:
-- `ZeroBasedBudget/Views/Components/CategoryProgressBar.swift` - Reusable progress bar component
-- `ZeroBasedBudgetTests/Views/CategoryProgressBarTests.swift` - Unit tests for progress bar logic (optional)
-
-**Files to Modify**:
-- `ZeroBasedBudget/Views/BudgetPlanningView.swift` - Integrate progress bar into category cards
-- `ZeroBasedBudget/Utilities/AppColors.swift` - Add progress bar color definitions (if not using existing semantic colors)
-
-**Design Considerations**:
-1. **Visual Hierarchy**: Progress bar should be subtle, not dominate the card
-2. **Color Accessibility**: Use WCAG AA compliant colors for progress bar
-3. **Animation**: Use spring animation for smooth, natural feel
-4. **Edge Cases**: Handle $0 budgeted categories gracefully (YNAB allows this)
-5. **Performance**: Ensure progress bar doesn't cause lag with many categories
-6. **Consistency**: Match existing app visual style and theme
-7. **YNAB Principle**: Progress shows spending, not assignment (spending ≠ budgeting)
-
-**Code Example**:
-```swift
-// CategoryProgressBar.swift
-struct CategoryProgressBar: View {
-    let spent: Decimal
-    let budgeted: Decimal
-
-    private var percentage: Double {
-        guard budgeted > 0 else { return 0 }
-        let value = Double(truncating: (spent / budgeted) as NSNumber)
-        return min(max(value, 0), 1.0) // Clamp between 0 and 1
-    }
-
-    private var progressColor: Color {
-        if percentage >= 1.0 {
-            return .red // Overspent
-        } else if percentage >= 0.75 {
-            return .orange // Approaching limit
-        } else {
-            return .green // Healthy
-        }
-    }
-
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                // Background track
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(height: 6)
-
-                // Progress fill
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(progressColor)
-                    .frame(width: geometry.size.width * percentage, height: 6)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: percentage)
-            }
-        }
-        .frame(height: 6)
-        .accessibilityLabel("Spending progress")
-        .accessibilityValue("\(Int(percentage * 100))% of budget used")
-    }
-}
-
-// In BudgetPlanningView.swift - Category Card
-VStack(alignment: .leading, spacing: 8) {
-    Text(category.name)
-        .font(.headline)
-
-    Text(category.budgetedAmount, format: .currency(code: "USD"))
-        .font(.subheadline)
-        .foregroundColor(.secondary)
-
-    // NEW: Progress bar
-    CategoryProgressBar(
-        spent: BudgetCalculations.calculateActualSpending(
-            for: category,
-            in: transactions
-        ),
-        budgeted: category.budgetedAmount
-    )
-    .padding(.top, 4)
-}
-```
-
-**Testing Checklist**:
-- [ ] Progress bar displays correctly for 0% spending
-- [ ] Progress bar displays correctly for partial spending (25%, 50%, 75%)
-- [ ] Progress bar displays correctly at 100% spending
-- [ ] Progress bar handles overspending (>100%) gracefully
-- [ ] Color transitions occur at correct thresholds (75%, 100%)
-- [ ] Animation is smooth and performant
-- [ ] Handles $0 budgeted categories (YNAB principle)
-- [ ] Handles negative spending (refunds) correctly
-- [ ] VoiceOver announces progress status
-- [ ] Works with Dynamic Type (large text sizes)
-- [ ] No performance degradation with many categories
-- [ ] Visual consistency with app theme
-
-**Acceptance Criteria**:
-- Progress bar component created and reusable
-- Progress bars integrated into all category cards in BudgetPlanningView
-- Color coding implemented: green (0-75%), yellow (75-100%), red (>100%)
-- Smooth animation when spending changes
-- Edge cases handled: $0 budget, negative spending, overspending
-- WCAG AA color contrast compliance maintained
-- VoiceOver accessibility support for progress status
-- All existing tests pass
-- No performance regression with large category lists
-- Visual design consistent with existing app aesthetic
-
-**Estimated Complexity**: Medium (3-4 hours - component creation, integration, edge case handling, testing)
-
-**Dependencies**: None (independent UX improvement)
 
 ---
 
@@ -950,22 +718,22 @@ enum ThemeType {
 
 ## Active Development
 
-**Current Focus**: v1.7.0 Planning - UX Improvements & Theme Management
-**Status**: v1.6.0 complete (110 unit tests passing); ready for new feature development
+**Current Focus**: v1.7.0 Development - UX Improvements & Theme Management
+**Status**: v1.7.0 in progress; Enhancements 7.1 & 7.2 complete; 114 unit tests passing
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
-2. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
-3. [2025-11-05] ✅ **Test Suite Complete**: All tests passing (Models, Utilities, YNAB, EdgeCases, Persistence)
-4. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list with relative dates
-5. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting bug
+1. [2025-11-06] ✅ **Enhancement 7.2 COMPLETE**: Category spending progress indicators (v1.7.0)
+2. [2025-11-06] ✅ **Enhancement 7.1 COMPLETE**: Absolute transaction dates with locale support (v1.7.0)
+3. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
+4. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
+5. [2025-11-05] ✅ **Test Suite Complete**: All tests passing (Models, Utilities, YNAB, EdgeCases, Persistence)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Test Suite Status**: ✅ All 110 tests passing (verified November 5, 2025)
+1. **Test Suite Status**: ✅ All 114 tests passing (verified November 6, 2025)
 2. **Design Assets**: ✅ Three complete visual themes available in Designs/ folder
-3. **Current Priority**: Begin v1.7.0 enhancements (see Active Issues & Enhancement Backlog below)
+3. **Current Priority**: Continue v1.7.0 enhancements - Next: Enhancement 8.1 (Theme Management Infrastructure)
 4. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy

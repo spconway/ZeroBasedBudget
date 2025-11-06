@@ -36,6 +36,26 @@ enum BudgetCalculations {
         return dateComponents.year == monthComponents.year && dateComponents.month == monthComponents.month
     }
 
+    /// Formats a date for transaction section headers with absolute dates
+    /// Returns format like "Nov 5" for current year, "Nov 5, 2025" for other years
+    /// Respects user's locale and calendar settings
+    static func formatTransactionSectionDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Check if date is in current year
+        let dateYear = calendar.component(.year, from: date)
+        let currentYear = calendar.component(.year, from: now)
+
+        if dateYear == currentYear {
+            // Omit year for current year: "Nov 5"
+            return date.formatted(.dateTime.month(.abbreviated).day())
+        } else {
+            // Include year for other years: "Nov 5, 2025"
+            return date.formatted(.dateTime.month(.abbreviated).day().year())
+        }
+    }
+
     // MARK: - Transaction Filtering
 
     /// Filters transactions to only those in the specified month

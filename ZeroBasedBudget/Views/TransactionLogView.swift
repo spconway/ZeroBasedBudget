@@ -68,28 +68,6 @@ struct TransactionLogView: View {
         allTransactions.contains { $0.type == .income }
     }
 
-    // Format date with relative labels (Today, Yesterday, etc.)
-    private func formatSectionDate(_ date: Date) -> String {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let transactionDate = calendar.startOfDay(for: date)
-
-        if transactionDate == today {
-            return "Today"
-        } else if let yesterday = calendar.date(byAdding: .day, value: -1, to: today),
-                  transactionDate == yesterday {
-            return "Yesterday"
-        } else if let daysAgo = calendar.dateComponents([.day], from: transactionDate, to: today).day,
-                  daysAgo < 7 {
-            return "\(daysAgo) days ago"
-        } else {
-            // Standard date format for older transactions
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .none
-            return formatter.string(from: date)
-        }
-    }
 
     var body: some View {
         NavigationStack {
@@ -136,7 +114,7 @@ struct TransactionLogView: View {
                                 }
                         }
                     } header: {
-                        Text(formatSectionDate(date))
+                        Text(BudgetCalculations.formatTransactionSectionDate(date))
                             .font(.headline)
                             .foregroundStyle(.primary)
                     }
