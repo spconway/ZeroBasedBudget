@@ -104,12 +104,23 @@ ZeroBasedBudget/
 **v1.7.0 (Current - In Progress):**
 - ✅ Enhancement 7.1: Replaced relative transaction dates with absolute dates ("Nov 5" instead of "2 days ago")
 - ✅ Enhancement 7.2: Added category spending progress indicators with color-coded visual feedback
+- ✅ Enhancement 8.1: Theme management infrastructure with SwiftUI Environment integration
 - ✅ Added: formatTransactionSectionDate() utility function with locale support
 - ✅ Added: CategoryProgressBar reusable component with green/yellow/red color coding
 - ✅ Added: Progress bars to all category cards in BudgetPlanningView
+- ✅ Added: Theme protocol defining complete theme contract (colors, typography, spacing, radius)
+- ✅ Added: ThemeManager @Observable class for centralized theme state management
+- ✅ Added: ThemeEnvironment for SwiftUI @Environment(\.theme) integration
+- ✅ Added: MidnightMintTheme as default theme implementation (from design tokens)
+- ✅ Added: ThemePicker UI component for Settings with color previews
+- ✅ Added: Visual Theme section in Settings view
+- ✅ Added: AppSettings.selectedTheme for theme persistence
+- ✅ Added: RootView for theme injection at app level
+- ✅ Added: 20 unit tests for ThemeManager (initialization, switching, persistence, registry)
 - ✅ Added: 4 unit tests for date formatting (current year, different year, year boundary edge cases)
 - ✅ Improved: Transaction list temporal clarity and scannability
 - ✅ Improved: Category spending visibility with at-a-glance progress indicators
+- ✅ Infrastructure: Foundation ready for Enhancement 8.2 (three visual themes implementation)
 
 **v1.6.0:**
 - ✅ Added: Comprehensive unit testing suite (110 tests across 10 files)
@@ -209,234 +220,41 @@ ZeroBasedBudget/
 
 #### Enhancement 8.1: Theme Management Infrastructure
 
-**Status**: 🔄 **PENDING**
+**Status**: ✅ **COMPLETE** (November 6, 2025)
 **Version**: v1.7.0 (Theme System Foundation)
-**Priority**: High (Foundation for Enhancement 8.2)
-**Planned Start**: After Enhancement 7.2
+**Commit**: `47700ec` - feat: add theme management infrastructure (Enhancement 8.1)
 
-**Objective**: Create a centralized theme management system with SwiftUI Environment integration, enabling dynamic theme switching throughout the app. This infrastructure will support the three visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate) and provide a foundation for future theme additions.
+**Completed**: Created centralized theme management system with SwiftUI Environment integration, enabling dynamic theme switching throughout the app. This infrastructure provides the foundation for the three visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate).
 
-**YNAB Alignment Check**: ✅ **Neutral** - Theming is purely aesthetic and does not affect YNAB methodology or calculations.
+**Implementation Summary**:
+- ✅ Created Theme protocol with colors, typography, spacing, radius definitions
+- ✅ Created ThemeManager @Observable class for centralized theme state management
+- ✅ Created ThemeEnvironment for SwiftUI @Environment(\.theme) integration
+- ✅ Implemented MidnightMintTheme as default theme (from Designs/MidnightMint/tokens.json)
+- ✅ Created ThemePicker UI component with color previews and descriptions
+- ✅ Added Visual Theme section to SettingsView
+- ✅ Added AppSettings.selectedTheme property for persistence
+- ✅ Created RootView for theme injection at app level
+- ✅ Added 20 unit tests for ThemeManager (initialization, switching, persistence, registry)
+- ✅ Theme switching with smooth animations
+- ✅ Theme persistence across app restarts
+- ✅ Color hex initialization helper for design token integration
+- ✅ Fallback to default theme for invalid identifiers
 
-**Current Behavior**:
-- App uses hardcoded colors defined in `AppColors.swift`
-- No centralized theme system
-- No ability to switch themes dynamically
-- Dark mode toggle exists but limited to light/dark, not full themes
+**Files Created**:
+- ZeroBasedBudget/Utilities/Theme/Theme.swift (212 lines)
+- ZeroBasedBudget/Utilities/Theme/ThemeManager.swift (131 lines)
+- ZeroBasedBudget/Utilities/Theme/ThemeEnvironment.swift (44 lines)
+- ZeroBasedBudget/Utilities/Theme/MidnightMintTheme.swift (77 lines)
+- ZeroBasedBudget/Views/Components/ThemePicker.swift (98 lines)
+- ZeroBasedBudgetTests/Utilities/ThemeManagerTests.swift (256 lines)
 
-**Proposed Behavior**:
-- Centralized `ThemeManager` class manages current theme
-- Themes defined as protocols with concrete implementations
-- SwiftUI Environment integration for global theme access
-- Theme selection persisted in `AppSettings` model
-- Smooth transitions between themes with animations
-- Settings tab provides theme picker UI
+**Files Modified**:
+- ZeroBasedBudget/Models/AppSettings.swift (added selectedTheme property)
+- ZeroBasedBudget/Views/SettingsView.swift (added Visual Theme section)
+- ZeroBasedBudget/ZeroBasedBudgetApp.swift (added RootView for theme injection)
 
-**Implementation Approach**:
-
-**Phase 1: Define Theme Protocol and Infrastructure**
-1. Create `Theme` protocol defining all required colors, typography, spacing
-2. Create `ThemeManager` @Observable class for theme state management
-3. Add `selectedTheme` property to `AppSettings.swift` model
-4. Create `ThemeEnvironmentKey` for SwiftUI Environment integration
-5. Implement theme persistence (save/load from AppSettings)
-
-**Phase 2: Settings Integration**
-1. Modify `SettingsView.swift` to add "Theme" section
-2. Create theme picker UI with radio buttons or segmented control
-3. Display theme previews (color swatches + name + description)
-4. Bind theme selection to ThemeManager
-5. Save selection to AppSettings model
-6. Test theme switching in Settings
-
-**Phase 3: App-Wide Integration**
-1. Modify `ZeroBasedBudgetApp.swift` to inject ThemeManager into environment
-2. Create `@Environment(\.theme)` accessor for views
-3. Document theme usage pattern for future development
-4. Ensure all views can access theme via Environment
-
-**Files to Create**:
-- `ZeroBasedBudget/Utilities/Theme/Theme.swift` - Theme protocol definition
-- `ZeroBasedBudget/Utilities/Theme/ThemeManager.swift` - Theme management class
-- `ZeroBasedBudget/Utilities/Theme/ThemeEnvironment.swift` - SwiftUI Environment integration
-- `ZeroBasedBudget/Views/Components/ThemePicker.swift` - Theme selection UI component
-- `ZeroBasedBudgetTests/Utilities/ThemeManagerTests.swift` - Unit tests for theme management
-
-**Files to Modify**:
-- `ZeroBasedBudget/Models/AppSettings.swift` - Add `selectedTheme` property
-- `ZeroBasedBudget/Views/SettingsView.swift` - Add Theme section with picker
-- `ZeroBasedBudget/ZeroBasedBudgetApp.swift` - Inject ThemeManager into environment
-
-**Design Considerations**:
-1. **Performance**: Theme switching should be instant (< 100ms)
-2. **Persistence**: Theme selection must survive app restarts
-3. **Type Safety**: Use enums for theme selection, not strings
-4. **Extensibility**: Make it easy to add new themes in the future
-5. **Testing**: Theme manager should be easily testable in unit tests
-6. **Environment**: Use SwiftUI Environment for clean, declarative access
-7. **Animation**: Consider smooth color transitions when switching themes
-8. **Default**: Default theme should be sensible (recommend Midnight Mint for broad appeal)
-
-**Code Example**:
-```swift
-// Theme.swift - Protocol defining theme contract
-protocol Theme {
-    var name: String { get }
-    var colors: ThemeColors { get }
-    var typography: ThemeTypography { get }
-    var spacing: ThemeSpacing { get }
-    var radius: ThemeRadius { get }
-}
-
-struct ThemeColors {
-    let background: Color
-    let surface: Color
-    let surfaceElevated: Color
-    let primary: Color
-    let onPrimary: Color
-    let accent: Color
-    let success: Color
-    let warning: Color
-    let error: Color
-    let textPrimary: Color
-    let textSecondary: Color
-    let border: Color
-    let readyToAssignBackground: Color
-    let readyToAssignText: Color
-    // ... other semantic colors
-}
-
-struct ThemeTypography {
-    let largeTitle: Font
-    let title: Font
-    let headline: Font
-    let body: Font
-    let caption: Font
-}
-
-struct ThemeSpacing {
-    let xs: CGFloat
-    let sm: CGFloat
-    let md: CGFloat
-    let lg: CGFloat
-    let xl: CGFloat
-}
-
-struct ThemeRadius {
-    let sm: CGFloat
-    let md: CGFloat
-    let lg: CGFloat
-    let xl: CGFloat
-}
-
-// ThemeManager.swift - Observable theme management
-@Observable
-class ThemeManager {
-    var currentTheme: Theme {
-        didSet {
-            saveThemePreference()
-        }
-    }
-
-    init() {
-        // Load saved theme preference or use default
-        self.currentTheme = ThemeManager.loadThemePreference()
-    }
-
-    func setTheme(_ theme: Theme) {
-        currentTheme = theme
-    }
-
-    private func saveThemePreference() {
-        // Save to AppSettings via SwiftData
-    }
-
-    private static func loadThemePreference() -> Theme {
-        // Load from AppSettings or return default
-        return MidnightMintTheme() // Default
-    }
-}
-
-// ThemeEnvironment.swift - SwiftUI Environment integration
-private struct ThemeEnvironmentKey: EnvironmentKey {
-    static let defaultValue: Theme = MidnightMintTheme()
-}
-
-extension EnvironmentValues {
-    var theme: Theme {
-        get { self[ThemeEnvironmentKey.self] }
-        set { self[ThemeEnvironmentKey.self] = newValue }
-    }
-}
-
-// In ZeroBasedBudgetApp.swift
-@main
-struct ZeroBasedBudgetApp: App {
-    @State private var themeManager = ThemeManager()
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environment(\.theme, themeManager.currentTheme)
-        }
-    }
-}
-
-// Usage in any view
-struct SomeView: View {
-    @Environment(\.theme) private var theme
-
-    var body: some View {
-        Text("Hello")
-            .foregroundColor(theme.colors.textPrimary)
-            .background(theme.colors.surface)
-    }
-}
-```
-
-**AppSettings Model Update**:
-```swift
-// In AppSettings.swift
-@Model
-class AppSettings {
-    var colorSchemePreference: String = "system" // Existing
-    var currencyCode: String = "USD"            // Existing
-    var selectedTheme: String = "midnightMint"  // NEW: "neonLedger", "midnightMint", "ultravioletSlate"
-    // ... other properties
-}
-```
-
-**Testing Checklist**:
-- [ ] Theme protocol defines all required properties
-- [ ] ThemeManager initializes with default theme
-- [ ] ThemeManager loads saved theme preference on init
-- [ ] Theme selection persists across app restarts
-- [ ] Theme switching updates immediately in all views
-- [ ] SwiftUI Environment provides theme access in views
-- [ ] Theme picker UI displays all available themes
-- [ ] Theme picker selection updates ThemeManager
-- [ ] No memory leaks with theme switching
-- [ ] Unit tests cover theme management logic
-- [ ] All existing tests still pass
-
-**Acceptance Criteria**:
-- Theme protocol defined with all necessary properties (colors, typography, spacing, radius)
-- ThemeManager class created with Observable support
-- Theme selection persisted in AppSettings model
-- SwiftUI Environment integration complete (`@Environment(\.theme)`)
-- Settings tab includes Theme section with picker UI
-- Theme selection immediately updates app appearance
-- Default theme set (Midnight Mint recommended)
-- All existing app functionality still works
-- Unit tests added for ThemeManager
-- Documentation added for theme usage pattern
-- Foundation ready for Enhancement 8.2 (theme implementations)
-
-**Estimated Complexity**: High (6-8 hours - infrastructure design, SwiftUI integration, persistence, testing)
-
-**Dependencies**: None (independent infrastructure work)
-
-**Next Enhancement**: Enhancement 8.2 (Implement Three Visual Themes) - depends on this infrastructure
+**Foundation ready for Enhancement 8.2 (implement three visual themes).**
 
 ---
 
@@ -719,22 +537,23 @@ enum ThemeType {
 ## Active Development
 
 **Current Focus**: v1.7.0 Development - UX Improvements & Theme Management
-**Status**: v1.7.0 in progress; Enhancements 7.1 & 7.2 complete; 114 unit tests passing
+**Status**: v1.7.0 in progress; Enhancements 7.1, 7.2, 8.1 complete; 134 unit tests passing (114 existing + 20 theme tests)
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-06] ✅ **Enhancement 7.2 COMPLETE**: Category spending progress indicators (v1.7.0)
-2. [2025-11-06] ✅ **Enhancement 7.1 COMPLETE**: Absolute transaction dates with locale support (v1.7.0)
-3. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
-4. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
-5. [2025-11-05] ✅ **Test Suite Complete**: All tests passing (Models, Utilities, YNAB, EdgeCases, Persistence)
+1. [2025-11-06] ✅ **Enhancement 8.1 COMPLETE**: Theme management infrastructure with SwiftUI Environment integration (v1.7.0)
+2. [2025-11-06] ✅ **Enhancement 7.2 COMPLETE**: Category spending progress indicators (v1.7.0)
+3. [2025-11-06] ✅ **Enhancement 7.1 COMPLETE**: Absolute transaction dates with locale support (v1.7.0)
+4. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
+5. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Test Suite Status**: ✅ All 114 tests passing (verified November 6, 2025)
-2. **Design Assets**: ✅ Three complete visual themes available in Designs/ folder
-3. **Current Priority**: Continue v1.7.0 enhancements - Next: Enhancement 8.1 (Theme Management Infrastructure)
-4. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+1. **Test Suite Status**: ✅ All 134 tests passing (114 existing + 20 theme tests, verified November 6, 2025)
+2. **Theme Infrastructure**: ✅ Theme management system complete (Enhancement 8.1)
+3. **Design Assets**: ✅ Three complete visual themes available in Designs/ folder
+4. **Current Priority**: Continue v1.7.0 enhancements - Next: Enhancement 8.2 (Implement Three Visual Themes)
+5. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy
 
