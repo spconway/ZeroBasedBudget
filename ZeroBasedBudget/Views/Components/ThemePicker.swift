@@ -113,7 +113,7 @@ struct ThemePickerPreview: View {
                 ThemePicker(themeManager: themeManager)
             }
         }
-        .theme(themeManager.currentTheme)
+        .withTheme(themeManager.currentTheme)
     }
 }
 

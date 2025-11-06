@@ -9,7 +9,7 @@ import SwiftUI
 
 /// Reusable row component for displaying account information in a list
 struct AccountRow: View {
-    @Environment(.theme) private var theme
+    @Environment(\.theme) private var theme
     let account: Account
     var currencyCode: String = "USD"
 

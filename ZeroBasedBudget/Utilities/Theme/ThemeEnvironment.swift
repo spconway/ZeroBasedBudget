@@ -72,14 +72,14 @@ extension View {
     /// Inject a theme into the SwiftUI environment
     /// - Parameter theme: Theme to make available to child views
     /// - Returns: View with theme in environment
-    func theme(_ theme: Theme) -> some View {
+    func withTheme(_ theme: Theme) -> some View {
         environment(\.theme, theme)
     }
 
     /// Inject a ThemeManager into the SwiftUI environment
     /// - Parameter themeManager: ThemeManager to make available to child views
     /// - Returns: View with themeManager in environment
-    func themeManager(_ themeManager: ThemeManager) -> some View {
+    func withThemeManager(_ themeManager: ThemeManager) -> some View {
         environment(\.themeManager, themeManager)
     }
 }

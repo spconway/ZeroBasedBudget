@@ -830,6 +830,7 @@ struct BudgetPlanningView: View {
 
 // MARK: - CategoryRow View
 struct CategoryRow: View {
+    @Environment(\.theme) private var theme
     let category: BudgetCategory
     let readyToAssign: Decimal
     let actualSpent: Decimal  // NEW: Enhancement 7.2 - Track actual spending
@@ -904,6 +905,7 @@ struct CategoryRow: View {
 // MARK: - AddCategorySheet
 struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
     let categoryType: String
 	var currencyCode: String = "USD"
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
@@ -1054,6 +1056,7 @@ struct AddCategorySheet: View {
 // MARK: - EditCategorySheet
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
     let category: BudgetCategory
     let onSave: (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
     var currencyCode: String = "USD"

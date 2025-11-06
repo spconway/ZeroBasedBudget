@@ -21,6 +21,7 @@ import UniformTypeIdentifiers
 /// - About
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
     @Environment(\.themeManager) private var themeManager
     @Query private var settings: [AppSettings]
     @Query private var accounts: [Account]

@@ -11,7 +11,7 @@ import SwiftUI
 /// Visual progress bar showing spending against budgeted amount
 /// Color-coded: Green (0-75%), Yellow (75-100%), Red (>100%)
 struct CategoryProgressBar: View {
-    @Environment(.theme) private var theme
+    @Environment(\.theme) private var theme
     let spent: Decimal
     let budgeted: Decimal
 

@@ -16,6 +16,7 @@ enum ChartType: String, CaseIterable {
 
 struct BudgetAnalysisView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
     @Query private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
     @Query private var settings: [AppSettings]
@@ -105,6 +106,7 @@ struct BudgetAnalysisView: View {
 // MARK: - Month Picker Section
 
 struct MonthPickerSection: View {
+    @Environment(\.theme) private var theme
     @Binding var selectedMonth: Date
 
     private var monthYearString: String {
@@ -159,6 +161,7 @@ struct MonthPickerSection: View {
 // MARK: - Summary Section
 
 struct SummarySection: View {
+    @Environment(\.theme) private var theme
     let totalBudgeted: Decimal
     let totalActual: Decimal
     let totalDifference: Decimal
@@ -201,6 +204,7 @@ struct SummarySection: View {
 }
 
 struct SummaryCard: View {
+    @Environment(\.theme) private var theme
     let title: String
     let amount: Decimal
     let color: Color
@@ -227,6 +231,7 @@ struct SummaryCard: View {
 // MARK: - Bar Chart Section
 
 struct BarChartSection: View {
+    @Environment(\.theme) private var theme
     let categoryComparisons: [CategoryComparison]
 
     var body: some View {
@@ -269,6 +274,7 @@ struct BarChartSection: View {
 // MARK: - Donut Chart Section
 
 struct DonutChartSection: View {
+    @Environment(\.theme) private var theme
     let categoryComparisons: [CategoryComparison]
     var currencyCode: String = "USD"
 
@@ -434,6 +440,7 @@ struct DetailedListSection: View {
 }
 
 struct CategoryComparisonRow: View {
+    @Environment(\.theme) private var theme
     let comparison: CategoryComparison
     var currencyCode: String = "USD"
 
@@ -505,6 +512,7 @@ struct CategoryComparisonRow: View {
 }
 
 struct MetricColumn: View {
+    @Environment(\.theme) private var theme
     let title: String
     let value: Decimal
     let color: Color
