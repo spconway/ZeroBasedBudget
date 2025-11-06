@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import SwiftUI
 import SwiftData
 @testable import ZeroBasedBudget
 
@@ -23,7 +24,7 @@ final class ThemeManagerTests: XCTestCase {
             for: AppSettings.self,
             configurations: config
         )
-        modelContext = modelContainer.mainContext
+        modelContext = await modelContainer.mainContext
     }
 
     override func tearDown() {

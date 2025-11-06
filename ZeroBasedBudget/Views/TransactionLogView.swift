@@ -91,7 +91,7 @@ struct TransactionLogView: View {
                                 Spacer()
                                 Image(systemName: "arrow.right.circle.fill")
                                     .font(.title2)
-                                    .foregroundStyle(theme.colors.accent)
+                                    .iconAccent()
                             }
                         }
                         .buttonStyle(.plain)
@@ -203,9 +203,15 @@ struct TransactionRow: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(transaction.amount, format: .currency(code: currencyCode))
-                        .font(.body.bold())
-                        .foregroundStyle(transaction.type == .income ? theme.colors.success : theme.colors.error)
+                    HStack(spacing: 6) {
+                        Image(systemName: transaction.type == .income ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                            .font(.body)
+                            .iconTransactionType(isIncome: transaction.type == .income)
+
+                        Text(transaction.amount, format: .currency(code: currencyCode))
+                            .font(.body.bold())
+                            .foregroundStyle(transaction.type == .income ? theme.colors.success : theme.colors.error)
+                    }
 
                     Text(transaction.type.rawValue.capitalized)
                         .font(.caption)

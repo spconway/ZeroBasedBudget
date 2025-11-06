@@ -37,7 +37,7 @@ struct ReadyToAssignBanner: View {
                 // Could show explainer sheet in future
             } label: {
                 Image(systemName: "info.circle")
-                    .foregroundStyle(theme.colors.textSecondary)
+                    .iconNeutral()
             }
             .buttonStyle(.plain)
         }

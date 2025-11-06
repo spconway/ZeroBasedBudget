@@ -134,6 +134,7 @@ struct MonthPickerSection: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.title2)
+                        .iconAccent()
                 }
 
                 Spacer()
@@ -152,6 +153,7 @@ struct MonthPickerSection: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.title2)
+                        .iconAccent()
                 }
             }
             .padding()
@@ -338,7 +340,7 @@ struct DonutChartSection: View {
                 VStack(spacing: 12) {
                     Image(systemName: "chart.pie")
                         .font(.system(size: 48))
-                        .foregroundStyle(theme.colors.textSecondary)
+                        .iconNeutral()
                     Text("No spending recorded")
                         .font(.headline)
                         .foregroundStyle(theme.colors.textSecondary)
@@ -463,7 +465,7 @@ struct CategoryComparisonRow: View {
                 Spacer()
 
                 Image(systemName: comparison.isOverBudget ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                    .foregroundStyle(comparison.isOverBudget ? theme.colors.error : theme.colors.success)
+                    .iconTransactionType(isIncome: !comparison.isOverBudget)
             }
 
             // Metrics grid

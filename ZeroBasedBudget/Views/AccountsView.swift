@@ -54,7 +54,7 @@ struct AccountsView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "banknote")
                             .font(.system(size: 60))
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .iconNeutral()
 
                         Text("No Accounts Yet")
                             .font(.title2.bold())
@@ -104,6 +104,7 @@ struct AccountsView: View {
                         showingAddSheet = true
                     } label: {
                         Image(systemName: "plus")
+                            .iconAccent()
                     }
                 }
             }

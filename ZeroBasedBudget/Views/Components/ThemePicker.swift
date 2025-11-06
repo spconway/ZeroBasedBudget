@@ -60,7 +60,7 @@ struct ThemePicker: View {
                 // Selection indicator
                 if themeManager.currentTheme.identifier == themeType.theme.identifier {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(currentTheme.colors.accent)
+                        .iconAccent()
                         .imageScale(.large)
                 }
             }

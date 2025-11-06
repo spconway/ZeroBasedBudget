@@ -10,6 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
     @Query private var settings: [AppSettings]
 
     @State private var selectedTab = 0
@@ -64,6 +65,7 @@ struct ContentView: View {
                 }
                 .tag(4)
         }
+        .tint(theme.colors.primary) // Apply theme color to selected tab icons
         .preferredColorScheme(colorScheme)
     }
 }
