@@ -101,7 +101,13 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
-**v1.6.0 (Current):**
+**v1.7.0 (Current - In Progress):**
+- ✅ Enhancement 7.1: Replaced relative transaction dates with absolute dates ("Nov 5" instead of "2 days ago")
+- ✅ Added: formatTransactionSectionDate() utility function with locale support
+- ✅ Added: 4 unit tests for date formatting (current year, different year, year boundary edge cases)
+- ✅ Improved: Transaction list temporal clarity and scannability
+
+**v1.6.0:**
 - ✅ Added: Comprehensive unit testing suite (110 tests across 10 files)
 - ✅ Added: XCTest framework infrastructure with in-memory SwiftData testing
 - ✅ Added: TestDataFactory for consistent test data creation
@@ -152,121 +158,24 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🟡 Priority 2: UX Improvements (v1.7.0 Planned)
+### 🟡 Priority 2: UX Improvements (v1.7.0 In Progress)
 
 #### Enhancement 7.1: Replace Relative Transaction Dates with Absolute Dates
 
-**Status**: 🔄 **PENDING**
+**Status**: ✅ **COMPLETE** (November 6, 2025)
 **Version**: v1.7.0 (UX Polish)
-**Priority**: Medium (User experience improvement)
-**Planned Start**: Next available session
+**Commit**: `d408390` - feat: replace relative transaction dates with absolute dates
 
-**Objective**: Replace relative date labels ("Today", "Yesterday", "2 days ago") with absolute date formats ("Nov 5, 2025") in transaction list section headers to provide clearer temporal context and improve scannability.
+**Completed**: Replaced relative date labels with absolute date formats in transaction list section headers.
 
-**YNAB Alignment Check**: ✅ **Neutral** - Does not affect YNAB methodology; purely a UI presentation change.
-
-**Current Behavior**:
-- TransactionLogView groups transactions by date
-- Section headers use relative date strings: "Today", "Yesterday", "2 days ago", "3 days ago", etc.
-- Created in v1.5.0 as part of Enhancement 4.1
-
-**Proposed Behavior**:
-- Section headers use absolute date format: "Nov 5, 2025", "Nov 4, 2025", "Nov 3, 2025", etc.
-- Format adapts to locale settings (US: "Nov 5, 2025", Europe: "5 Nov 2025")
-- Current year can be omitted for brevity if within same calendar year
-- Maintains date grouping logic (transactions grouped by calendar day)
-
-**Implementation Approach**:
-
-**Phase 1: Create Date Formatting Utility**
-1. Add new date formatter to `BudgetCalculations.swift` or create `DateFormatters.swift`
-2. Implement `formatTransactionSectionDate(_ date: Date) -> String` function
-3. Support multiple format options:
-   - Full: "November 5, 2025"
-   - Medium (recommended): "Nov 5, 2025"
-   - Short: "Nov 5" (for current year only)
-4. Respect user's locale and calendar settings
-5. Add unit tests for date formatting edge cases
-
-**Phase 2: Update TransactionLogView**
-1. Locate section header rendering code in `TransactionLogView.swift`
-2. Replace relative date calculation with absolute date formatter
-3. Maintain existing grouping logic (group by calendar day)
-4. Test with transactions spanning multiple months and years
-5. Verify proper sorting (newest to oldest)
-
-**Files to Modify**:
-- `ZeroBasedBudget/Views/TransactionLogView.swift` - Update section header date display
-- `ZeroBasedBudget/Utilities/BudgetCalculations.swift` (or new `DateFormatters.swift`) - Add date formatting function
-
-**Files to Create** (optional):
-- `ZeroBasedBudget/Utilities/DateFormatters.swift` - Centralized date formatting utilities (if not added to BudgetCalculations)
-- `ZeroBasedBudgetTests/Utilities/DateFormattersTests.swift` - Unit tests for date formatting
-
-**Design Considerations**:
-1. **Locale Awareness**: Use `Date.FormatStyle` for automatic locale support
-2. **Year Display**: Omit year for dates in current calendar year to reduce visual clutter
-3. **Consistency**: Use same format throughout app (consider using in other views if applicable)
-4. **Performance**: Cache DateFormatter instances to avoid repeated creation
-5. **Accessibility**: Ensure VoiceOver announces dates naturally
-6. **Testing**: Test with different locales (US, UK, Europe, Asia) and calendar systems
-
-**Code Example**:
-```swift
-// In DateFormatters.swift or BudgetCalculations.swift
-extension Date {
-    /// Format date for transaction section headers (e.g., "Nov 5, 2025")
-    func transactionSectionDateString() -> String {
-        let calendar = Calendar.current
-        let now = Date()
-
-        // Check if date is in current year
-        let dateYear = calendar.component(.year, from: self)
-        let currentYear = calendar.component(.year, from: now)
-
-        if dateYear == currentYear {
-            // Omit year for current year: "Nov 5"
-            return self.formatted(.dateTime.month(.abbreviated).day())
-        } else {
-            // Include year for other years: "Nov 5, 2025"
-            return self.formatted(.dateTime.month(.abbreviated).day().year())
-        }
-    }
-}
-
-// In TransactionLogView.swift
-Section(header: Text(date.transactionSectionDateString())) {
-    ForEach(transactionsForDate) { transaction in
-        TransactionRow(transaction: transaction)
-    }
-}
-```
-
-**Testing Checklist**:
-- [ ] Date formatter handles current year (omits year)
-- [ ] Date formatter handles past years (includes year)
-- [ ] Date formatter handles future years (includes year)
-- [ ] Format respects user's locale settings
-- [ ] Section headers display correctly for all grouped dates
-- [ ] No performance degradation with large transaction lists
-- [ ] VoiceOver announces dates naturally
-- [ ] Tested with multiple locales (US, UK, Germany, Japan)
-- [ ] Year boundary transitions work correctly (Dec 31 → Jan 1)
-- [ ] Month boundary transitions work correctly
-
-**Acceptance Criteria**:
-- Transaction section headers display absolute dates (e.g., "Nov 5, 2025")
-- Year is omitted for dates in current calendar year (e.g., "Nov 5")
-- Format adapts to user's locale and calendar settings
-- No change to transaction grouping logic (still grouped by calendar day)
-- VoiceOver accessibility maintained
-- No performance regression with large transaction lists
-- All existing tests still pass
-- New unit tests added for date formatting utility
-
-**Estimated Complexity**: Low (1-2 hours - simple date formatting change)
-
-**Dependencies**: None (independent UX improvement)
+**Implementation Summary**:
+- ✅ Added `formatTransactionSectionDate()` to BudgetCalculations.swift
+- ✅ Updated TransactionLogView to use absolute dates
+- ✅ Removed old `formatSectionDate()` function
+- ✅ Added 4 unit tests for date formatting (current year, different year, future year, year boundary)
+- ✅ Locale-aware formatting using Date.FormatStyle
+- ✅ Year omitted for current calendar year ("Nov 5"), included for other years ("Nov 5, 2025")
+- ✅ VoiceOver accessibility maintained
 
 ---
 
@@ -950,22 +859,22 @@ enum ThemeType {
 
 ## Active Development
 
-**Current Focus**: v1.7.0 Planning - UX Improvements & Theme Management
-**Status**: v1.6.0 complete (110 unit tests passing); ready for new feature development
+**Current Focus**: v1.7.0 Development - UX Improvements & Theme Management
+**Status**: v1.7.0 in progress; Enhancement 7.1 complete; 114 unit tests passing
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
-2. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
-3. [2025-11-05] ✅ **Test Suite Complete**: All tests passing (Models, Utilities, YNAB, EdgeCases, Persistence)
-4. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list with relative dates
-5. [2025-11-05] ✅ **Bug 1.2 RESOLVED**: Fixed Ready to Assign double-counting bug
+1. [2025-11-06] ✅ **Enhancement 7.1 COMPLETE**: Absolute transaction dates with locale support (v1.7.0)
+2. [2025-11-05] ✅ **v1.6.0 COMPLETE**: Comprehensive unit testing suite (110 tests across 10 files, 5 domains)
+3. [2025-11-05] ✅ **Three Design Themes Created**: Neon Ledger, Midnight Mint, Ultraviolet Slate (16 design files)
+4. [2025-11-05] ✅ **Test Suite Complete**: All tests passing (Models, Utilities, YNAB, EdgeCases, Persistence)
+5. [2025-11-05] ✅ **Enhancement 4.1 COMPLETE**: Date-grouped transaction list with relative dates
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Test Suite Status**: ✅ All 110 tests passing (verified November 5, 2025)
+1. **Test Suite Status**: ✅ All 114 tests passing (4 new date formatting tests added November 6, 2025)
 2. **Design Assets**: ✅ Three complete visual themes available in Designs/ folder
-3. **Current Priority**: Begin v1.7.0 enhancements (see Active Issues & Enhancement Backlog below)
+3. **Current Priority**: Continue v1.7.0 enhancements - Next: Enhancement 7.2 (Category Progress Indicators)
 4. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy
