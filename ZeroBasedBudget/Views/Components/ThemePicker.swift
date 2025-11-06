@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /// Theme picker component for Settings
 struct ThemePicker: View {
@@ -105,7 +106,7 @@ struct ThemePicker: View {
     // Create theme manager
     let themeManager = ThemeManager(appSettings: settings, modelContext: context)
 
-    return List {
+    List {
         Section("Theme") {
             ThemePicker(themeManager: themeManager)
         }

@@ -327,7 +327,7 @@ struct AddTransactionSheet: View {
             }
             .navigationTitle("Add Transaction")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -340,7 +340,7 @@ struct AddTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            }
+            })
         }
     }
 
@@ -493,7 +493,7 @@ struct EditTransactionSheet: View {
             }
             .navigationTitle("Edit Transaction")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbar(content: {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -506,7 +506,7 @@ struct EditTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            }
+            })
         }
     }
 

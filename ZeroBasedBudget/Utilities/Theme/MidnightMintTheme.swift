@@ -15,46 +15,55 @@ struct MidnightMintTheme: Theme {
     let identifier = "midnightMint"
     let description = "Calm, professional fintech"
 
-    let colors = ThemeColors(
-        // MARK: Base Colors
-        background: Color(hex: "0B0E11"),        // Blue-tinted near-black
-        surface: Color(hex: "14181C"),           // Elevated surface
-        surfaceElevated: Color(hex: "1C2128"),   // Further elevated (modals)
+    var colors: ThemeColors {
+        // Break up color initialization to help Swift compiler
+        let bgColor = Color(hex: "0B0E11")
+        let surfaceColor = Color(hex: "14181C")
+        let surfaceElevatedColor = Color(hex: "1C2128")
 
-        // MARK: Brand Colors
-        primary: Color(hex: "3BFFB4"),           // Seafoam mint
-        onPrimary: Color(hex: "0B0E11"),         // Dark text on mint
-        accent: Color(hex: "14B8A6"),            // Soft teal
+        let primaryColor = Color(hex: "3BFFB4")
+        let onPrimaryColor = Color(hex: "0B0E11")
+        let accentColor = Color(hex: "14B8A6")
 
-        // MARK: Semantic Colors
-        success: Color(hex: "10B981"),           // Pine green (income)
-        warning: Color(hex: "F59E0B"),           // Warm orange
-        error: Color(hex: "EF4444"),             // Coral red (expenses)
+        let successColor = Color(hex: "10B981")
+        let warningColor = Color(hex: "F59E0B")
+        let errorColor = Color(hex: "EF4444")
 
-        // MARK: Text Colors
-        textPrimary: Color(hex: "FFFFFF"),       // White text
-        textSecondary: Color(hex: "9CA3AF"),     // Gray text (muted)
-        textTertiary: Color(hex: "6B7280"),      // Subtle gray (low emphasis)
+        let textPrimaryColor = Color(hex: "FFFFFF")
+        let textSecondaryColor = Color(hex: "9CA3AF")
+        let textTertiaryColor = Color(hex: "6B7280")
 
-        // MARK: Border Colors
-        border: Color(hex: "2A3138"),            // Subtle borders
-        borderSubtle: Color(hex: "1C2128"),      // Very subtle separators
+        let borderColor = Color(hex: "2A3138")
+        let borderSubtleColor = Color(hex: "1C2128")
 
-        // MARK: Ready to Assign Banner
-        readyToAssignBackground: Color(hex: "3BFFB4"),  // Seafoam mint
-        readyToAssignText: Color(hex: "0B0E11"),        // Dark text on mint
-        readyToAssignBorder: Color(hex: "14B8A6"),      // Teal border
+        let chartTertiaryColor = Color(hex: "6366F1")
 
-        // MARK: Chart Colors
-        chartPrimary: Color(hex: "3BFFB4"),      // Mint (budgeted)
-        chartSecondary: Color(hex: "14B8A6"),    // Teal (actual)
-        chartTertiary: Color(hex: "6366F1"),     // Indigo (alternate)
-
-        // MARK: Progress Colors
-        progressGreen: Color(hex: "10B981"),     // Pine green (0-75%)
-        progressYellow: Color(hex: "F59E0B"),    // Warm orange (75-100%)
-        progressRed: Color(hex: "EF4444")        // Coral red (>100%)
-    )
+        return ThemeColors(
+            background: bgColor,
+            surface: surfaceColor,
+            surfaceElevated: surfaceElevatedColor,
+            primary: primaryColor,
+            onPrimary: onPrimaryColor,
+            accent: accentColor,
+            success: successColor,
+            warning: warningColor,
+            error: errorColor,
+            textPrimary: textPrimaryColor,
+            textSecondary: textSecondaryColor,
+            textTertiary: textTertiaryColor,
+            border: borderColor,
+            borderSubtle: borderSubtleColor,
+            readyToAssignBackground: primaryColor,
+            readyToAssignText: onPrimaryColor,
+            readyToAssignBorder: accentColor,
+            chartPrimary: primaryColor,
+            chartSecondary: accentColor,
+            chartTertiary: chartTertiaryColor,
+            progressGreen: successColor,
+            progressYellow: warningColor,
+            progressRed: errorColor
+        )
+    }
 
     let typography = ThemeTypography(
         largeTitle: .system(size: 34, weight: .bold, design: .default),
