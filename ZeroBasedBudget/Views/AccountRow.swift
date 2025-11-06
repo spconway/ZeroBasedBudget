@@ -18,6 +18,7 @@ struct AccountRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(account.name)
                     .font(.headline)
+                    .foregroundStyle(theme.colors.textPrimary)
 
                 if let accountType = account.accountType {
                     Text(accountType)

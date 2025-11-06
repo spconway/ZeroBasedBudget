@@ -58,6 +58,7 @@ struct AccountsView: View {
 
                         Text("No Accounts Yet")
                             .font(.title2.bold())
+                            .foregroundStyle(theme.colors.textPrimary)
 
                         Text("Add your first account to start budgeting with the YNAB method.")
                             .font(.body)
