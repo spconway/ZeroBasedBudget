@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.6.0 (Comprehensive Unit Testing Suite)
-**Last Updated**: November 5, 2025 (v1.6.0 Complete - 110 Unit Tests)
+**Version**: 1.7.0 (Theme System & UX Polish)
+**Last Updated**: November 6, 2025 (v1.7.0 Complete - 140 Unit Tests)
 **Methodology**: YNAB-Style Zero-Based Budgeting
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -177,423 +177,182 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🟡 Priority 2: UX Improvements (v1.7.0 In Progress)
+### 🟢 Priority 3: New Features (v1.8.0 Planned)
 
-#### Enhancement 7.1: Replace Relative Transaction Dates with Absolute Dates
+#### Enhancement 9.1: Theme-Aware Icon System with Contextual Theming
 
-**Status**: ✅ **COMPLETE** (November 6, 2025)
-**Version**: v1.7.0 (UX Polish)
-**Commit**: `d408390` - feat: replace relative transaction dates with absolute dates
+**Objective**: Implement contextual theming for all SF Symbols throughout the app, where icons automatically use appropriate theme colors based on their semantic meaning and context.
 
-**Completed**: Replaced relative date labels with absolute date formats in transaction list section headers.
+**YNAB Alignment Check**: ✅ **Compliant** - Icon theming enhances visual hierarchy and reinforces YNAB principles by using theme colors to emphasize important elements like "Ready to Assign" banner and income/expense indicators.
 
-**Implementation Summary**:
-- ✅ Added `formatTransactionSectionDate()` to BudgetCalculations.swift
-- ✅ Updated TransactionLogView to use absolute dates
-- ✅ Removed old `formatSectionDate()` function
-- ✅ Added 4 unit tests for date formatting (current year, different year, future year, year boundary)
-- ✅ Locale-aware formatting using Date.FormatStyle
-- ✅ Year omitted for current calendar year ("Nov 5"), included for other years ("Nov 5, 2025")
-- ✅ VoiceOver accessibility maintained
-
----
-
-#### Enhancement 7.2: Add Category Spending Progress Indicators
-
-**Status**: ✅ **COMPLETE** (November 6, 2025)
-**Version**: v1.7.0 (UX Enhancement)
-**Commit**: `00042b2` - feat: add category spending progress indicators
-
-**Completed**: Added visual progress bars to all budget category cards with color-coded spending feedback.
-
-**Implementation Summary**:
-- ✅ Created CategoryProgressBar reusable SwiftUI component
-- ✅ Color-coded progress: Green (0-75%), Yellow (75-100%), Red (>100%)
-- ✅ Integrated into all category cards (Fixed, Variable, Quarterly expenses)
-- ✅ Uses BudgetCalculations.calculateActualSpending() for accurate data
-- ✅ Smooth spring animation for progress updates
-- ✅ Edge case handling: $0 budget, negative spending, overspending
-- ✅ VoiceOver accessibility with progress announcements
-- ✅ Created Views/Components/ directory for reusable UI components
-- ✅ Multiple preview scenarios for testing
-
-
----
-
-### 🟢 Priority 3: New Features (v1.7.0 Planned)
-
-#### Enhancement 8.1: Theme Management Infrastructure
-
-**Status**: ✅ **COMPLETE** (November 6, 2025)
-**Version**: v1.7.0 (Theme System Foundation)
-**Commit**: `47700ec` - feat: add theme management infrastructure (Enhancement 8.1)
-
-**Completed**: Created centralized theme management system with SwiftUI Environment integration, enabling dynamic theme switching throughout the app. This infrastructure provides the foundation for the three visual themes (Neon Ledger, Midnight Mint, Ultraviolet Slate).
-
-**Implementation Summary**:
-- ✅ Created Theme protocol with colors, typography, spacing, radius definitions
-- ✅ Created ThemeManager @Observable class for centralized theme state management
-- ✅ Created ThemeEnvironment for SwiftUI @Environment(\.theme) integration
-- ✅ Implemented MidnightMintTheme as default theme (from Designs/MidnightMint/tokens.json)
-- ✅ Created ThemePicker UI component with color previews and descriptions
-- ✅ Added Visual Theme section to SettingsView
-- ✅ Added AppSettings.selectedTheme property for persistence
-- ✅ Created RootView for theme injection at app level
-- ✅ Added 20 unit tests for ThemeManager (initialization, switching, persistence, registry)
-- ✅ Theme switching with smooth animations
-- ✅ Theme persistence across app restarts
-- ✅ Color hex initialization helper for design token integration
-- ✅ Fallback to default theme for invalid identifiers
-
-**Files Created**:
-- ZeroBasedBudget/Utilities/Theme/Theme.swift (212 lines)
-- ZeroBasedBudget/Utilities/Theme/ThemeManager.swift (131 lines)
-- ZeroBasedBudget/Utilities/Theme/ThemeEnvironment.swift (44 lines)
-- ZeroBasedBudget/Utilities/Theme/MidnightMintTheme.swift (77 lines)
-- ZeroBasedBudget/Views/Components/ThemePicker.swift (98 lines)
-- ZeroBasedBudgetTests/Utilities/ThemeManagerTests.swift (256 lines)
-
-**Files Modified**:
-- ZeroBasedBudget/Models/AppSettings.swift (added selectedTheme property)
-- ZeroBasedBudget/Views/SettingsView.swift (added Visual Theme section)
-- ZeroBasedBudget/ZeroBasedBudgetApp.swift (added RootView for theme injection)
-
-**Foundation ready for Enhancement 8.2 (implement three visual themes).**
-
----
-
-#### Enhancement 8.2: Implement Three Visual Themes from Design Assets
-
-**Status**: ✅ **COMPLETE** (November 6, 2025)
-**Version**: v1.7.0 (Theme System Implementation)
-**Commit**: `df4adf9` - feat: implement three visual themes (Enhancement 8.2)
-
-**Completed**: Implemented complete three-theme system with Neon Ledger, Midnight Mint, and Ultraviolet Slate. All themes use design tokens from Designs/ folder and are selectable in Settings.
-
-**Implementation Summary**:
-- ✅ Created NeonLedgerTheme.swift (cyberpunk with electric teal and magenta accents)
-- ✅ Created UltravioletSlateTheme.swift (bold design with deep violet and cyan accents)
-- ✅ MidnightMintTheme.swift already exists as default theme
-- ✅ Updated ThemeManager.availableThemes registry with all 3 themes
-- ✅ Updated ThemeType enum with all 3 theme cases (neonLedger, midnightMint, ultravioletSlate)
-- ✅ Theme picker now displays all three themes with color previews
-- ✅ Added 6 new unit tests for theme properties and switching
-- ✅ All themes WCAG AA compliant (verified in design specifications)
-- ✅ Theme switching instant with smooth animations
-- ✅ Theme persistence works across all three themes
-- ✅ YNAB visual hierarchy maintained in all themes
-
-**Themes Implemented**:
-1. **Neon Ledger**: Cyberpunk financial ledger with electric teal (#00E5CC) and magenta (#FF006E) accents on pure black base
-2. **Midnight Mint** (Default): Calm, professional fintech with seafoam mint (#3BFFB4) accents on blue-tinted black base
-3. **Ultraviolet Slate**: Bold, energetic design with deep violet (#6366F1) and vivid cyan (#22D3EE) accents on charcoal base
-
-**Files Created**:
-- ZeroBasedBudget/Utilities/Theme/NeonLedgerTheme.swift (94 lines)
-- ZeroBasedBudget/Utilities/Theme/UltravioletSlateTheme.swift (94 lines)
-
-**Files Modified**:
-- ZeroBasedBudget/Utilities/Theme/ThemeManager.swift (added all themes to registry, updated ThemeType enum)
-- ZeroBasedBudgetTests/Utilities/ThemeManagerTests.swift (added 6 theme-specific tests)
-
-**Total Test Suite**: 140 tests (114 original + 26 theme tests)
-
-**Theme system complete. All three visual themes available for user selection in Settings > Visual Theme.**
-
----
-
-#### Enhancement 8.2: ARCHIVED SPECIFICATION (See Above for Completion Summary)
-
-**YNAB Alignment Check**: ✅ **Compliant** - All three themes maintain prominent "Ready to Assign" banner, proper visual hierarchy, and YNAB-first design principles. Color coding for income/expenses preserved across all themes.
-
-**Design Assets Available**:
-All three themes have complete design tokens and mockups in `Designs/` folder:
-
-1. **Neon Ledger** (`Designs/NeonLedger/`)
-   - Personality: Cyberpunk financial ledger with neon accents
-   - Colors: Pure black base (#0A0A0A), electric teal primary (#00E5CC), magenta accent (#FF006E)
-   - Features: Neon glows, high contrast, futuristic aesthetic
-   - Complete SwiftUI implementation already available in `Theme.swift`
-   - WCAG AA compliant contrast ratios validated
-
-2. **Midnight Mint** (`Designs/MidnightMint/`)
-   - Personality: Calm, professional modern fintech
-   - Colors: Blue-tinted black base (#0B0E11), seafoam mint primary (#3BFFB4), soft teal accent (#14B8A6)
-   - Features: Restrained gradients, subtle elevations, trustworthy feel
-   - WCAG AA compliant, design tokens available
-
-3. **Ultraviolet Slate** (`Designs/UltravioletSlate/`)
-   - Personality: Bold, energetic with saturated colors
-   - Colors: Charcoal base (#1A1A1F), deep violet primary (#6366F1), vivid cyan accent (#22D3EE)
-   - Features: Thin hairline borders, geometric structure, high energy
-   - WCAG AA compliant, design tokens available
+**Icon Color Semantic Mapping**:
+- **Primary color**: Main navigation actions, important buttons, tab bar selected state
+- **Accent color**: Secondary actions, edit buttons, info icons
+- **Success color**: Income transactions, positive balance indicators, completed states
+- **Error color**: Expense transactions, overspending indicators, delete actions
+- **Warning color**: Alert icons, notification badges, attention states
+- **TextPrimary/TextSecondary**: Non-semantic icons (chevrons, list indicators, etc.)
 
 **Implementation Approach**:
 
-**Phase 1: Implement Neon Ledger Theme**
-1. Create `NeonLedgerTheme.swift` conforming to `Theme` protocol
-2. Import color values from `Designs/NeonLedger/tokens.json`
-3. Use existing `Designs/NeonLedger/Theme.swift` as reference
-4. Define all required colors, typography, spacing, radius
-5. Add neon glow effects using `.shadow()` modifiers
-6. Test with all app views (Accounts, Budget, Transactions, Analysis, Settings)
-7. Verify WCAG AA contrast compliance
+1. **Create IconTheme Utility** (`Utilities/Theme/IconTheme.swift`):
+   - Create reusable view modifiers for themed icons
+   - Provide convenience methods for common icon contexts (`.iconPrimary()`, `.iconAccent()`, `.iconSuccess()`, `.iconError()`)
+   - Ensure consistent icon sizing and styling
 
-**Phase 2: Implement Midnight Mint Theme**
-1. Create `MidnightMintTheme.swift` conforming to `Theme` protocol
-2. Import color values from `Designs/MidnightMint/tokens.json`
-3. Define all required colors, typography, spacing, radius
-4. Implement subtle gradients for Ready to Assign banner
-5. Test with all app views
-6. Verify WCAG AA contrast compliance
+2. **Update Tab Bar Icons**:
+   - Apply `theme.colors.primary` to selected tab icons
+   - Apply `theme.colors.textSecondary` to unselected tab icons
+   - Ensure smooth color transitions on tab changes
 
-**Phase 3: Implement Ultraviolet Slate Theme**
-1. Create `UltravioletSlateTheme.swift` conforming to `Theme` protocol
-2. Import color values from `Designs/UltravioletSlate/tokens.json`
-3. Define all required colors, typography, spacing, radius
-4. Implement thin hairline borders (1px) on cards
-5. Test with all app views
-6. Verify WCAG AA contrast compliance
+3. **Update Navigation & List Icons**:
+   - Transaction type icons: success (income) / error (expense)
+   - Category icons: theme.colors.primary
+   - Account icons: theme.colors.accent
+   - Edit/Add buttons: theme.colors.accent
+   - Status indicators: contextual colors
 
-**Phase 4: Update ThemeManager**
-1. Register all three themes with ThemeManager
-2. Create theme enum: `case neonLedger, midnightMint, ultravioletSlate`
-3. Update theme picker to show all three options with previews
-4. Add theme descriptions and personality traits to UI
-5. Test theme switching between all three themes
-
-**Phase 5: Apply Themes to All Views**
-1. Update all views to use `@Environment(\.theme)` instead of hardcoded colors
-2. Replace `AppColors` references with `theme.colors`
-3. Test each view with all three themes
-4. Ensure Ready to Assign banner prominence in all themes
-5. Verify income/expense color coding consistency
+4. **Update All Views**:
+   - Replace hardcoded icon colors with theme-aware modifiers
+   - Apply contextual colors based on icon purpose
+   - Test across all three themes (Neon Ledger, Midnight Mint, Ultraviolet Slate)
 
 **Files to Create**:
-- `ZeroBasedBudget/Utilities/Theme/NeonLedgerTheme.swift` - Neon Ledger theme implementation
-- `ZeroBasedBudget/Utilities/Theme/MidnightMintTheme.swift` - Midnight Mint theme implementation
-- `ZeroBasedBudget/Utilities/Theme/UltravioletSlateTheme.swift` - Ultraviolet Slate theme implementation
-- `ZeroBasedBudgetTests/Utilities/NeonLedgerThemeTests.swift` - Unit tests for Neon Ledger theme
-- `ZeroBasedBudgetTests/Utilities/MidnightMintThemeTests.swift` - Unit tests for Midnight Mint theme
-- `ZeroBasedBudgetTests/Utilities/UltravioletSlateThemeTests.swift` - Unit tests for Ultraviolet Slate theme
+- `ZeroBasedBudget/Utilities/Theme/IconTheme.swift` - Icon theming utilities and view modifiers
 
 **Files to Modify**:
-- `ZeroBasedBudget/Utilities/Theme/ThemeManager.swift` - Register all three themes
-- `ZeroBasedBudget/Views/SettingsView.swift` - Update theme picker with all themes
-- **ALL VIEW FILES** - Replace hardcoded colors with `@Environment(\.theme)`:
-  - `AccountsView.swift`
-  - `BudgetPlanningView.swift`
-  - `ReadyToAssignBanner.swift`
-  - `TransactionLogView.swift`
-  - `BudgetAnalysisView.swift`
-  - `SettingsView.swift`
-  - All component views (AccountRow, TransactionRow, etc.)
-
-**Design Considerations**:
-1. **Color Mapping**: Map design token colors to Theme protocol properties semantically
-2. **Consistency**: Ensure each theme maintains visual consistency across all views
-3. **Accessibility**: All themes must pass WCAG AA contrast requirements (verified in design docs)
-4. **YNAB Principles**: Ready to Assign banner must be prominent in all themes
-5. **Performance**: Theme switching should be instant with no lag
-6. **Testing**: Test all themes with real user data (transactions, categories, accounts)
-7. **Default**: Set Midnight Mint as default theme (broadest appeal, professional)
-8. **Documentation**: Document color usage patterns for each theme
-
-**Color Mapping Example**:
-```swift
-// MidnightMintTheme.swift
-struct MidnightMintTheme: Theme {
-    let name = "Midnight Mint"
-
-    let colors = ThemeColors(
-        background: Color(hex: "0B0E11"),           // Near-black with blue tint
-        surface: Color(hex: "14181C"),              // Elevated surface
-        surfaceElevated: Color(hex: "1C2128"),      // Further elevated
-        primary: Color(hex: "3BFFB4"),              // Seafoam mint
-        onPrimary: Color(hex: "0B0E11"),            // Dark text on mint
-        accent: Color(hex: "14B8A6"),               // Soft teal
-        success: Color(hex: "10B981"),              // Pine green (income)
-        warning: Color(hex: "F59E0B"),              // Warm orange
-        error: Color(hex: "EF4444"),                // Coral red (expenses)
-        textPrimary: Color(hex: "FFFFFF"),          // White text
-        textSecondary: Color(hex: "9CA3AF"),        // Gray text
-        border: Color(hex: "2A3138"),               // Subtle borders
-        readyToAssignBackground: Color(hex: "3BFFB4"), // Mint banner
-        readyToAssignText: Color(hex: "0B0E11")     // Dark text on mint
-    )
-
-    let typography = ThemeTypography(
-        largeTitle: .system(size: 34, weight: .bold, design: .default),
-        title: .system(size: 28, weight: .bold, design: .default),
-        headline: .system(size: 17, weight: .semibold, design: .default),
-        body: .system(size: 17, weight: .regular, design: .default),
-        caption: .system(size: 12, weight: .regular, design: .default)
-    )
-
-    let spacing = ThemeSpacing(
-        xs: 4,
-        sm: 8,
-        md: 16,
-        lg: 24,
-        xl: 32
-    )
-
-    let radius = ThemeRadius(
-        sm: 8,
-        md: 12,
-        lg: 20,
-        xl: 28
-    )
-}
-
-// Extension for hex color support
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let r, g, b: Double
-        r = Double((int >> 16) & 0xFF) / 255.0
-        g = Double((int >> 8) & 0xFF) / 255.0
-        b = Double(int & 0xFF) / 255.0
-        self.init(red: r, green: g, blue: b)
-    }
-}
-```
-
-**Theme Picker UI Example**:
-```swift
-// In SettingsView.swift - Theme Section
-Section("Theme") {
-    ForEach([ThemeType.neonLedger, .midnightMint, .ultravioletSlate], id: \.self) { themeType in
-        Button(action: {
-            themeManager.setTheme(themeType.theme)
-        }) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(themeType.theme.name)
-                        .font(.headline)
-                    Text(themeType.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                // Color preview swatches
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(themeType.theme.colors.primary)
-                        .frame(width: 20, height: 20)
-                    Circle()
-                        .fill(themeType.theme.colors.accent)
-                        .frame(width: 20, height: 20)
-                }
-
-                // Checkmark if selected
-                if themeManager.currentTheme.name == themeType.theme.name {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.blue)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-enum ThemeType {
-    case neonLedger
-    case midnightMint
-    case ultravioletSlate
-
-    var theme: Theme {
-        switch self {
-        case .neonLedger: return NeonLedgerTheme()
-        case .midnightMint: return MidnightMintTheme()
-        case .ultravioletSlate: return UltravioletSlateTheme()
-        }
-    }
-
-    var description: String {
-        switch self {
-        case .neonLedger: return "Cyberpunk with neon accents"
-        case .midnightMint: return "Calm, professional fintech"
-        case .ultravioletSlate: return "Bold, energetic design"
-        }
-    }
-}
-```
+- `ZeroBasedBudget/ZeroBasedBudgetApp.swift` - Update tab bar icon theming
+- `ZeroBasedBudget/Views/AccountsView.swift` - Apply themed icons
+- `ZeroBasedBudget/Views/BudgetPlanningView.swift` - Apply themed icons
+- `ZeroBasedBudget/Views/TransactionLogView.swift` - Apply themed icons (success/error for income/expense)
+- `ZeroBasedBudget/Views/BudgetAnalysisView.swift` - Apply themed icons
+- `ZeroBasedBudget/Views/SettingsView.swift` - Apply themed icons
+- `ZeroBasedBudget/Views/AccountRow.swift` - Apply themed icons
+- `ZeroBasedBudget/Views/Components/CategoryProgressBar.swift` - Apply themed icons if applicable
 
 **Testing Checklist**:
-- [ ] Neon Ledger theme implemented with all colors from design tokens
-- [ ] Midnight Mint theme implemented with all colors from design tokens
-- [ ] Ultraviolet Slate theme implemented with all colors from design tokens
-- [ ] All three themes registered with ThemeManager
-- [ ] Theme picker displays all three themes with previews
-- [ ] Theme switching works instantly between all themes
-- [ ] Ready to Assign banner prominent in all three themes
-- [ ] Income/expense color coding consistent across themes
-- [ ] All views updated to use `@Environment(\.theme)`
-- [ ] WCAG AA contrast compliance verified for all themes
-- [ ] Neon glow effects work in Neon Ledger theme
-- [ ] Hairline borders work in Ultraviolet Slate theme
-- [ ] Theme selection persists across app restarts
-- [ ] No color bleeding or visual artifacts during theme switching
-- [ ] VoiceOver announces theme names correctly
-- [ ] All 110 unit tests still pass with theme system
-- [ ] Performance: Theme switching completes in < 100ms
+- [ ] Tab bar icons use theme colors (primary for selected, textSecondary for unselected)
+- [ ] Transaction icons show success (income) and error (expense) from theme
+- [ ] Category icons use theme primary color
+- [ ] Account icons use theme accent color
+- [ ] Button icons use appropriate contextual colors
+- [ ] Icons transition smoothly when switching themes
+- [ ] All three themes show distinct icon colors
+- [ ] Icon colors maintain WCAG AA contrast ratios
+- [ ] VoiceOver still announces icon meanings correctly
+- [ ] All 140 unit tests still pass
 
 **Acceptance Criteria**:
-- All three themes (Neon Ledger, Midnight Mint, Ultraviolet Slate) fully implemented
-- Each theme conforms to Theme protocol with complete color/typography definitions
-- Theme picker in Settings tab displays all three themes with descriptions and previews
-- User can select any theme and selection persists across app restarts
-- All app views use theme colors via `@Environment(\.theme)` (no hardcoded colors)
-- YNAB principles maintained: Ready to Assign banner prominent in all themes
-- WCAG AA accessibility compliance verified for all three themes
-- Theme switching is instant with smooth visual transitions
-- Color coding for income/expenses consistent across all themes
-- All existing functionality works with all three themes
-- All 110 unit tests pass
-- Performance meets requirements (< 100ms theme switch)
-- Documentation updated with theme usage examples
+- All SF Symbols use contextual theme colors
+- Icon colors automatically update when theme changes
+- Income/expense transactions show themed success/error colors
+- Tab bar reflects selected state with theme colors
+- All themed icons maintain WCAG AA contrast compliance
+- Icon theming works across all three themes
+- No hardcoded icon colors remain in codebase
+- All existing functionality preserved
+- All 140 unit tests pass
 
-**Estimated Complexity**: Very High (12-16 hours - three complete theme implementations, view migration, testing across all themes)
+**Estimated Complexity**: Medium (4-6 hours - systematic icon audit and theming)
 
-**Dependencies**:
-- **REQUIRED**: Enhancement 8.1 (Theme Management Infrastructure) must be completed first
-- Design assets in `Designs/` folder (already available)
+**Dependencies**: None (Enhancement 8.2 complete)
 
-**Version Planning**:
-- **v1.7.0**: Complete theme system with all three visual themes
-- Provides foundation for future theme additions
-- Significantly enhances user experience and app appeal
+**Version Planning**: v1.8.0 (Icon Theming & Navigation Polish)
+
+---
+
+#### Enhancement 9.2: Move Month Navigation to Navigation Bar
+
+**Objective**: Move the month indicator section from its current position (below navigation bar, above Ready to Assign banner) to the navigation bar itself, displaying as "< Nov 2025 >" with chevron buttons. This reduces whitespace and eliminates the redundant "Budget" header.
+
+**YNAB Alignment Check**: ✅ **Compliant** - Improves visual hierarchy by bringing "Ready to Assign" banner closer to top, emphasizing its importance in YNAB methodology. Reduces visual clutter while maintaining all functionality.
+
+**Current State**:
+Navigation Bar → "Budget" title → Month Section → Ready to Assign Banner → Categories
+
+**Target State**:
+Navigation Bar with embedded month navigation (< November 2025 >) → Ready to Assign Banner → Categories
+
+**Implementation Approach**:
+
+1. **Remove Current Month Section**:
+   - Remove standalone month indicator from BudgetPlanningView body
+   - Remove redundant "Budget" title from navigation bar
+
+2. **Implement Toolbar Month Navigation**:
+   - Use `.toolbar` modifier with custom toolbar items
+   - `ToolbarItem(placement: .principal)`: Month/Year display (centered)
+   - `ToolbarItem(placement: .navigationBarLeading)`: Previous month button (chevron.left)
+   - `ToolbarItem(placement: .navigationBarTrailing)`: Next month button (chevron.right)
+
+3. **Apply Theme Colors**:
+   - Month text: `theme.colors.primary`, `theme.typography.headline`
+   - Chevron buttons: `theme.colors.accent`
+   - Buttons meet 44x44pt minimum tap target
+
+4. **Preserve Functionality**:
+   - Keep existing month navigation logic
+   - Maintain carry-forward warnings
+   - Ensure locale-aware date formatting
+
+**Files to Modify**:
+- `ZeroBasedBudget/Views/BudgetPlanningView.swift` - Remove month section, add toolbar navigation
+
+**Testing Checklist**:
+- [ ] Month indicator centered in navigation bar
+- [ ] Previous/next month buttons functional with chevrons
+- [ ] Carry-forward warnings still work correctly
+- [ ] Month format is locale-aware
+- [ ] Month text uses theme primary color
+- [ ] Chevron buttons use theme accent color
+- [ ] Ready to Assign banner now immediately below nav bar
+- [ ] Vertical whitespace reduced by ~80-100pt
+- [ ] VoiceOver announces month navigation correctly
+- [ ] Buttons meet 44x44pt minimum tap target
+- [ ] Works in all three themes
+- [ ] All 140 unit tests still pass
+
+**Acceptance Criteria**:
+- Month navigation moved to navigation bar in [<] [Month Year] [>] format
+- "Budget" title removed (tab bar already shows this)
+- Ready to Assign banner appears immediately below navigation bar
+- Vertical whitespace reduced by at least 80pt
+- Month navigation uses theme colors
+- All functionality preserved (carry-forward, date formatting)
+- VoiceOver accessibility maintained
+- Works seamlessly across all three themes
+- All 140 unit tests pass
+
+**Estimated Complexity**: Low-Medium (2-3 hours - layout restructuring and toolbar implementation)
+
+**Dependencies**: Enhancement 9.1 should ideally be completed first for chevron button theming (can be implemented independently if needed)
+
+**Version Planning**: v1.8.0 (Icon Theming & Navigation Polish)
 
 ---
 
 ## Active Development
 
-**Current Focus**: v1.7.0 Development - UX Improvements & Theme Management
-**Status**: v1.7.0 near completion; Enhancements 7.1, 7.2, 8.1, 8.2 complete; 140 unit tests passing (114 original + 26 theme tests)
+**Current Focus**: v1.8.0 Planning - Icon Theming & Navigation Polish
+**Status**: v1.7.0 complete (140 tests passing); v1.8.0 enhancements specified and ready for implementation
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-06] ✅ **Full Theme Implementation COMPLETE**: Systematically migrated all views to use theme colors - themes now have full visual impact across entire app (v1.7.0)
-2. [2025-11-06] ✅ **Enhancement 8.2 COMPLETE**: Three visual themes implemented (Neon Ledger, Midnight Mint, Ultraviolet Slate) - v1.7.0
-3. [2025-11-06] ✅ **Enhancement 8.1 COMPLETE**: Theme management infrastructure with SwiftUI Environment integration (v1.7.0)
-4. [2025-11-06] ✅ **Enhancement 7.2 COMPLETE**: Category spending progress indicators (v1.7.0)
-5. [2025-11-06] ✅ **Enhancement 7.1 COMPLETE**: Absolute transaction dates with locale support (v1.7.0)
+1. [2025-11-06] 📋 **v1.8.0 Enhancements Specified**: Added Enhancement 9.1 (Icon Theming) and 9.2 (Month Nav to Nav Bar)
+2. [2025-11-06] ✅ **v1.7.0 COMPLETE**: Full theme system with three visual themes and comprehensive view migration
+3. [2025-11-06] ✅ **Theme Migration COMPLETE**: All 7 views systematically migrated to use theme colors
+4. [2025-11-06] ✅ **Three Themes Implemented**: Neon Ledger, Midnight Mint, Ultraviolet Slate (Enhancement 8.2)
+5. [2025-11-06] ✅ **Theme Infrastructure Complete**: Theme management with SwiftUI Environment integration (Enhancement 8.1)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Test Suite Status**: ✅ All 140 tests passing (114 original + 26 theme tests, verified November 6, 2025)
-2. **Theme System**: ✅ COMPLETE - Full visual theme support across entire app with 3 themes (Neon Ledger, Midnight Mint, Ultraviolet Slate)
-3. **Theme Infrastructure**: ✅ Theme management system complete (Enhancement 8.1)
-4. **Theme Implementation**: ✅ All three visual themes implemented and selectable (Enhancement 8.2)
-5. **Theme Migration**: ✅ COMPLETE - All views systematically migrated to use theme colors (7 view files updated)
-6. **v1.7.0 Status**: ✅ Ready for release - All planned enhancements complete (7.1, 7.2, 8.1, 8.2)
-7. **Current Priority**: Consider releasing v1.7.0 or continuing with additional enhancements from backlog
-8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+1. **Current Version**: v1.7.0 complete and stable (140 tests passing)
+2. **Next Version**: v1.8.0 planning phase - two enhancements specified
+3. **Enhancement 9.1**: Theme-aware icon system (4-6 hours estimated)
+4. **Enhancement 9.2**: Move month navigation to nav bar (2-3 hours estimated)
+5. **Recommended Order**: Implement 9.1 first, then 9.2 (9.2 can use themed chevrons from 9.1)
+6. **Test Coverage**: Maintain 140 passing tests throughout implementation
+7. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy
 
@@ -631,27 +390,31 @@ refactor: extract chart components for better organization
 
 ### Starting a New Session
 
-**Minimal Start** (same-day continuation):
+**Quick Start** (continuing recent work):
 ```
-Read CLAUDE.md "Active Development" section and continue with current focus.
-```
-
-**Standard Start** (after gap or new work):
-```
-1. Read CLAUDE.md "Active Development" section
-2. Review "Active Issues & Enhancement Backlog" for current priority
-3. Review git log --oneline -5 to see recent work
-4. Continue with next unchecked task
+1. Read CLAUDE.md "Next Session Start Here" section
+2. Continue with current enhancement or start next one
 ```
 
-**Full Start** (after interruption or uncertainty):
+**Standard Start** (after gap or new context):
 ```
-1. Read CLAUDE.md completely (especially YNAB methodology and active bugs)
-2. Run: git log --oneline -10
-3. Run: git status (check for uncommitted work)
-4. Build project to verify working state
-5. Report current status and next steps
+1. Read CLAUDE.md "Active Development" + "Enhancement Backlog"
+2. Run: git log --oneline -5
+3. Run: xcodebuild test (verify 140 tests passing)
+4. Start work on highest priority enhancement
 ```
+
+**Full Start** (after interruption or major context switch):
+```
+1. Read CLAUDE.md completely (focus on YNAB methodology if needed)
+2. Run: git log --online -10 && git status
+3. Run: xcodebuild build (verify project compiles)
+4. Run: xcodebuild test (verify all tests passing)
+5. Review "Active Development" section for current state
+6. Report findings and proceed with next enhancement
+```
+
+**Note**: The "Next Session Start Here" section is specifically designed to give you immediate context without reading the entire file.
 
 ### During Development
 
