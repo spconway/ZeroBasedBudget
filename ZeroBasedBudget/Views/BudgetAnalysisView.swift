@@ -117,7 +117,7 @@ struct MonthPickerSection: View {
         VStack(spacing: 8) {
             Text("Analysis Period")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.colors.textSecondary)
 
             HStack {
                 Button {
@@ -150,7 +150,7 @@ struct MonthPickerSection: View {
                 }
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(theme.colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -174,14 +174,14 @@ struct SummarySection: View {
                 SummaryCard(
                     title: "Total Budgeted",
                     amount: totalBudgeted,
-                    color: .appAccent,
+                    color: theme.colors.accent,
                     currencyCode: currencyCode
                 )
 
                 SummaryCard(
                     title: "Total Actual",
                     amount: totalActual,
-                    color: totalActual > totalBudgeted ? .appError : .appSuccess,
+                    color: totalActual > totalBudgeted ? theme.colors.error : theme.colors.success,
                     currencyCode: currencyCode
                 )
             }
@@ -189,13 +189,13 @@ struct SummarySection: View {
             SummaryCard(
                 title: totalDifference >= 0 ? "Under Budget" : "Over Budget",
                 amount: abs(totalDifference),
-                color: totalDifference >= 0 ? .appSuccess : .appError,
+                color: totalDifference >= 0 ? theme.colors.success : theme.colors.error,
                 isFullWidth: true,
                 currencyCode: currencyCode
             )
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(theme.colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
@@ -211,7 +211,7 @@ struct SummaryCard: View {
         VStack(spacing: 4) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.colors.textSecondary)
 
             Text(amount, format: .currency(code: currencyCode))
                 .font(isFullWidth ? .title2.bold() : .headline.bold())
@@ -219,7 +219,7 @@ struct SummaryCard: View {
         }
         .frame(maxWidth: isFullWidth ? .infinity : nil)
         .padding()
-        .background(Color(.systemBackground))
+        .background(theme.colors.background)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
@@ -242,7 +242,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.budgeted as NSDecimalNumber))
                     )
-                    .foregroundStyle(Color.appAccent)
+                    .foregroundStyle(theme.colors.accent)
                     .position(by: .value("Type", "Budgeted"))
 
                     // Actual bar
@@ -250,7 +250,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.actual as NSDecimalNumber))
                     )
-                    .foregroundStyle(comparison.isOverBudget ? Color.appError : Color.appSuccess)
+                    .foregroundStyle(comparison.isOverBudget ? theme.colors.error : theme.colors.success)
                     .position(by: .value("Type", "Actual"))
                 }
             }
@@ -260,7 +260,7 @@ struct BarChartSection: View {
             }
             .frame(height: 300)
             .padding()
-            .background(Color(.systemGray6))
+            .background(theme.colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -329,15 +329,15 @@ struct DonutChartSection: View {
                 VStack(spacing: 12) {
                     Image(systemName: "chart.pie")
                         .font(.system(size: 48))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.colors.textSecondary)
                     Text("No spending recorded")
                         .font(.headline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.colors.textSecondary)
                 }
                 .frame(height: 300)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color(.systemGray6))
+                .background(theme.colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 VStack(spacing: 16) {
@@ -364,7 +364,7 @@ struct DonutChartSection: View {
                             VStack(spacing: 4) {
                                 Text("Total")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(theme.colors.textSecondary)
                                 Text(totalSpending, format: .currency(code: currencyCode))
                                     .font(.title2.bold())
                             }
@@ -388,7 +388,7 @@ struct DonutChartSection: View {
 
                                     Text(data.amount, format: .currency(code: currencyCode))
                                         .font(.caption2.bold())
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(theme.colors.textSecondary)
                                 }
 
                                 Spacer()
@@ -397,7 +397,7 @@ struct DonutChartSection: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(theme.colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
@@ -453,7 +453,7 @@ struct CategoryComparisonRow: View {
                 Spacer()
 
                 Image(systemName: comparison.isOverBudget ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
-                    .foregroundStyle(comparison.isOverBudget ? Color.appError : Color.appSuccess)
+                    .foregroundStyle(comparison.isOverBudget ? theme.colors.error : theme.colors.success)
             }
 
             // Metrics grid
@@ -470,7 +470,7 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Actual",
                     value: comparison.actual,
-                    color: comparison.isOverBudget ? .appError : .appSuccess,
+                    color: comparison.isOverBudget ? theme.colors.error : theme.colors.success,
                     currencyCode: currencyCode
                 )
 
@@ -479,7 +479,7 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Difference",
                     value: comparison.difference,
-                    color: comparison.difference >= 0 ? .appSuccess : .appError,
+                    color: comparison.difference >= 0 ? theme.colors.success : theme.colors.error,
                     currencyCode: currencyCode
                 )
 
@@ -488,18 +488,18 @@ struct CategoryComparisonRow: View {
                 VStack(spacing: 4) {
                     Text("% Used")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.colors.textSecondary)
 
                     Text(comparison.percentageUsedFormatted)
                         .font(.body.bold())
-                        .foregroundStyle(comparison.percentageUsed > 1.0 ? Color.appError : Color.primary)
+                        .foregroundStyle(comparison.percentageUsed > 1.0 ? theme.colors.error : theme.colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
             }
             .frame(height: 60)
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(theme.colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
@@ -514,7 +514,7 @@ struct MetricColumn: View {
         VStack(spacing: 4) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme.colors.textSecondary)
 
             Text(value, format: .currency(code: currencyCode))
                 .font(.body.bold())

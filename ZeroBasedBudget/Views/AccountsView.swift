@@ -14,6 +14,7 @@ import SwiftData
 /// The sum of all account balances = total money available to budget.
 struct AccountsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
     @Query(sort: \Account.createdDate, order: .forward) private var allAccounts: [Account]
     @Query private var settings: [AppSettings]
 
@@ -37,15 +38,15 @@ struct AccountsView: View {
                 VStack(spacing: 8) {
                     Text("Total Across All Accounts")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.colors.textSecondary)
 
                     Text(totalAccountBalances, format: .currency(code: currencyCode))
                         .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(theme.colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
-                .background(Color(.systemGroupedBackground))
+                .background(theme.colors.background)
 
                 // Accounts list
                 if allAccounts.isEmpty {
@@ -53,14 +54,14 @@ struct AccountsView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "banknote")
                             .font(.system(size: 60))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(theme.colors.textSecondary)
 
                         Text("No Accounts Yet")
                             .font(.title2.bold())
 
                         Text("Add your first account to start budgeting with the YNAB method.")
                             .font(.body)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(theme.colors.textSecondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
 

@@ -148,7 +148,7 @@ struct SettingsView: View {
                 ThemePicker(themeManager: themeManager)
             } else {
                 Text("Theme selection unavailable")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
         } header: {
             Text("Visual Theme")
@@ -257,7 +257,7 @@ struct SettingsView: View {
             if !appSettings.notificationsEnabled {
                 Text("Notifications are disabled. Category due date reminders will not appear.")
                     .font(.caption)
-                    .foregroundStyle(Color.appWarning)
+                    .foregroundStyle(theme.colors.warning)
             }
         } header: {
             Text("Notifications")
@@ -294,7 +294,7 @@ struct SettingsView: View {
                 showingClearDataAlert = true
             } label: {
                 Label("Clear All Data", systemImage: "trash")
-                    .foregroundStyle(Color.appError)
+                    .foregroundStyle(theme.colors.error)
             }
 
             // Storage Info
@@ -302,7 +302,7 @@ struct SettingsView: View {
                 Text("Storage")
                 Spacer()
                 Text("Local Only")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
         } header: {
             Text("Data Management")
@@ -318,7 +318,7 @@ struct SettingsView: View {
                 Text("Version")
                 Spacer()
                 Text("1.4.0")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
 
             // Build
@@ -326,7 +326,7 @@ struct SettingsView: View {
                 Text("Build")
                 Spacer()
                 Text("Enhancement 3.2")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
 
             // YNAB Methodology
@@ -341,7 +341,7 @@ struct SettingsView: View {
                 Text("Privacy")
                 Spacer()
                 Text("Local Only")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.colors.textSecondary)
             }
 
             // GitHub Link (placeholder)
@@ -390,7 +390,7 @@ struct SettingsView: View {
 
                     Text("This app follows YNAB principles by tracking real account balances and helping you assign every dollar a specific job.")
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.colors.textSecondary)
                         .padding(.top)
                 }
                 .padding()
