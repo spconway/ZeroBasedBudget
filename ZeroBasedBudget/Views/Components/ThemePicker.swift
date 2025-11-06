@@ -90,26 +90,33 @@ struct ThemePicker: View {
 
 // MARK: - Preview
 
-#Preview("Theme Picker") {
-    // Create preview environment
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(
-        for: AppSettings.self,
-        configurations: config
-    )
-    let context = container.mainContext
+struct ThemePickerPreview: View {
+    @State private var themeManager: ThemeManager
 
-    // Create settings
-    let settings = AppSettings()
-    context.insert(settings)
+    init() {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(
+            for: AppSettings.self,
+            configurations: config
+        )
+        let context = container.mainContext
 
-    // Create theme manager
-    let themeManager = ThemeManager(appSettings: settings, modelContext: context)
+        let settings = AppSettings()
+        context.insert(settings)
 
-    List {
-        Section("Theme") {
-            ThemePicker(themeManager: themeManager)
-        }
+        _themeManager = State(initialValue: ThemeManager(appSettings: settings, modelContext: context))
     }
-    .theme(themeManager.currentTheme)
+
+    var body: some View {
+        List {
+            Section("Theme") {
+                ThemePicker(themeManager: themeManager)
+            }
+        }
+        .theme(themeManager.currentTheme)
+    }
+}
+
+#Preview("Theme Picker") {
+    ThemePickerPreview()
 }
