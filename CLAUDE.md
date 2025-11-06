@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.7.0 (Theme System & UX Polish)
-**Last Updated**: November 6, 2025 (v1.7.0 Complete - 140 Unit Tests)
+**Version**: 1.8.0 (Icon Theming & Navigation Polish)
+**Last Updated**: November 6, 2025 (v1.8.0 Complete - 140 Unit Tests)
 **Methodology**: YNAB-Style Zero-Based Budgeting
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -101,7 +101,22 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
-**v1.7.0 (Current - Complete):**
+**v1.8.0 (Current - Complete):**
+- ✅ Enhancement 9.1: Theme-aware icon system with contextual theming for all SF Symbols
+- ✅ Enhancement 9.2: Month navigation moved to navigation bar (< Nov 2025 >)
+- ✅ Added: IconTheme.swift utility with 6 icon theming view modifiers
+- ✅ Added: Tab bar now uses theme.colors.primary for selected state (.tint())
+- ✅ Added: Income/expense icons to transaction rows (arrow.up/down.circle.fill)
+- ✅ Improved: All SF Symbols now use contextual theme colors (primary, accent, success, error, warning, neutral)
+- ✅ Improved: Vertical whitespace reduced by ~80-100pt in Budget tab
+- ✅ Improved: Ready to Assign banner now immediately below navigation bar
+- ✅ Removed: Redundant "Budget Planning" title from navigation bar
+- ✅ Removed: Standalone month indicator section from view body
+- ✅ Updated: 8 view files with themed icons (ContentView, AccountsView, BudgetPlanningView, TransactionLogView, BudgetAnalysisView, ReadyToAssignBanner, ThemePicker, SettingsView)
+- ✅ Fixed: ThemeManagerTests.swift Swift 6 concurrency compliance (await mainContext)
+- ✅ Complete: Icon theming system with automatic color updates across all three themes
+
+**v1.7.0:**
 - ✅ Enhancement 7.1: Replaced relative transaction dates with absolute dates ("Nov 5" instead of "2 days ago")
 - ✅ Enhancement 7.2: Added category spending progress indicators with color-coded visual feedback
 - ✅ Enhancement 8.1: Theme management infrastructure with SwiftUI Environment integration
@@ -177,181 +192,31 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🟢 Priority 3: New Features (v1.8.0 Planned)
-
-#### Enhancement 9.1: Theme-Aware Icon System with Contextual Theming
-
-**Objective**: Implement contextual theming for all SF Symbols throughout the app, where icons automatically use appropriate theme colors based on their semantic meaning and context.
-
-**YNAB Alignment Check**: ✅ **Compliant** - Icon theming enhances visual hierarchy and reinforces YNAB principles by using theme colors to emphasize important elements like "Ready to Assign" banner and income/expense indicators.
-
-**Icon Color Semantic Mapping**:
-- **Primary color**: Main navigation actions, important buttons, tab bar selected state
-- **Accent color**: Secondary actions, edit buttons, info icons
-- **Success color**: Income transactions, positive balance indicators, completed states
-- **Error color**: Expense transactions, overspending indicators, delete actions
-- **Warning color**: Alert icons, notification badges, attention states
-- **TextPrimary/TextSecondary**: Non-semantic icons (chevrons, list indicators, etc.)
-
-**Implementation Approach**:
-
-1. **Create IconTheme Utility** (`Utilities/Theme/IconTheme.swift`):
-   - Create reusable view modifiers for themed icons
-   - Provide convenience methods for common icon contexts (`.iconPrimary()`, `.iconAccent()`, `.iconSuccess()`, `.iconError()`)
-   - Ensure consistent icon sizing and styling
-
-2. **Update Tab Bar Icons**:
-   - Apply `theme.colors.primary` to selected tab icons
-   - Apply `theme.colors.textSecondary` to unselected tab icons
-   - Ensure smooth color transitions on tab changes
-
-3. **Update Navigation & List Icons**:
-   - Transaction type icons: success (income) / error (expense)
-   - Category icons: theme.colors.primary
-   - Account icons: theme.colors.accent
-   - Edit/Add buttons: theme.colors.accent
-   - Status indicators: contextual colors
-
-4. **Update All Views**:
-   - Replace hardcoded icon colors with theme-aware modifiers
-   - Apply contextual colors based on icon purpose
-   - Test across all three themes (Neon Ledger, Midnight Mint, Ultraviolet Slate)
-
-**Files to Create**:
-- `ZeroBasedBudget/Utilities/Theme/IconTheme.swift` - Icon theming utilities and view modifiers
-
-**Files to Modify**:
-- `ZeroBasedBudget/ZeroBasedBudgetApp.swift` - Update tab bar icon theming
-- `ZeroBasedBudget/Views/AccountsView.swift` - Apply themed icons
-- `ZeroBasedBudget/Views/BudgetPlanningView.swift` - Apply themed icons
-- `ZeroBasedBudget/Views/TransactionLogView.swift` - Apply themed icons (success/error for income/expense)
-- `ZeroBasedBudget/Views/BudgetAnalysisView.swift` - Apply themed icons
-- `ZeroBasedBudget/Views/SettingsView.swift` - Apply themed icons
-- `ZeroBasedBudget/Views/AccountRow.swift` - Apply themed icons
-- `ZeroBasedBudget/Views/Components/CategoryProgressBar.swift` - Apply themed icons if applicable
-
-**Testing Checklist**:
-- [ ] Tab bar icons use theme colors (primary for selected, textSecondary for unselected)
-- [ ] Transaction icons show success (income) and error (expense) from theme
-- [ ] Category icons use theme primary color
-- [ ] Account icons use theme accent color
-- [ ] Button icons use appropriate contextual colors
-- [ ] Icons transition smoothly when switching themes
-- [ ] All three themes show distinct icon colors
-- [ ] Icon colors maintain WCAG AA contrast ratios
-- [ ] VoiceOver still announces icon meanings correctly
-- [ ] All 140 unit tests still pass
-
-**Acceptance Criteria**:
-- All SF Symbols use contextual theme colors
-- Icon colors automatically update when theme changes
-- Income/expense transactions show themed success/error colors
-- Tab bar reflects selected state with theme colors
-- All themed icons maintain WCAG AA contrast compliance
-- Icon theming works across all three themes
-- No hardcoded icon colors remain in codebase
-- All existing functionality preserved
-- All 140 unit tests pass
-
-**Estimated Complexity**: Medium (4-6 hours - systematic icon audit and theming)
-
-**Dependencies**: None (Enhancement 8.2 complete)
-
-**Version Planning**: v1.8.0 (Icon Theming & Navigation Polish)
-
----
-
-#### Enhancement 9.2: Move Month Navigation to Navigation Bar
-
-**Objective**: Move the month indicator section from its current position (below navigation bar, above Ready to Assign banner) to the navigation bar itself, displaying as "< Nov 2025 >" with chevron buttons. This reduces whitespace and eliminates the redundant "Budget" header.
-
-**YNAB Alignment Check**: ✅ **Compliant** - Improves visual hierarchy by bringing "Ready to Assign" banner closer to top, emphasizing its importance in YNAB methodology. Reduces visual clutter while maintaining all functionality.
-
-**Current State**:
-Navigation Bar → "Budget" title → Month Section → Ready to Assign Banner → Categories
-
-**Target State**:
-Navigation Bar with embedded month navigation (< November 2025 >) → Ready to Assign Banner → Categories
-
-**Implementation Approach**:
-
-1. **Remove Current Month Section**:
-   - Remove standalone month indicator from BudgetPlanningView body
-   - Remove redundant "Budget" title from navigation bar
-
-2. **Implement Toolbar Month Navigation**:
-   - Use `.toolbar` modifier with custom toolbar items
-   - `ToolbarItem(placement: .principal)`: Month/Year display (centered)
-   - `ToolbarItem(placement: .navigationBarLeading)`: Previous month button (chevron.left)
-   - `ToolbarItem(placement: .navigationBarTrailing)`: Next month button (chevron.right)
-
-3. **Apply Theme Colors**:
-   - Month text: `theme.colors.primary`, `theme.typography.headline`
-   - Chevron buttons: `theme.colors.accent`
-   - Buttons meet 44x44pt minimum tap target
-
-4. **Preserve Functionality**:
-   - Keep existing month navigation logic
-   - Maintain carry-forward warnings
-   - Ensure locale-aware date formatting
-
-**Files to Modify**:
-- `ZeroBasedBudget/Views/BudgetPlanningView.swift` - Remove month section, add toolbar navigation
-
-**Testing Checklist**:
-- [ ] Month indicator centered in navigation bar
-- [ ] Previous/next month buttons functional with chevrons
-- [ ] Carry-forward warnings still work correctly
-- [ ] Month format is locale-aware
-- [ ] Month text uses theme primary color
-- [ ] Chevron buttons use theme accent color
-- [ ] Ready to Assign banner now immediately below nav bar
-- [ ] Vertical whitespace reduced by ~80-100pt
-- [ ] VoiceOver announces month navigation correctly
-- [ ] Buttons meet 44x44pt minimum tap target
-- [ ] Works in all three themes
-- [ ] All 140 unit tests still pass
-
-**Acceptance Criteria**:
-- Month navigation moved to navigation bar in [<] [Month Year] [>] format
-- "Budget" title removed (tab bar already shows this)
-- Ready to Assign banner appears immediately below navigation bar
-- Vertical whitespace reduced by at least 80pt
-- Month navigation uses theme colors
-- All functionality preserved (carry-forward, date formatting)
-- VoiceOver accessibility maintained
-- Works seamlessly across all three themes
-- All 140 unit tests pass
-
-**Estimated Complexity**: Low-Medium (2-3 hours - layout restructuring and toolbar implementation)
-
-**Dependencies**: Enhancement 9.1 should ideally be completed first for chevron button theming (can be implemented independently if needed)
-
-**Version Planning**: v1.8.0 (Icon Theming & Navigation Polish)
+**No active enhancements**. All planned features for v1.8.0 have been completed.
 
 ---
 
 ## Active Development
 
-**Current Focus**: v1.8.0 Planning - Icon Theming & Navigation Polish
-**Status**: v1.7.0 complete (140 tests passing); v1.8.0 enhancements specified and ready for implementation
+**Current Focus**: v1.8.0 Complete - Icon Theming & Navigation Polish
+**Status**: v1.8.0 complete (140 tests passing); project ready for release or new enhancements
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-06] 📋 **v1.8.0 Enhancements Specified**: Added Enhancement 9.1 (Icon Theming) and 9.2 (Month Nav to Nav Bar)
-2. [2025-11-06] ✅ **v1.7.0 COMPLETE**: Full theme system with three visual themes and comprehensive view migration
-3. [2025-11-06] ✅ **Theme Migration COMPLETE**: All 7 views systematically migrated to use theme colors
-4. [2025-11-06] ✅ **Three Themes Implemented**: Neon Ledger, Midnight Mint, Ultraviolet Slate (Enhancement 8.2)
-5. [2025-11-06] ✅ **Theme Infrastructure Complete**: Theme management with SwiftUI Environment integration (Enhancement 8.1)
+1. [2025-11-06] ✅ **Enhancement 9.2 COMPLETE**: Month navigation moved to navigation bar (v1.8.0)
+2. [2025-11-06] ✅ **Enhancement 9.1 COMPLETE**: Theme-aware icon system with contextual theming (v1.8.0)
+3. [2025-11-06] ✅ **v1.7.0 COMPLETE**: Full theme system with three visual themes
+4. [2025-11-06] ✅ **Theme Migration COMPLETE**: All views systematically migrated to use theme colors
+5. [2025-11-06] ✅ **Three Themes Implemented**: Neon Ledger, Midnight Mint, Ultraviolet Slate
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.7.0 complete and stable (140 tests passing)
-2. **Next Version**: v1.8.0 planning phase - two enhancements specified
-3. **Enhancement 9.1**: Theme-aware icon system (4-6 hours estimated)
-4. **Enhancement 9.2**: Move month navigation to nav bar (2-3 hours estimated)
-5. **Recommended Order**: Implement 9.1 first, then 9.2 (9.2 can use themed chevrons from 9.1)
-6. **Test Coverage**: Maintain 140 passing tests throughout implementation
+1. **Current Version**: v1.8.0 complete and stable (140 tests passing)
+2. **Project Status**: Production ready with full theme system and icon theming
+3. **Recent Enhancements**: Icon theming (9.1), navigation bar month selector (9.2)
+4. **Test Suite**: 140 tests passing (114 original + 26 theme tests)
+5. **Build Status**: ✅ Project builds successfully
+6. **Available Actions**: Consider releasing v1.8.0 or planning new enhancements
 7. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy
