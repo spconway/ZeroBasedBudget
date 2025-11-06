@@ -104,8 +104,12 @@ struct RootView: View {
     var body: some View {
         Group {
             if let themeManager = themeManager {
+                // Access currentTheme to create dependency for observation
+                let currentTheme = themeManager.currentTheme
+
                 ContentView()
-                    .environment(\.theme, themeManager.currentTheme)
+                    .environment(\.theme, currentTheme)
+                    .environment(\.themeManager, themeManager)
             } else {
                 // Loading state (brief flash while theme initializes)
                 Color.clear

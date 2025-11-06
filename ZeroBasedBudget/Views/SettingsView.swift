@@ -21,6 +21,7 @@ import UniformTypeIdentifiers
 /// - About
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.themeManager) private var themeManager
     @Query private var settings: [AppSettings]
     @Query private var accounts: [Account]
     @Query private var categories: [BudgetCategory]
@@ -46,11 +47,6 @@ struct SettingsView: View {
             modelContext.insert(newSettings)
             return newSettings
         }
-    }
-
-    /// Theme manager for theme selection
-    private var themeManager: ThemeManager {
-        ThemeManager(appSettings: appSettings, modelContext: modelContext)
     }
 
     /// Available currency codes
@@ -148,7 +144,12 @@ struct SettingsView: View {
 
     private var themeSection: some View {
         Section {
-            ThemePicker(themeManager: themeManager)
+            if let themeManager = themeManager {
+                ThemePicker(themeManager: themeManager)
+            } else {
+                Text("Theme selection unavailable")
+                    .foregroundStyle(.secondary)
+            }
         } header: {
             Text("Visual Theme")
         } footer: {
