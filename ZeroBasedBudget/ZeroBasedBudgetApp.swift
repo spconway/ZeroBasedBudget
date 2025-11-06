@@ -110,6 +110,7 @@ struct RootView: View {
                 ContentView()
                     .environment(\.theme, currentTheme)
                     .environment(\.themeManager, themeManager)
+                    .id(currentTheme.identifier) // Force re-render when theme changes
             } else {
                 // Loading state (brief flash while theme initializes)
                 Color.clear
