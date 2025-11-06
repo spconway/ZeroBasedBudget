@@ -11,6 +11,7 @@ import SwiftData
 /// Sheet for editing an existing account
 struct EditAccountSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
     @Query private var settings: [AppSettings]
     @Bindable var account: Account
 
@@ -70,8 +71,12 @@ struct EditAccountSheet: View {
                     .disabled(account.name.isEmpty)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(theme.colors.background)
             .navigationTitle("Edit Account")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {

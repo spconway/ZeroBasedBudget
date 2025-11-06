@@ -83,7 +83,12 @@ struct SettingsView: View {
                 // MARK: - About Section
                 aboutSection
             }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(theme.colors.background)
             .navigationTitle("Settings")
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .alert("Clear All Data", isPresented: $showingClearDataAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Clear All Data", role: .destructive) {
@@ -396,8 +401,11 @@ struct SettingsView: View {
                 }
                 .padding()
             }
+            .background(theme.colors.background)
             .navigationTitle("YNAB Methodology")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {

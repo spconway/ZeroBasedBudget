@@ -97,8 +97,11 @@ struct BudgetAnalysisView: View {
                 }
                 .padding()
             }
+            .background(theme.colors.background)
             .navigationTitle("Budget Analysis")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 }

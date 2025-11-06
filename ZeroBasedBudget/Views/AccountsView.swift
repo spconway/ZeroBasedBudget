@@ -81,6 +81,7 @@ struct AccountsView: View {
                     List {
                         ForEach(allAccounts) { account in
                             AccountRow(account: account, currencyCode: currencyCode)
+                                .listRowBackground(theme.colors.surface)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     editingAccount = account
@@ -89,9 +90,14 @@ struct AccountsView: View {
                         .onDelete(perform: deleteAccounts)
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background(theme.colors.background)
                 }
             }
+            .background(theme.colors.background)
             .navigationTitle("Accounts")
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

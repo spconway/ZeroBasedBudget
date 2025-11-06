@@ -121,8 +121,13 @@ struct TransactionLogView: View {
                     }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(theme.colors.background)
             .navigationTitle("Transactions")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search transactions")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -328,8 +333,12 @@ struct AddTransactionSheet: View {
                         .lineLimit(3...6)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(theme.colors.background)
             .navigationTitle("Add Transaction")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar(content: {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -495,8 +504,12 @@ struct EditTransactionSheet: View {
                         .lineLimit(3...6)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(theme.colors.background)
             .navigationTitle("Edit Transaction")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar(content: {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {

@@ -216,7 +216,7 @@ struct BudgetPlanningView: View {
                     .padding(.vertical, 8)
                     .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                 }
-                .listRowBackground(Color.clear)
+                .listRowBackground(theme.colors.surface)
 
                 // NEW: Simple Ready to Assign Banner (Enhancement 3.1)
                 Section {
@@ -227,7 +227,7 @@ struct BudgetPlanningView: View {
                     )
                 }
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                .listRowBackground(Color.clear)
+                .listRowBackground(theme.colors.surface)
 
                 // Fixed Expenses Section
                 Section(header: HStack {
@@ -447,9 +447,13 @@ struct BudgetPlanningView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(theme.colors.background)
             .listSectionSpacing(0)
             .navigationTitle("Budget Planning")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .onAppear {
                 // NOTE: Enhancement 3.1 - Account balances now persist globally, no need to load per-month
                 // Budget data still created for month tracking
@@ -890,7 +894,7 @@ struct CategoryRow: View {
                 Button(action: onQuickAssign) {
                     Image(systemName: "bolt.fill")
                         .font(.system(size: 14))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(theme.colors.onPrimary)
                         .frame(width: 28, height: 28)
                         .background(theme.colors.warning)
                         .clipShape(Circle())
