@@ -192,31 +192,423 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-**No active enhancements**. All planned features for v1.8.0 have been completed.
+### 🔴 Priority 1: Critical Bugs (v1.8.1 Planned)
+
+#### Bug 10.1: Implement Light/Dark Variants for All Three Themes
+
+**Objective**: Extend the theme system to support separate light and dark color variants for each of the three themes (Neon Ledger, Midnight Mint, Ultraviolet Slate), allowing the Appearance setting (System/Light/Dark) to properly adjust backgrounds and surfaces while preserving each theme's unique accent colors and personality.
+
+**Current Issue**: When user selects "Light" in Settings > Appearance, the app attempts to apply light mode via `.preferredColorScheme(.light)` but all three themes only define dark color values. This results in dark backgrounds persisting and dark text becoming unreadable in many areas (main backgrounds, navigation bars).
+
+**YNAB Alignment Check**: ✅ **Compliant** - Visual theme variants do not affect YNAB budgeting principles. Ready to Assign banner prominence must be maintained in both light and dark variants.
+
+**Implementation Approach**:
+
+**Phase 1: Update Theme Protocol**
+1. Modify `Theme` protocol to support light/dark color sets:
+   ```swift
+   protocol Theme {
+       var name: String { get }
+       var identifier: String { get }
+       var description: String { get }
+
+       // Light and dark color variants
+       var lightColors: ThemeColors { get }
+       var darkColors: ThemeColors { get }
+
+       // Get colors for current color scheme
+       func colors(for colorScheme: ColorScheme) -> ThemeColors
+
+       // Typography, spacing, radius remain the same
+       var typography: ThemeTypography { get }
+       var spacing: ThemeSpacing { get }
+       var radius: ThemeRadius { get }
+   }
+
+   extension Theme {
+       func colors(for colorScheme: ColorScheme) -> ThemeColors {
+           colorScheme == .dark ? darkColors : lightColors
+       }
+   }
+   ```
+
+2. Update `ThemeEnvironment` to pass color scheme to theme:
+   ```swift
+   struct ThemeEnvironmentKey: EnvironmentKey {
+       static let defaultValue: Theme? = nil
+   }
+
+   extension EnvironmentValues {
+       var theme: Theme {
+           get { self[ThemeEnvironmentKey.self] ?? MidnightMintTheme() }
+           set { self[ThemeEnvironmentKey.self] = newValue }
+       }
+
+       var currentThemeColors: ThemeColors {
+           theme.colors(for: colorScheme)
+       }
+   }
+   ```
+
+**Phase 2: Create Light Variants for Neon Ledger**
+1. Define light color palette maintaining neon aesthetic:
+   - Background: Very light gray (#F8F8F8) instead of pure black
+   - Surface: White (#FFFFFF) instead of dark gray
+   - Primary: Electric teal (#00CDB8) adjusted for light background contrast
+   - Accent: Magenta (#E0005E) adjusted for light background
+   - TextPrimary: Dark gray (#1A1A1A) for readability
+   - TextSecondary: Medium gray (#6B7280)
+   - Success/Warning/Error: Adjusted for WCAG AA on light backgrounds
+
+2. Update `NeonLedgerTheme.swift`:
+   ```swift
+   struct NeonLedgerTheme: Theme {
+       let darkColors = ThemeColors(
+           background: Color(hex: "0A0A0A"), // Current dark values
+           // ... existing dark colors
+       )
+
+       let lightColors = ThemeColors(
+           background: Color(hex: "F8F8F8"),
+           surface: Color(hex: "FFFFFF"),
+           surfaceElevated: Color(hex: "F0F0F0"),
+           primary: Color(hex: "00CDB8"),
+           onPrimary: Color(hex: "1A1A1A"),
+           accent: Color(hex: "E0005E"),
+           success: Color(hex: "059669"),
+           warning: Color(hex: "D97706"),
+           error: Color(hex: "DC2626"),
+           textPrimary: Color(hex: "1A1A1A"),
+           textSecondary: Color(hex: "6B7280"),
+           border: Color(hex: "E5E7EB"),
+           readyToAssignBackground: Color(hex: "00CDB8"),
+           readyToAssignText: Color(hex: "1A1A1A")
+       )
+   }
+   ```
+
+**Phase 3: Create Light Variants for Midnight Mint**
+1. Define light color palette maintaining professional fintech aesthetic:
+   - Background: Very light blue-gray (#F8FAFB)
+   - Surface: White with subtle blue tint (#FFFFFF)
+   - Primary: Seafoam mint (#14B8A6) adjusted for light contrast
+   - All other colors adjusted for WCAG AA compliance on light backgrounds
+
+**Phase 4: Create Light Variants for Ultraviolet Slate**
+1. Define light color palette maintaining bold energetic aesthetic:
+   - Background: Very light warm gray (#F9F9FA)
+   - Surface: White (#FFFFFF)
+   - Primary: Deep violet (#5B5FC7) adjusted for light contrast
+   - Accent: Vivid cyan (#0891B2) adjusted for light backgrounds
+
+**Phase 5: Update All Views to Use ColorScheme-Aware Colors**
+1. Update all views to use `theme.colors(for: colorScheme)` or rely on environment-based color resolution
+2. Ensure `ContentView.swift` `.preferredColorScheme()` properly triggers theme color updates
+3. Test all views in both light and dark modes for each theme
+
+**Files to Create**: None (modifying existing)
+
+**Files to Modify**:
+- `ZeroBasedBudget/Utilities/Theme/Theme.swift` - Update protocol with light/dark color support
+- `ZeroBasedBudget/Utilities/Theme/ThemeEnvironment.swift` - Add color scheme awareness
+- `ZeroBasedBudget/Utilities/Theme/NeonLedgerTheme.swift` - Add lightColors property
+- `ZeroBasedBudget/Utilities/Theme/MidnightMintTheme.swift` - Add lightColors property
+- `ZeroBasedBudget/Utilities/Theme/UltravioletSlateTheme.swift` - Add lightColors property
+- `ZeroBasedBudget/Views/*.swift` - Update to use color-scheme-aware theme colors (if needed)
+- `ZeroBasedBudgetTests/Utilities/ThemeManagerTests.swift` - Add tests for light/dark variants
+
+**Design Considerations**:
+1. **WCAG AA Compliance**: All light variants must meet WCAG AA contrast ratios (4.5:1 for text, 3:1 for UI components)
+2. **Theme Personality**: Each theme's unique character must be preserved in light mode (neon aesthetic, professional fintech, bold energetic)
+3. **Consistency**: Light mode shouldn't feel like a different theme, just a lighter variant
+4. **Ready to Assign**: Banner must remain prominent in both light and dark modes
+5. **Performance**: Color scheme changes should be instant with no lag
+6. **Accessibility**: VoiceOver and Dynamic Type must work in both modes
+
+**Testing Checklist**:
+- [ ] Theme protocol supports lightColors and darkColors properties
+- [ ] ThemeEnvironment returns correct colors based on color scheme
+- [ ] Neon Ledger light variant defined with WCAG AA compliance
+- [ ] Midnight Mint light variant defined with WCAG AA compliance
+- [ ] Ultraviolet Slate light variant defined with WCAG AA compliance
+- [ ] Appearance "Light" setting properly switches to light theme variants
+- [ ] Appearance "Dark" setting properly switches to dark theme variants
+- [ ] Appearance "System" setting follows device color scheme
+- [ ] All views render correctly in light mode for all three themes
+- [ ] All views render correctly in dark mode for all three themes
+- [ ] Ready to Assign banner prominent in both light and dark modes
+- [ ] Text readable in all combinations (3 themes × 2 modes = 6 variants)
+- [ ] Navigation bars use correct light/dark colors
+- [ ] Main backgrounds use correct light/dark colors
+- [ ] Theme switching in light mode updates colors properly
+- [ ] Theme switching in dark mode updates colors properly
+- [ ] All 140 unit tests still pass
+- [ ] New unit tests verify light/dark color variants
+
+**Acceptance Criteria**:
+- Theme protocol extended with light/dark color variant support
+- All three themes (Neon Ledger, Midnight Mint, Ultraviolet Slate) have complete light and dark color sets
+- Appearance "Light" setting displays light theme variants with readable text throughout app
+- Appearance "Dark" setting displays dark theme variants (current behavior)
+- Main backgrounds and navigation bars properly adapt to light/dark mode
+- All color combinations meet WCAG AA accessibility requirements
+- Theme personality preserved in both light and dark modes
+- Ready to Assign banner remains prominent in all 6 variants (3 themes × 2 modes)
+- All existing functionality works in both light and dark modes
+- All 140 tests pass + new tests for light/dark variants
+
+**Estimated Complexity**: High (8-12 hours - protocol changes, 6 color sets to define and test, WCAG compliance verification)
+
+**Dependencies**: None
+
+**Version Planning**: v1.8.1 (Light/Dark Theme Support & Bug Fixes)
+
+---
+
+#### Bug 10.2: Fix Account Tab Theme Color Updates
+
+**Objective**: Ensure all UI elements on the Accounts tab (AccountsView and AccountRow) properly update their colors when the user switches themes, maintaining visual consistency with the rest of the app.
+
+**Current Issue**: When user selects a different theme in Settings > Visual Theme, account card colors, text colors, and the banner/total section on the Accounts tab do not immediately update to reflect the new theme colors. Other tabs (Budget, Transactions, Analysis) update correctly.
+
+**Root Cause Analysis**:
+- `AccountRow.swift` line 20: `Text(account.name)` missing explicit `.foregroundStyle()` - uses system default instead of `theme.colors.textPrimary`
+- Possible view re-rendering issue when theme changes in `@Environment(\.theme)`
+
+**YNAB Alignment Check**: ✅ **Compliant** - Visual bug fix does not affect YNAB methodology. Ensures proper visibility of account balances which represent real money available to budget.
+
+**Implementation Approach**:
+
+1. **Fix AccountRow Missing Theme Colors** (`AccountRow.swift`):
+   ```swift
+   var body: some View {
+       HStack {
+           VStack(alignment: .leading, spacing: 4) {
+               Text(account.name)
+                   .font(.headline)
+                   .foregroundStyle(theme.colors.textPrimary) // ✅ ADD THIS LINE
+
+               if let accountType = account.accountType {
+                   Text(accountType)
+                       .font(.caption)
+                       .foregroundStyle(theme.colors.textSecondary) // Already correct
+               }
+           }
+
+           Spacer()
+
+           Text(account.balance, format: .currency(code: currencyCode))
+               .font(.body.monospacedDigit())
+               .foregroundStyle(account.balance >= 0 ? theme.colors.textPrimary : theme.colors.error) // Already correct
+       }
+       .padding(.vertical, 8) // Add padding for better tap targets
+   }
+   ```
+
+2. **Verify AccountsView Theme Colors** (`AccountsView.swift`):
+   - Check all Text views have explicit `.foregroundStyle(theme.colors.*)`
+   - Verify `.listRowBackground(theme.colors.surface)` is applied
+   - Ensure banner background uses `theme.colors.background`
+   - Confirm toolbar uses `theme.colors.surface`
+
+3. **Test Theme Switching**:
+   - Switch between all three themes (Neon Ledger, Midnight Mint, Ultraviolet Slate)
+   - Verify all account tab elements update immediately:
+     - Account names (textPrimary)
+     - Account types (textSecondary)
+     - Account balances (textPrimary or error)
+     - Card backgrounds (surface)
+     - Banner background (background)
+     - Banner text (textSecondary and textPrimary)
+     - Navigation bar (surface)
+
+**Files to Modify**:
+- `ZeroBasedBudget/Views/AccountRow.swift` - Add missing `.foregroundStyle()` to account name
+
+**Testing Checklist**:
+- [ ] Account name uses `theme.colors.textPrimary`
+- [ ] Account type uses `theme.colors.textSecondary`
+- [ ] Account balance uses `theme.colors.textPrimary` or `theme.colors.error`
+- [ ] Account card background uses `theme.colors.surface`
+- [ ] Banner "Total Across All Accounts" label uses `theme.colors.textSecondary`
+- [ ] Banner amount uses `theme.colors.textPrimary`
+- [ ] Banner background uses `theme.colors.background`
+- [ ] Navigation bar uses `theme.colors.surface`
+- [ ] Switching to Neon Ledger theme updates all account tab colors
+- [ ] Switching to Midnight Mint theme updates all account tab colors
+- [ ] Switching to Ultraviolet Slate theme updates all account tab colors
+- [ ] Empty state icon and text use correct theme colors
+- [ ] Add account button uses theme colors
+- [ ] All 140 unit tests still pass
+
+**Acceptance Criteria**:
+- All text elements in AccountsView and AccountRow explicitly use theme colors
+- Account name text uses `theme.colors.textPrimary`
+- Theme switching instantly updates all account tab UI elements
+- All three themes display correctly on Accounts tab
+- Visual consistency maintained with other tabs (Budget, Transactions, Analysis)
+- No visual glitches or color bleeding during theme switches
+- All 140 tests pass
+
+**Estimated Complexity**: Low (1-2 hours - simple color application and testing)
+
+**Dependencies**: Should be fixed BEFORE Bug 10.1 (will be easier to verify with just dark mode)
+
+**Version Planning**: v1.8.1 (Light/Dark Theme Support & Bug Fixes)
+
+---
+
+### 🏗️ Architecture / Project Changes (v1.8.1 Planned)
+
+#### Architecture 1: Implement Smoke Test Strategy for Token Efficiency
+
+**Objective**: Develop and document a smoke test strategy to reduce Claude Code token usage by running only essential tests during development, reserving full test suite runs for major changes or explicit requests. This will prevent hitting Pro Plan usage limits prematurely.
+
+**Current Issue**: Running all 140 tests with `xcodebuild test` consumes significant tokens (~3-5k tokens per run). For small UI changes or bug fixes, running the full suite is wasteful. Claude Code should be strategic about when to run tests.
+
+**Test Suite Organization** (140 tests total across 12 files):
+- **Models** (5 files): AccountTests, AppSettingsTests, BudgetCategoryTests, MonthlyBudgetTests, TransactionTests
+- **Utilities** (3 files): BudgetCalculationsTests, ValidationHelpersTests, ThemeManagerTests
+- **YNAB** (1 file): YNABMethodologyTests (12 critical tests)
+- **Persistence** (1 file): SwiftDataPersistenceTests
+- **Edge Cases** (1 file): EdgeCaseTests
+- **Main** (1 file): ZeroBasedBudgetTests
+
+**Implementation Approach**:
+
+**Phase 1: Create Smoke Test Suite**
+1. Create new test file: `ZeroBasedBudgetTests/Smoke/SmokeTests.swift`
+2. Define ~15-20 critical smoke tests covering:
+   - Basic model creation (Account, Transaction, BudgetCategory)
+   - Core YNAB calculations (Ready to Assign, totalAssigned, actualSpending)
+   - Theme manager basic functionality (initialization, setTheme)
+   - SwiftData persistence (insert, fetch, delete)
+   - Basic validation (amount >= 0, date validity)
+3. Smoke tests should run in < 5 seconds total
+
+**Phase 2: Define Test Execution Strategy**
+Document in CLAUDE.md when to run which tests:
+
+**Smoke Tests Only** (run these for most changes):
+- UI-only changes (colors, spacing, layout, navigation)
+- View refactoring without logic changes
+- Icon theming updates
+- Documentation updates
+- Minor bug fixes that don't affect calculations or data
+
+**Targeted Test Suites** (run specific suites based on change):
+- **Model changes** → Model tests (5 files)
+- **Calculation changes** → BudgetCalculationsTests + YNABMethodologyTests
+- **Theme changes** → ThemeManagerTests
+- **Validation changes** → ValidationHelpersTests
+- **Persistence changes** → SwiftDataPersistenceTests
+- **YNAB logic changes** → YNABMethodologyTests (ALWAYS run for YNAB changes)
+
+**Full Test Suite** (140 tests - run for major changes only):
+- New feature releases (v1.x.0)
+- Bug fix releases (v1.x.1) before final commit
+- Model schema changes
+- Major refactoring affecting multiple components
+- Before creating pull requests
+- When explicitly requested by user
+- After resolving merge conflicts
+
+**Phase 3: Update CLAUDE.md Quick Reference**
+Add test strategy to "Quick Reference" section with clear decision tree:
+
+```markdown
+**Test Execution Strategy** (Token Efficiency):
+
+**Run Smoke Tests** (~15-20 tests, <5 seconds):
+- UI-only changes, icon theming, layout adjustments
+- Command: `xcodebuild test -scheme ZeroBasedBudget -only-testing:ZeroBasedBudgetTests/SmokeTests`
+
+**Run Targeted Tests** (specific suite based on change):
+- Model changes: `xcodebuild test -only-testing:ZeroBasedBudgetTests/Models`
+- YNAB logic: `xcodebuild test -only-testing:ZeroBasedBudgetTests/YNAB/YNABMethodologyTests`
+- Calculations: `xcodebuild test -only-testing:ZeroBasedBudgetTests/Utilities/BudgetCalculationsTests`
+- Themes: `xcodebuild test -only-testing:ZeroBasedBudgetTests/Utilities/ThemeManagerTests`
+
+**Run Full Suite** (140 tests, ~30-45 seconds):
+- Version releases, major refactoring, schema changes, explicit user request
+- Command: `xcodebuild test -scheme ZeroBasedBudget`
+
+**Decision Tree**:
+1. Did I change model schemas or YNAB calculations? → Full Suite
+2. Did I change specific utility functions? → Run that utility's tests + smoke tests
+3. Did I only change UI/colors/layout? → Smoke tests only
+4. Is this a version release or PR? → Full suite
+5. User explicitly asked for tests? → Full suite
+6. Unsure? → Smoke tests first, then targeted if issues found
+```
+
+**Phase 4: Update Session Continuity Guide**
+Update "Standard Start" and "Full Start" sections to reference smoke tests instead of full suite:
+
+```markdown
+**Standard Start** (after gap or new context):
+1. Read CLAUDE.md "Active Development" + "Enhancement Backlog"
+2. Run: git log --oneline -5
+3. Run: Smoke tests (not full suite) to verify project stability
+4. Start work on highest priority enhancement
+```
+
+**Files to Create**:
+- `ZeroBasedBudgetTests/Smoke/SmokeTests.swift` - New smoke test suite (~15-20 critical tests)
+
+**Files to Modify**:
+- `CLAUDE.md` - Update "Quick Reference" with test strategy, update "Session Continuity Guide"
+
+**Testing Checklist**:
+- [ ] SmokeTests.swift created with 15-20 critical tests
+- [ ] Smoke tests cover: models, YNAB calculations, themes, persistence, validation
+- [ ] Smoke tests run in < 5 seconds
+- [ ] Test execution strategy documented in CLAUDE.md "Quick Reference"
+- [ ] Decision tree clear and actionable
+- [ ] xcodebuild commands provided for each test scenario
+- [ ] "Session Continuity Guide" updated to reference smoke tests
+- [ ] Strategy verified with actual development scenarios
+
+**Acceptance Criteria**:
+- SmokeTests.swift file created with ~15-20 tests covering critical functionality
+- Smoke tests run successfully in < 5 seconds
+- Test execution strategy clearly documented in CLAUDE.md
+- Decision tree helps Claude Code choose appropriate test level
+- xcodebuild commands provided for smoke tests, targeted tests, and full suite
+- "Session Continuity Guide" updated to use smoke tests by default
+- Strategy reduces token usage by ~70% for typical development (smoke tests vs full suite)
+- Full suite (140 tests) still available for major changes
+- Documentation clear enough for future Claude Code sessions to follow
+
+**Estimated Complexity**: Low-Medium (3-4 hours - test creation, documentation, validation)
+
+**Dependencies**: None (can be implemented immediately)
+
+**Version Planning**: v1.8.1 (Light/Dark Theme Support & Bug Fixes)
 
 ---
 
 ## Active Development
 
-**Current Focus**: v1.8.0 Complete - Icon Theming & Navigation Polish
-**Status**: v1.8.0 complete (140 tests passing); project ready for release or new enhancements
+**Current Focus**: v1.8.1 Planning - Light/Dark Theme Support & Bug Fixes
+**Status**: v1.8.0 complete (140 tests passing); three new issues identified for v1.8.1
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-06] ✅ **Enhancement 9.2 COMPLETE**: Month navigation moved to navigation bar (v1.8.0)
-2. [2025-11-06] ✅ **Enhancement 9.1 COMPLETE**: Theme-aware icon system with contextual theming (v1.8.0)
-3. [2025-11-06] ✅ **v1.7.0 COMPLETE**: Full theme system with three visual themes
-4. [2025-11-06] ✅ **Theme Migration COMPLETE**: All views systematically migrated to use theme colors
-5. [2025-11-06] ✅ **Three Themes Implemented**: Neon Ledger, Midnight Mint, Ultraviolet Slate
+1. [2025-11-06] 📋 **v1.8.1 Issues Identified**: Light/dark theme variants, account tab colors, smoke test strategy
+2. [2025-11-06] ✅ **Enhancement 9.2 COMPLETE**: Month navigation moved to navigation bar (v1.8.0)
+3. [2025-11-06] ✅ **Enhancement 9.1 COMPLETE**: Theme-aware icon system with contextual theming (v1.8.0)
+4. [2025-11-06] ✅ **v1.7.0 COMPLETE**: Full theme system with three visual themes
+5. [2025-11-06] ✅ **Theme Migration COMPLETE**: All views systematically migrated to use theme colors
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
 1. **Current Version**: v1.8.0 complete and stable (140 tests passing)
-2. **Project Status**: Production ready with full theme system and icon theming
-3. **Recent Enhancements**: Icon theming (9.1), navigation bar month selector (9.2)
-4. **Test Suite**: 140 tests passing (114 original + 26 theme tests)
-5. **Build Status**: ✅ Project builds successfully
-6. **Available Actions**: Consider releasing v1.8.0 or planning new enhancements
+2. **Next Version**: v1.8.1 planning - three issues identified (2 bugs, 1 architecture change)
+3. **Recommended Order**: Architecture 1 (smoke tests) → Bug 10.2 (account colors) → Bug 10.1 (light/dark variants)
+4. **Priority**: Implement smoke tests first to save tokens during development of other fixes
+5. **Test Strategy**: Use smoke tests for UI changes, targeted tests for specific areas, full suite for major changes
+6. **Build Status**: ✅ Project builds successfully
 7. **Platform**: iPhone-only, iOS 26+ (no iPad support)
 
 ## Git Commit Strategy
@@ -265,21 +657,21 @@ refactor: extract chart components for better organization
 ```
 1. Read CLAUDE.md "Active Development" + "Enhancement Backlog"
 2. Run: git log --oneline -5
-3. Run: xcodebuild test (verify 140 tests passing)
+3. Run: Smoke tests only (see Test Execution Strategy below)
 4. Start work on highest priority enhancement
 ```
 
 **Full Start** (after interruption or major context switch):
 ```
 1. Read CLAUDE.md completely (focus on YNAB methodology if needed)
-2. Run: git log --online -10 && git status
+2. Run: git log --oneline -10 && git status
 3. Run: xcodebuild build (verify project compiles)
-4. Run: xcodebuild test (verify all tests passing)
+4. Run: Smoke tests (not full suite unless required)
 5. Review "Active Development" section for current state
 6. Report findings and proceed with next enhancement
 ```
 
-**Note**: The "Next Session Start Here" section is specifically designed to give you immediate context without reading the entire file.
+**Note**: The "Next Session Start Here" section is specifically designed to give you immediate context without reading the entire file. Use smoke tests by default to conserve tokens unless working on model/YNAB logic changes.
 
 ### During Development
 
@@ -418,9 +810,32 @@ Follow `Docs/ClaudeCodeResumption.md` for step-by-step recovery process.
 
 **Build Project**: `Cmd+B` in Xcode or `xcodebuild -project ZeroBasedBudget.xcodeproj -scheme ZeroBasedBudget build`
 
-**Run Tests** (after v1.6.0): `Cmd+U` in Xcode or `xcodebuild test -scheme ZeroBasedBudget -destination 'platform=iOS Simulator,name=iPhone 17'`
-
 **Check Git Status**: `git status`, `git log --oneline -10`
+
+**Test Execution Strategy** (Token Efficiency):
+
+**Run Smoke Tests** (~15-20 tests, <5 seconds) - **USE THIS FOR MOST CHANGES**:
+- UI-only changes, icon theming, layout adjustments, color updates
+- Documentation updates, minor bug fixes
+- Command: `xcodebuild test -scheme ZeroBasedBudget -only-testing:ZeroBasedBudgetTests/SmokeTests -destination 'platform=iOS Simulator,name=iPhone 17'`
+
+**Run Targeted Tests** (specific suite based on change):
+- Model changes: `xcodebuild test -only-testing:ZeroBasedBudgetTests/Models -destination 'platform=iOS Simulator,name=iPhone 17'`
+- YNAB logic: `xcodebuild test -only-testing:ZeroBasedBudgetTests/YNAB/YNABMethodologyTests -destination 'platform=iOS Simulator,name=iPhone 17'`
+- Calculations: `xcodebuild test -only-testing:ZeroBasedBudgetTests/Utilities/BudgetCalculationsTests -destination 'platform=iOS Simulator,name=iPhone 17'`
+- Themes: `xcodebuild test -only-testing:ZeroBasedBudgetTests/Utilities/ThemeManagerTests -destination 'platform=iOS Simulator,name=iPhone 17'`
+
+**Run Full Suite** (140 tests, ~30-45 seconds) - **USE SPARINGLY**:
+- Version releases, major refactoring, schema changes, explicit user request
+- Command: `xcodebuild test -scheme ZeroBasedBudget -destination 'platform=iOS Simulator,name=iPhone 17'`
+
+**Decision Tree for Test Selection**:
+1. Changed model schemas or YNAB calculations? → **Full Suite**
+2. Changed specific utility functions? → **Run that utility's tests + smoke tests**
+3. Only changed UI/colors/layout? → **Smoke tests only**
+4. Version release or PR? → **Full suite**
+5. User explicitly asked for tests? → **Full suite**
+6. Unsure? → **Smoke tests first, then targeted if issues found**
 
 **Key Files to Review When Starting**:
 - This file (CLAUDE.md) - current state, YNAB methodology, active issues
