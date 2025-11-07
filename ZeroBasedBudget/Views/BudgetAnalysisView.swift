@@ -17,6 +17,7 @@ enum ChartType: String, CaseIterable {
 struct BudgetAnalysisView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
     @Query private var settings: [AppSettings]
@@ -97,10 +98,10 @@ struct BudgetAnalysisView: View {
                 }
                 .padding()
             }
-            .background(theme.colors.background)
+            .background(colors.background)
             .navigationTitle("Budget Analysis")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
         }
     }
@@ -110,6 +111,7 @@ struct BudgetAnalysisView: View {
 
 struct MonthPickerSection: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Binding var selectedMonth: Date
 
     private var monthYearString: String {
@@ -122,7 +124,7 @@ struct MonthPickerSection: View {
         VStack(spacing: 8) {
             Text("Analysis Period")
                 .font(.caption)
-                .foregroundStyle(theme.colors.textSecondary)
+                .foregroundStyle(colors.textSecondary)
 
             HStack {
                 Button {
@@ -157,7 +159,7 @@ struct MonthPickerSection: View {
                 }
             }
             .padding()
-            .background(theme.colors.surface)
+            .background(colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -167,6 +169,7 @@ struct MonthPickerSection: View {
 
 struct SummarySection: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let totalBudgeted: Decimal
     let totalActual: Decimal
     let totalDifference: Decimal
@@ -182,14 +185,14 @@ struct SummarySection: View {
                 SummaryCard(
                     title: "Total Budgeted",
                     amount: totalBudgeted,
-                    color: theme.colors.accent,
+                    color: colors.accent,
                     currencyCode: currencyCode
                 )
 
                 SummaryCard(
                     title: "Total Actual",
                     amount: totalActual,
-                    color: totalActual > totalBudgeted ? theme.colors.error : theme.colors.success,
+                    color: totalActual > totalBudgeted ? colors.error : colors.success,
                     currencyCode: currencyCode
                 )
             }
@@ -197,19 +200,20 @@ struct SummarySection: View {
             SummaryCard(
                 title: totalDifference >= 0 ? "Under Budget" : "Over Budget",
                 amount: abs(totalDifference),
-                color: totalDifference >= 0 ? theme.colors.success : theme.colors.error,
+                color: totalDifference >= 0 ? colors.success : colors.error,
                 isFullWidth: true,
                 currencyCode: currencyCode
             )
         }
         .padding()
-        .background(theme.colors.surface)
+        .background(colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
 struct SummaryCard: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let title: String
     let amount: Decimal
     let color: Color
@@ -220,7 +224,7 @@ struct SummaryCard: View {
         VStack(spacing: 4) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(theme.colors.textSecondary)
+                .foregroundStyle(colors.textSecondary)
 
             Text(amount, format: .currency(code: currencyCode))
                 .font(isFullWidth ? .title2.bold() : .headline.bold())
@@ -228,7 +232,7 @@ struct SummaryCard: View {
         }
         .frame(maxWidth: isFullWidth ? .infinity : nil)
         .padding()
-        .background(theme.colors.background)
+        .background(colors.background)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
@@ -237,6 +241,7 @@ struct SummaryCard: View {
 
 struct BarChartSection: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let categoryComparisons: [CategoryComparison]
 
     var body: some View {
@@ -252,7 +257,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.budgeted as NSDecimalNumber))
                     )
-                    .foregroundStyle(theme.colors.accent)
+                    .foregroundStyle(colors.accent)
                     .position(by: .value("Type", "Budgeted"))
 
                     // Actual bar
@@ -260,7 +265,7 @@ struct BarChartSection: View {
                         x: .value("Category", comparison.categoryName),
                         y: .value("Amount", Double(truncating: comparison.actual as NSDecimalNumber))
                     )
-                    .foregroundStyle(comparison.isOverBudget ? theme.colors.error : theme.colors.success)
+                    .foregroundStyle(comparison.isOverBudget ? colors.error : colors.success)
                     .position(by: .value("Type", "Actual"))
                 }
             }
@@ -270,7 +275,7 @@ struct BarChartSection: View {
             }
             .frame(height: 300)
             .padding()
-            .background(theme.colors.surface)
+            .background(colors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -280,6 +285,7 @@ struct BarChartSection: View {
 
 struct DonutChartSection: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let categoryComparisons: [CategoryComparison]
     var currencyCode: String = "USD"
 
@@ -343,12 +349,12 @@ struct DonutChartSection: View {
                         .iconNeutral()
                     Text("No spending recorded")
                         .font(.headline)
-                        .foregroundStyle(theme.colors.textSecondary)
+                        .foregroundStyle(colors.textSecondary)
                 }
                 .frame(height: 300)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(theme.colors.surface)
+                .background(colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 VStack(spacing: 16) {
@@ -375,7 +381,7 @@ struct DonutChartSection: View {
                             VStack(spacing: 4) {
                                 Text("Total")
                                     .font(.caption)
-                                    .foregroundStyle(theme.colors.textSecondary)
+                                    .foregroundStyle(colors.textSecondary)
                                 Text(totalSpending, format: .currency(code: currencyCode))
                                     .font(.title2.bold())
                             }
@@ -399,7 +405,7 @@ struct DonutChartSection: View {
 
                                     Text(data.amount, format: .currency(code: currencyCode))
                                         .font(.caption2.bold())
-                                        .foregroundStyle(theme.colors.textSecondary)
+                                        .foregroundStyle(colors.textSecondary)
                                 }
 
                                 Spacer()
@@ -408,7 +414,7 @@ struct DonutChartSection: View {
                     }
                 }
                 .padding()
-                .background(theme.colors.surface)
+                .background(colors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
@@ -446,6 +452,7 @@ struct DetailedListSection: View {
 
 struct CategoryComparisonRow: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let comparison: CategoryComparison
     var currencyCode: String = "USD"
 
@@ -482,7 +489,7 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Actual",
                     value: comparison.actual,
-                    color: comparison.isOverBudget ? theme.colors.error : theme.colors.success,
+                    color: comparison.isOverBudget ? colors.error : colors.success,
                     currencyCode: currencyCode
                 )
 
@@ -491,7 +498,7 @@ struct CategoryComparisonRow: View {
                 MetricColumn(
                     title: "Difference",
                     value: comparison.difference,
-                    color: comparison.difference >= 0 ? theme.colors.success : theme.colors.error,
+                    color: comparison.difference >= 0 ? colors.success : colors.error,
                     currencyCode: currencyCode
                 )
 
@@ -500,24 +507,25 @@ struct CategoryComparisonRow: View {
                 VStack(spacing: 4) {
                     Text("% Used")
                         .font(.caption)
-                        .foregroundStyle(theme.colors.textSecondary)
+                        .foregroundStyle(colors.textSecondary)
 
                     Text(comparison.percentageUsedFormatted)
                         .font(.body.bold())
-                        .foregroundStyle(comparison.percentageUsed > 1.0 ? theme.colors.error : theme.colors.textPrimary)
+                        .foregroundStyle(comparison.percentageUsed > 1.0 ? colors.error : colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
             }
             .frame(height: 60)
         }
         .padding()
-        .background(theme.colors.surface)
+        .background(colors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
 struct MetricColumn: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let title: String
     let value: Decimal
     let color: Color
@@ -527,7 +535,7 @@ struct MetricColumn: View {
         VStack(spacing: 4) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(theme.colors.textSecondary)
+                .foregroundStyle(colors.textSecondary)
 
             Text(value, format: .currency(code: currencyCode))
                 .font(.body.bold())

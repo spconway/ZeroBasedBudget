@@ -11,6 +11,7 @@ import SwiftData
 struct BudgetPlanningView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query private var allCategories: [BudgetCategory]
     @Query private var allTransactions: [Transaction]
     @Query private var allMonthlyBudgets: [MonthlyBudget]
@@ -147,11 +148,11 @@ struct BudgetPlanningView: View {
     // Color coding for Ready to Assign
     private var readyToAssignColor: Color {
         if readyToAssign == 0 {
-            return theme.colors.success  // Goal achieved!
+            return colors.success  // Goal achieved!
         } else if readyToAssign > 0 {
-            return theme.colors.warning  // Money needs to be assigned
+            return colors.warning  // Money needs to be assigned
         } else {
-            return theme.colors.error  // Over-assigned, need to reduce categories
+            return colors.error  // Over-assigned, need to reduce categories
         }
     }
 
@@ -196,7 +197,7 @@ struct BudgetPlanningView: View {
                     )
                 }
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                .listRowBackground(theme.colors.surface)
+                .listRowBackground(colors.surface)
 
                 // Fixed Expenses Section
                 Section(header: HStack {
@@ -209,7 +210,7 @@ struct BudgetPlanningView: View {
                 }) {
                     if fixedExpenseCategories.isEmpty {
                         Text("No fixed expenses yet. Tap + to add.")
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(colors.textSecondary)
                             .italic()
                     } else {
                         ForEach(fixedExpenseCategories) { category in
@@ -252,7 +253,7 @@ struct BudgetPlanningView: View {
                 }) {
                     if variableExpenseCategories.isEmpty {
                         Text("No variable expenses yet. Tap + to add.")
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(colors.textSecondary)
                             .italic()
                     } else {
                         ForEach(variableExpenseCategories) { category in
@@ -295,7 +296,7 @@ struct BudgetPlanningView: View {
                 }) {
                     if quarterlyExpenseCategories.isEmpty {
                         Text("No quarterly expenses yet. Tap + to add.")
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(colors.textSecondary)
                             .italic()
                     } else {
                         ForEach(quarterlyExpenseCategories) { category in
@@ -331,7 +332,7 @@ struct BudgetPlanningView: View {
                 Section {
                     LabeledContent("Total Assigned") {
                         Text(totalAssigned, format: .currency(code: currencyCode))
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
 
                     LabeledContent("Ready to Assign") {
@@ -345,12 +346,12 @@ struct BudgetPlanningView: View {
                         HStack {
                             Text("Previous Month (\(comparison.month))")
                                 .font(.caption)
-                                .foregroundStyle(theme.colors.textSecondary)
+                                .foregroundStyle(colors.textSecondary)
                             Spacer()
                             HStack(spacing: 4) {
                                 Text(comparison.amount, format: .currency(code: currencyCode))
                                     .font(.caption)
-                                    .foregroundStyle(theme.colors.textSecondary)
+                                    .foregroundStyle(colors.textSecondary)
 
                                 // Show arrow indicator for change
                                 if comparison.amount < readyToAssign {
@@ -380,11 +381,11 @@ struct BudgetPlanningView: View {
                                 .font(.title2)
                             Text("Goal Achieved!")
                                 .font(.headline)
-                                .foregroundStyle(theme.colors.success)
+                                .foregroundStyle(colors.success)
                             Spacer()
                         }
                         .padding(.vertical, 8)
-                        .listRowBackground(theme.colors.success.opacity(0.1))
+                        .listRowBackground(colors.success.opacity(0.1))
                     } else if readyToAssign > 0 {
                         HStack {
                             Image(systemName: "exclamationmark.circle.fill")
@@ -392,7 +393,7 @@ struct BudgetPlanningView: View {
                                 .font(.title3)
                             Text("Assign \(readyToAssign, format: .currency(code: currencyCode)) to categories")
                                 .font(.subheadline)
-                                .foregroundStyle(theme.colors.warning)
+                                .foregroundStyle(colors.warning)
                             Spacer()
                         }
                         .padding(.vertical, 4)
@@ -403,7 +404,7 @@ struct BudgetPlanningView: View {
                                 .font(.title3)
                             Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: currencyCode))")
                                 .font(.subheadline)
-                                .foregroundStyle(theme.colors.error)
+                                .foregroundStyle(colors.error)
                             Spacer()
                         }
                         .padding(.vertical, 4)
@@ -414,16 +415,16 @@ struct BudgetPlanningView: View {
                     if readyToAssign == 0 {
                         Text("Perfect! Every dollar has a job. You've successfully budgeted all available money.")
                             .font(.caption)
-                            .foregroundStyle(theme.colors.success)
+                            .foregroundStyle(colors.success)
                     }
                 }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .background(theme.colors.background)
+            .background(colors.background)
             .listSectionSpacing(0)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 // Previous month button (leading)
@@ -440,7 +441,7 @@ struct BudgetPlanningView: View {
                 ToolbarItem(placement: .principal) {
                     Text(monthYearText)
                         .font(theme.typography.headline)
-                        .foregroundStyle(theme.colors.primary)
+                        .foregroundStyle(colors.primary)
                 }
 
                 // Next month button (trailing)
@@ -537,7 +538,7 @@ struct BudgetPlanningView: View {
 
                             Text(action.actionDescription)
                                 .font(.subheadline)
-                                .foregroundStyle(theme.colors.textPrimary)
+                                .foregroundStyle(colors.textPrimary)
 
                             Spacer()
 
@@ -545,7 +546,7 @@ struct BudgetPlanningView: View {
                                 performUndo()
                             }
                             .fontWeight(.semibold)
-                            .foregroundStyle(theme.colors.accent)
+                            .foregroundStyle(colors.accent)
 
                             Button(action: {
                                 withAnimation {
@@ -559,7 +560,7 @@ struct BudgetPlanningView: View {
                             }
                         }
                         .padding()
-                        .background(theme.colors.surfaceElevated)
+                        .background(colors.surfaceElevated)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .shadow(radius: 10)
                         .padding()
@@ -834,6 +835,7 @@ struct BudgetPlanningView: View {
 // MARK: - CategoryRow View
 struct CategoryRow: View {
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let category: BudgetCategory
     let readyToAssign: Decimal
     let actualSpent: Decimal  // NEW: Enhancement 7.2 - Track actual spending
@@ -864,12 +866,12 @@ struct CategoryRow: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(category.name)
-                            .foregroundStyle(theme.colors.textPrimary)
+                            .foregroundStyle(colors.textPrimary)
 
                         if let dueDateText = dueDateText {
                             Text(dueDateText)
                                 .font(.caption)
-                                .foregroundStyle(theme.colors.textSecondary)
+                                .foregroundStyle(colors.textSecondary)
                         }
 
                         // NEW: Enhancement 7.2 - Progress bar showing spending
@@ -880,7 +882,7 @@ struct CategoryRow: View {
                     Spacer()
 
                     Text(category.budgetedAmount, format: .currency(code: currencyCode))
-                        .foregroundStyle(theme.colors.textSecondary)
+                        .foregroundStyle(colors.textSecondary)
 
                     Image(systemName: "chevron.right")
                         .font(.caption)
@@ -893,9 +895,9 @@ struct CategoryRow: View {
                 Button(action: onQuickAssign) {
                     Image(systemName: "bolt.fill")
                         .font(.system(size: 14))
-                        .foregroundStyle(theme.colors.onPrimary)
+                        .foregroundStyle(colors.onPrimary)
                         .frame(width: 28, height: 28)
-                        .background(theme.colors.warning)
+                        .background(colors.warning)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -909,6 +911,7 @@ struct CategoryRow: View {
 struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let categoryType: String
 	var currencyCode: String = "USD"
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
@@ -1001,7 +1004,7 @@ struct AddCategorySheet: View {
                         // Show effective date preview
                         LabeledContent("Effective Date") {
                             Text(displayDate, style: .date)
-                                .foregroundStyle(theme.colors.textSecondary)
+                                .foregroundStyle(colors.textSecondary)
                         }
                     }
                 }
@@ -1022,7 +1025,7 @@ struct AddCategorySheet: View {
 
                 Section {
                     Text("Category Type: \(categoryType)")
-                        .foregroundStyle(theme.colors.textSecondary)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
             .navigationTitle("Add \(categoryType) Expense")
@@ -1060,6 +1063,7 @@ struct AddCategorySheet: View {
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let category: BudgetCategory
     let onSave: (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
     var currencyCode: String = "USD"
@@ -1153,12 +1157,12 @@ struct EditCategorySheet: View {
                 Section(header: Text("Category Details")) {
                     LabeledContent("Name") {
                         Text(category.name)
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
 
                     LabeledContent("Type") {
                         Text(category.categoryType)
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
 
                     LabeledContent("Budgeted Amount") {
@@ -1186,7 +1190,7 @@ struct EditCategorySheet: View {
                         // Show effective date preview
                         LabeledContent("Effective Date") {
                             Text(displayDate, style: .date)
-                                .foregroundStyle(theme.colors.textSecondary)
+                                .foregroundStyle(colors.textSecondary)
                         }
                     }
                 }

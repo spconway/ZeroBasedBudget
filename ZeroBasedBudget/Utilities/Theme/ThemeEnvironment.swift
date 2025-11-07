@@ -33,11 +33,12 @@ extension EnvironmentValues {
     /// ```swift
     /// struct MyView: View {
     ///     @Environment(\.theme) private var theme
+    ///     @Environment(\.colorScheme) private var colorScheme
     ///
     ///     var body: some View {
     ///         Text("Hello")
-    ///             .foregroundColor(theme.colors.textPrimary)
-    ///             .background(theme.colors.surface)
+    ///             .foregroundColor(theme.colors(for: colorScheme).textPrimary)
+    ///             .background(theme.colors(for: colorScheme).surface)
     ///     }
     /// }
     /// ```
@@ -63,6 +64,27 @@ extension EnvironmentValues {
     var themeManager: ThemeManager? {
         get { self[ThemeManagerEnvironmentKey.self] }
         set { self[ThemeManagerEnvironmentKey.self] = newValue }
+    }
+
+    /// Access color-scheme-aware theme colors directly
+    ///
+    /// This computed property automatically returns the appropriate colors (light or dark)
+    /// based on the current color scheme, providing seamless theme adaptation.
+    ///
+    /// Usage in views:
+    /// ```swift
+    /// struct MyView: View {
+    ///     @Environment(\.themeColors) private var colors
+    ///
+    ///     var body: some View {
+    ///         Text("Hello")
+    ///             .foregroundColor(colors.textPrimary)  // Automatically adapts to light/dark mode
+    ///             .background(colors.surface)
+    ///     }
+    /// }
+    /// ```
+    var themeColors: ThemeColors {
+        theme.colors(for: colorScheme)
     }
 }
 

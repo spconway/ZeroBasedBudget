@@ -15,7 +15,9 @@ struct MidnightMintTheme: Theme {
     let identifier = "midnightMint"
     let description = "Calm, professional fintech"
 
-    var colors: ThemeColors {
+    // MARK: - Dark Mode Colors
+
+    var darkColors: ThemeColors {
         // Break up color initialization to help Swift compiler
         let bgColor = Color(hex: "0B0E11")
         let surfaceColor = Color(hex: "14181C")
@@ -37,6 +39,58 @@ struct MidnightMintTheme: Theme {
         let borderSubtleColor = Color(hex: "1C2128")
 
         let chartTertiaryColor = Color(hex: "6366F1")
+
+        return ThemeColors(
+            background: bgColor,
+            surface: surfaceColor,
+            surfaceElevated: surfaceElevatedColor,
+            primary: primaryColor,
+            onPrimary: onPrimaryColor,
+            accent: accentColor,
+            success: successColor,
+            warning: warningColor,
+            error: errorColor,
+            textPrimary: textPrimaryColor,
+            textSecondary: textSecondaryColor,
+            textTertiary: textTertiaryColor,
+            border: borderColor,
+            borderSubtle: borderSubtleColor,
+            readyToAssignBackground: primaryColor,
+            readyToAssignText: onPrimaryColor,
+            readyToAssignBorder: accentColor,
+            chartPrimary: primaryColor,
+            chartSecondary: accentColor,
+            chartTertiary: chartTertiaryColor,
+            progressGreen: successColor,
+            progressYellow: warningColor,
+            progressRed: errorColor
+        )
+    }
+
+    // MARK: - Light Mode Colors
+
+    var lightColors: ThemeColors {
+        // Professional fintech daylight - calm and readable
+        let bgColor = Color(hex: "F7FFFC")  // Subtle seafoam tint
+        let surfaceColor = Color(hex: "FFFFFF")  // Pure white
+        let surfaceElevatedColor = Color(hex: "FAFAFA")  // Slightly elevated
+
+        let primaryColor = Color(hex: "14B8A6")  // Bright mint for accents
+        let onPrimaryColor = Color(hex: "000000")  // Black on mint
+        let accentColor = Color(hex: "0D9F89")  // Deep teal for accents
+
+        let successColor = Color(hex: "059669")  // Readable green
+        let warningColor = Color(hex: "D97706")  // Readable orange
+        let errorColor = Color(hex: "DC2626")  // Readable red
+
+        let textPrimaryColor = Color(hex: "0A7C6E")  // Deep teal (4.8:1 contrast)
+        let textSecondaryColor = Color(hex: "0F766E")  // Darker teal (5.1:1 contrast)
+        let textTertiaryColor = Color(hex: "1F2937")  // Charcoal (12:1 contrast)
+
+        let borderColor = Color(hex: "E5E7EB")  // Light gray border
+        let borderSubtleColor = Color(hex: "F3F4F6")  // Very light border
+
+        let chartTertiaryColor = Color(hex: "6366F1")  // Indigo
 
         return ThemeColors(
             background: bgColor,

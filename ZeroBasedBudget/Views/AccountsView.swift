@@ -15,6 +15,7 @@ import SwiftData
 struct AccountsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query(sort: \Account.createdDate, order: .forward) private var allAccounts: [Account]
     @Query private var settings: [AppSettings]
 
@@ -38,15 +39,15 @@ struct AccountsView: View {
                 VStack(spacing: 8) {
                     Text("Total Across All Accounts")
                         .font(.subheadline)
-                        .foregroundStyle(theme.colors.textSecondary)
+                        .foregroundStyle(colors.textSecondary)
 
                     Text(totalAccountBalances, format: .currency(code: currencyCode))
                         .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundStyle(theme.colors.textPrimary)
+                        .foregroundStyle(colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
-                .background(theme.colors.background)
+                .background(colors.background)
 
                 // Accounts list
                 if allAccounts.isEmpty {
@@ -58,11 +59,11 @@ struct AccountsView: View {
 
                         Text("No Accounts Yet")
                             .font(.title2.bold())
-                            .foregroundStyle(theme.colors.textPrimary)
+                            .foregroundStyle(colors.textPrimary)
 
                         Text("Add your first account to start budgeting with the YNAB method.")
                             .font(.body)
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(colors.textSecondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
 
@@ -82,7 +83,7 @@ struct AccountsView: View {
                     List {
                         ForEach(allAccounts) { account in
                             AccountRow(account: account, currencyCode: currencyCode)
-                                .listRowBackground(theme.colors.surface)
+                                .listRowBackground(colors.surface)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     editingAccount = account
@@ -92,18 +93,18 @@ struct AccountsView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
-                    .background(theme.colors.background)
+                    .background(colors.background)
                 }
             }
 			.navigationBarTitleDisplayMode(.inline)
-            .background(theme.colors.background)
+            .background(colors.background)
 			.toolbar {
 				ToolbarItem(placement: .principal) {
 					Text("My title")
-						.foregroundColor(theme.colors.textPrimary)
+						.foregroundColor(colors.textPrimary)
 				}
 			}
-            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

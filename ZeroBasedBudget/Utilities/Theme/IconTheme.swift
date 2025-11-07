@@ -15,7 +15,7 @@ struct IconPrimaryModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .foregroundStyle(theme.colors.primary)
+            .foregroundStyle(colors.primary)
     }
 }
 
@@ -25,7 +25,7 @@ struct IconAccentModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .foregroundStyle(theme.colors.accent)
+            .foregroundStyle(colors.accent)
     }
 }
 
@@ -35,7 +35,7 @@ struct IconSuccessModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .foregroundStyle(theme.colors.success)
+            .foregroundStyle(colors.success)
     }
 }
 
@@ -45,7 +45,7 @@ struct IconErrorModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .foregroundStyle(theme.colors.error)
+            .foregroundStyle(colors.error)
     }
 }
 
@@ -55,7 +55,7 @@ struct IconWarningModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .foregroundStyle(theme.colors.warning)
+            .foregroundStyle(colors.warning)
     }
 }
 
@@ -65,7 +65,7 @@ struct IconNeutralModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .foregroundStyle(theme.colors.textSecondary)
+            .foregroundStyle(colors.textSecondary)
     }
 }
 

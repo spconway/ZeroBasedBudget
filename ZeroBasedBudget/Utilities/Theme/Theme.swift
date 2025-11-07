@@ -21,8 +21,14 @@ protocol Theme {
     /// Theme description for UI display
     var description: String { get }
 
-    /// Complete color palette for the theme
-    var colors: ThemeColors { get }
+    /// Light mode color palette
+    var lightColors: ThemeColors { get }
+
+    /// Dark mode color palette
+    var darkColors: ThemeColors { get }
+
+    /// Get colors for specific color scheme
+    func colors(for colorScheme: ColorScheme) -> ThemeColors
 
     /// Typography scale and weights
     var typography: ThemeTypography { get }
@@ -32,6 +38,15 @@ protocol Theme {
 
     /// Border radius scale for consistent roundness
     var radius: ThemeRadius { get }
+}
+
+// MARK: - Theme Protocol Extension
+
+extension Theme {
+    /// Default implementation returns appropriate colors based on color scheme
+    func colors(for colorScheme: ColorScheme) -> ThemeColors {
+        colorScheme == .dark ? darkColors : lightColors
+    }
 }
 
 // MARK: - Theme Colors

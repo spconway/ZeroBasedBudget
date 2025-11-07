@@ -52,9 +52,9 @@ struct ThemePicker: View {
 
                 // Color preview swatches
                 HStack(spacing: 6) {
-                    colorSwatch(themeType.theme.colors.primary)
-                    colorSwatch(themeType.theme.colors.accent)
-                    colorSwatch(themeType.theme.colors.success)
+                    colorSwatch(themeType.colors.primary)
+                    colorSwatch(themeType.colors.accent)
+                    colorSwatch(themeType.colors.success)
                 }
 
                 // Selection indicator

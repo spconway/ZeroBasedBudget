@@ -12,7 +12,7 @@ import SwiftUI
 /// YNAB Principle: Ready to Assign = Total money in accounts - Money assigned to categories
 /// Goal: Get this to $0 (all money has been given a job)
 struct ReadyToAssignBanner: View {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
 
     let amount: Decimal
     let color: Color
@@ -23,7 +23,7 @@ struct ReadyToAssignBanner: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Ready to Assign")
                     .font(.subheadline)
-                    .foregroundStyle(theme.colors.textSecondary)
+                    .foregroundStyle(colors.textSecondary)
 
                 Text(amount, format: .currency(code: currencyCode))
                     .font(.title2.bold())
@@ -42,7 +42,7 @@ struct ReadyToAssignBanner: View {
             .buttonStyle(.plain)
         }
         .padding()
-        .background(theme.colors.readyToAssignBackground)
+        .background(colors.readyToAssignBackground)
         .cornerRadius(12)
     }
 }

@@ -15,7 +15,9 @@ struct UltravioletSlateTheme: Theme {
     let identifier = "ultravioletSlate"
     let description = "Bold, energetic design"
 
-    var colors: ThemeColors {
+    // MARK: - Dark Mode Colors
+
+    var darkColors: ThemeColors {
         // Break up color initialization to help Swift compiler
         let bgColor = Color(hex: "1A1A1F")
         let surfaceColor = Color(hex: "222228")
@@ -37,6 +39,58 @@ struct UltravioletSlateTheme: Theme {
         let borderSubtleColor = Color(hex: "2A2A32")
 
         let chartTertiaryColor = Color(hex: "A78BFA")
+
+        return ThemeColors(
+            background: bgColor,
+            surface: surfaceColor,
+            surfaceElevated: surfaceElevatedColor,
+            primary: primaryColor,
+            onPrimary: onPrimaryColor,
+            accent: accentColor,
+            success: successColor,
+            warning: warningColor,
+            error: errorColor,
+            textPrimary: textPrimaryColor,
+            textSecondary: textSecondaryColor,
+            textTertiary: textTertiaryColor,
+            border: borderColor,
+            borderSubtle: borderSubtleColor,
+            readyToAssignBackground: primaryColor,
+            readyToAssignText: onPrimaryColor,
+            readyToAssignBorder: accentColor,
+            chartPrimary: primaryColor,
+            chartSecondary: accentColor,
+            chartTertiary: chartTertiaryColor,
+            progressGreen: successColor,
+            progressYellow: warningColor,
+            progressRed: errorColor
+        )
+    }
+
+    // MARK: - Light Mode Colors
+
+    var lightColors: ThemeColors {
+        // Bold energy in daylight - vibrant and readable
+        let bgColor = Color(hex: "F8F8FE")  // Subtle indigo tint
+        let surfaceColor = Color(hex: "FFFFFF")  // Pure white
+        let surfaceElevatedColor = Color(hex: "FAFAFA")  // Slightly elevated
+
+        let primaryColor = Color(hex: "5B51F1")  // Vibrant indigo for accents
+        let onPrimaryColor = Color(hex: "FFFFFF")  // White on indigo
+        let accentColor = Color(hex: "06B6D4")  // Bright cyan for accents
+
+        let successColor = Color(hex: "65A30D")  // Readable lime green
+        let warningColor = Color(hex: "EA580C")  // Readable orange
+        let errorColor = Color(hex: "E11D48")  // Readable rose
+
+        let textPrimaryColor = Color(hex: "4338CA")  // Deep indigo (5.2:1 contrast)
+        let textSecondaryColor = Color(hex: "0E7490")  // Dark cyan (4.8:1 contrast)
+        let textTertiaryColor = Color(hex: "1F2937")  // Charcoal (12:1 contrast)
+
+        let borderColor = Color(hex: "E5E7EB")  // Light gray border
+        let borderSubtleColor = Color(hex: "F3F4F6")  // Very light border
+
+        let chartTertiaryColor = Color(hex: "8B5CF6")  // Purple
 
         return ThemeColors(
             background: bgColor,

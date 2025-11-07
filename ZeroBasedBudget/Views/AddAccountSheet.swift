@@ -77,10 +77,10 @@ struct AddAccountSheet: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(theme.colors.background)
+            .background(colors.background)
             .navigationTitle("Add Account")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

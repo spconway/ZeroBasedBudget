@@ -22,6 +22,7 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Environment(\.themeManager) private var themeManager
     @Query private var settings: [AppSettings]
     @Query private var accounts: [Account]
@@ -85,9 +86,9 @@ struct SettingsView: View {
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
-            .background(theme.colors.background)
+            .background(colors.background)
             .navigationTitle("Settings")
-            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .alert("Clear All Data", isPresented: $showingClearDataAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -154,7 +155,7 @@ struct SettingsView: View {
                 ThemePicker(themeManager: themeManager)
             } else {
                 Text("Theme selection unavailable")
-                    .foregroundStyle(theme.colors.textSecondary)
+                    .foregroundStyle(colors.textSecondary)
             }
         } header: {
             Text("Visual Theme")
@@ -263,7 +264,7 @@ struct SettingsView: View {
             if !appSettings.notificationsEnabled {
                 Text("Notifications are disabled. Category due date reminders will not appear.")
                     .font(.caption)
-                    .foregroundStyle(theme.colors.warning)
+                    .foregroundStyle(colors.warning)
             }
         } header: {
             Text("Notifications")
@@ -300,7 +301,7 @@ struct SettingsView: View {
                 showingClearDataAlert = true
             } label: {
                 Label("Clear All Data", systemImage: "trash")
-                    .foregroundStyle(theme.colors.error)
+                    .foregroundStyle(colors.error)
             }
 
             // Storage Info
@@ -308,7 +309,7 @@ struct SettingsView: View {
                 Text("Storage")
                 Spacer()
                 Text("Local Only")
-                    .foregroundStyle(theme.colors.textSecondary)
+                    .foregroundStyle(colors.textSecondary)
             }
         } header: {
             Text("Data Management")
@@ -324,7 +325,7 @@ struct SettingsView: View {
                 Text("Version")
                 Spacer()
                 Text("1.4.0")
-                    .foregroundStyle(theme.colors.textSecondary)
+                    .foregroundStyle(colors.textSecondary)
             }
 
             // Build
@@ -332,7 +333,7 @@ struct SettingsView: View {
                 Text("Build")
                 Spacer()
                 Text("Enhancement 3.2")
-                    .foregroundStyle(theme.colors.textSecondary)
+                    .foregroundStyle(colors.textSecondary)
             }
 
             // YNAB Methodology
@@ -347,7 +348,7 @@ struct SettingsView: View {
                 Text("Privacy")
                 Spacer()
                 Text("Local Only")
-                    .foregroundStyle(theme.colors.textSecondary)
+                    .foregroundStyle(colors.textSecondary)
             }
 
             // GitHub Link (placeholder)
@@ -396,15 +397,15 @@ struct SettingsView: View {
 
                     Text("This app follows YNAB principles by tracking real account balances and helping you assign every dollar a specific job.")
                         .font(.callout)
-                        .foregroundStyle(theme.colors.textSecondary)
+                        .foregroundStyle(colors.textSecondary)
                         .padding(.top)
                 }
                 .padding()
             }
-            .background(theme.colors.background)
+            .background(colors.background)
             .navigationTitle("YNAB Methodology")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(theme.colors.surface, for: .navigationBar)
+            .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
