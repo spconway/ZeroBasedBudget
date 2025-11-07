@@ -476,9 +476,10 @@ struct BudgetPlanningView: View {
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, currencyCode: currencyCode, onSave: { updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                EditCategorySheet(category: category, currencyCode: currencyCode, onSave: { updatedName, updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     updateCategory(
                         category,
+                        name: updatedName,
                         amount: updatedAmount,
                         dueDayOfMonth: dueDayOfMonth,
                         isLastDayOfMonth: isLastDayOfMonth,
@@ -697,6 +698,7 @@ struct BudgetPlanningView: View {
 
     private func updateCategory(
         _ category: BudgetCategory,
+        name: String,
         amount: Decimal,
         dueDayOfMonth: Int?,
         isLastDayOfMonth: Bool,
@@ -706,6 +708,7 @@ struct BudgetPlanningView: View {
         notifyCustomDays: Bool,
         customDaysCount: Int
     ) {
+        category.name = name
         category.budgetedAmount = amount
         category.dueDayOfMonth = dueDayOfMonth
         category.isLastDayOfMonth = isLastDayOfMonth
@@ -1064,10 +1067,13 @@ struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.theme) private var theme
     @Environment(\.themeColors) private var colors
+    @Query private var allCategories: [BudgetCategory]
+
     let category: BudgetCategory
-    let onSave: (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
+    let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
     var currencyCode: String = "USD"
 
+    @State private var categoryName: String
     @State private var budgetedAmount: Decimal
     @State private var hasDueDate: Bool
     @State private var selectedDay: Int
@@ -1077,11 +1083,14 @@ struct EditCategorySheet: View {
     @State private var notifyOnDueDate: Bool
     @State private var notifyCustomDays: Bool
     @State private var customDaysCount: Int
+    @State private var showingNameError: Bool = false
+    @State private var nameErrorMessage: String = ""
 
-    init(category: BudgetCategory, currencyCode: String = "USD", onSave: @escaping (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
+    init(category: BudgetCategory, currencyCode: String = "USD", onSave: @escaping (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
         self.category = category
         self.currencyCode = currencyCode
         self.onSave = onSave
+        _categoryName = State(initialValue: category.name)
         _budgetedAmount = State(initialValue: category.budgetedAmount)
 
         // Extract day from dueDayOfMonth or legacy dueDate
@@ -1156,8 +1165,15 @@ struct EditCategorySheet: View {
             Form {
                 Section(header: Text("Category Details")) {
                     LabeledContent("Name") {
-                        Text(category.name)
-                            .foregroundStyle(colors.textSecondary)
+                        TextField("Category Name", text: $categoryName)
+                            .multilineTextAlignment(.trailing)
+                            .autocorrectionDisabled()
+                    }
+
+                    if showingNameError {
+                        Text(nameErrorMessage)
+                            .font(.caption)
+                            .foregroundStyle(colors.error)
                     }
 
                     LabeledContent("Type") {
@@ -1220,21 +1236,58 @@ struct EditCategorySheet: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        onSave(
-                            budgetedAmount,
-                            hasDueDate ? selectedDay : nil,
-                            isLastDayOfMonth,
-                            notify7DaysBefore,
-                            notify2DaysBefore,
-                            notifyOnDueDate,
-                            notifyCustomDays,
-                            customDaysCount
-                        )
+                        if validateName() {
+                            onSave(
+                                categoryName.trimmingCharacters(in: .whitespaces),
+                                budgetedAmount,
+                                hasDueDate ? selectedDay : nil,
+                                isLastDayOfMonth,
+                                notify7DaysBefore,
+                                notify2DaysBefore,
+                                notifyOnDueDate,
+                                notifyCustomDays,
+                                customDaysCount
+                            )
+                        }
                     }
                     .disabled(budgetedAmount < 0)
                 }
             }
         }
+    }
+
+    // MARK: - Validation
+
+    /// Validates the category name
+    /// Returns true if valid, false if invalid (shows error message)
+    private func validateName() -> Bool {
+        let trimmedName = categoryName.trimmingCharacters(in: .whitespaces)
+
+        // Check for empty name
+        if trimmedName.isEmpty {
+            showingNameError = true
+            nameErrorMessage = "Category name cannot be empty"
+            return false
+        }
+
+        // Check for duplicate name (only if name changed)
+        if trimmedName != category.name {
+            let isDuplicate = allCategories.contains { existingCategory in
+                existingCategory.name.lowercased() == trimmedName.lowercased() &&
+                existingCategory.id != category.id
+            }
+
+            if isDuplicate {
+                showingNameError = true
+                nameErrorMessage = "A category with this name already exists"
+                return false
+            }
+        }
+
+        // Name is valid
+        showingNameError = false
+        nameErrorMessage = ""
+        return true
     }
 }
 
