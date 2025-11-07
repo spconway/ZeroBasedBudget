@@ -10,7 +10,7 @@ import SwiftData
 
 struct TransactionLogView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
     @Query private var accounts: [Account]
@@ -173,7 +173,7 @@ struct TransactionLogView: View {
 // MARK: - Transaction Row Component
 
 struct TransactionRow: View {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let transaction: Transaction
     let runningBalance: Decimal
     var currencyCode: String = "USD"

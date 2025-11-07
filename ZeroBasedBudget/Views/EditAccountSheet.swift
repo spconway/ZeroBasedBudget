@@ -11,7 +11,7 @@ import SwiftData
 /// Sheet for editing an existing account
 struct EditAccountSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query private var settings: [AppSettings]
     @Bindable var account: Account
 

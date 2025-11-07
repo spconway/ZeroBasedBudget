@@ -11,7 +11,7 @@ import SwiftData
 /// Sheet for adding a new account
 struct AddAccountSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query private var settings: [AppSettings]
     let onSave: (String, Decimal, String?) -> Void
 

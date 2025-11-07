@@ -16,8 +16,8 @@ struct ThemePicker: View {
     /// Theme manager reference
     @Bindable var themeManager: ThemeManager
 
-    /// Current theme from environment
-    @Environment(\.theme) private var currentTheme
+    /// Current theme colors from environment
+    @Environment(\.themeColors) private var colors
 
     // MARK: - Body
 
@@ -41,20 +41,20 @@ struct ThemePicker: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(themeType.name)
                         .font(.headline)
-                        .foregroundColor(currentTheme.colors.textPrimary)
+                        .foregroundColor(colors.textPrimary)
 
                     Text(themeType.description)
                         .font(.caption)
-                        .foregroundColor(currentTheme.colors.textSecondary)
+                        .foregroundColor(colors.textSecondary)
                 }
 
                 Spacer()
 
-                // Color preview swatches
+                // Color preview swatches (show dark mode colors for consistency)
                 HStack(spacing: 6) {
-                    colorSwatch(themeType.colors.primary)
-                    colorSwatch(themeType.colors.accent)
-                    colorSwatch(themeType.colors.success)
+                    colorSwatch(themeType.theme.darkColors.primary)
+                    colorSwatch(themeType.theme.darkColors.accent)
+                    colorSwatch(themeType.theme.darkColors.success)
                 }
 
                 // Selection indicator
@@ -83,7 +83,7 @@ struct ThemePicker: View {
             .frame(width: 24, height: 24)
             .overlay(
                 Circle()
-                    .stroke(currentTheme.colors.border, lineWidth: 1)
+                    .stroke(colors.border, lineWidth: 1)
             )
     }
 }

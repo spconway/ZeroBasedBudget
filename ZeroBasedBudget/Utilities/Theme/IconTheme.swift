@@ -11,7 +11,7 @@ import SwiftUI
 
 /// View modifier for primary themed icons (main navigation, important actions)
 struct IconPrimaryModifier: ViewModifier {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
 
     func body(content: Content) -> some View {
         content
@@ -21,7 +21,7 @@ struct IconPrimaryModifier: ViewModifier {
 
 /// View modifier for accent themed icons (secondary actions, edit buttons)
 struct IconAccentModifier: ViewModifier {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
 
     func body(content: Content) -> some View {
         content
@@ -31,7 +31,7 @@ struct IconAccentModifier: ViewModifier {
 
 /// View modifier for success themed icons (income, positive indicators)
 struct IconSuccessModifier: ViewModifier {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
 
     func body(content: Content) -> some View {
         content
@@ -41,7 +41,7 @@ struct IconSuccessModifier: ViewModifier {
 
 /// View modifier for error themed icons (expenses, negative indicators)
 struct IconErrorModifier: ViewModifier {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
 
     func body(content: Content) -> some View {
         content
@@ -51,7 +51,7 @@ struct IconErrorModifier: ViewModifier {
 
 /// View modifier for warning themed icons (alerts, attention states)
 struct IconWarningModifier: ViewModifier {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
 
     func body(content: Content) -> some View {
         content
@@ -61,7 +61,7 @@ struct IconWarningModifier: ViewModifier {
 
 /// View modifier for neutral themed icons (chevrons, list indicators)
 struct IconNeutralModifier: ViewModifier {
-    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
 
     func body(content: Content) -> some View {
         content
