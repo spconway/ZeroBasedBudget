@@ -14,6 +14,8 @@ import SwiftData
 /// The sum of all account balances = total money available to budget.
 struct AccountsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query(sort: \Account.createdDate, order: .forward) private var allAccounts: [Account]
     @Query private var settings: [AppSettings]
 
@@ -37,15 +39,15 @@ struct AccountsView: View {
                 VStack(spacing: 8) {
                     Text("Total Across All Accounts")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(colors.textSecondary)
 
                     Text(totalAccountBalances, format: .currency(code: currencyCode))
                         .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
-                .background(Color(.systemGroupedBackground))
+                .background(colors.background)
 
                 // Accounts list
                 if allAccounts.isEmpty {
@@ -53,14 +55,15 @@ struct AccountsView: View {
                     VStack(spacing: 16) {
                         Image(systemName: "banknote")
                             .font(.system(size: 60))
-                            .foregroundStyle(.secondary)
+                            .iconNeutral()
 
                         Text("No Accounts Yet")
                             .font(.title2.bold())
+                            .foregroundStyle(colors.textPrimary)
 
                         Text("Add your first account to start budgeting with the YNAB method.")
                             .font(.body)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
 
@@ -80,6 +83,7 @@ struct AccountsView: View {
                     List {
                         ForEach(allAccounts) { account in
                             AccountRow(account: account, currencyCode: currencyCode)
+                                .listRowBackground(colors.surface)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     editingAccount = account
@@ -88,15 +92,27 @@ struct AccountsView: View {
                         .onDelete(perform: deleteAccounts)
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background(colors.background)
                 }
             }
-            .navigationTitle("Accounts")
+			.navigationBarTitleDisplayMode(.inline)
+            .background(colors.background)
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					Text("My title")
+						.foregroundColor(colors.textPrimary)
+				}
+			}
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingAddSheet = true
                     } label: {
                         Image(systemName: "plus")
+                            .iconAccent()
                     }
                 }
             }

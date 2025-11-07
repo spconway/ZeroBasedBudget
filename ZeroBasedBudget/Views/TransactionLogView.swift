@@ -10,6 +10,7 @@ import SwiftData
 
 struct TransactionLogView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.themeColors) private var colors
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
     @Query private var accounts: [Account]
@@ -82,15 +83,15 @@ struct TransactionLogView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Assign Your Income")
                                         .font(.headline)
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(colors.textPrimary)
                                     Text("Budget your income in the Budget tab")
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(colors.textSecondary)
                                 }
                                 Spacer()
                                 Image(systemName: "arrow.right.circle.fill")
                                     .font(.title2)
-                                    .foregroundStyle(Color.appAccent)
+                                    .iconAccent()
                             }
                         }
                         .buttonStyle(.plain)
@@ -116,12 +117,17 @@ struct TransactionLogView: View {
                     } header: {
                         Text(BudgetCalculations.formatTransactionSectionDate(date))
                             .font(.headline)
-                            .foregroundStyle(.primary)
+							.foregroundStyle(colors.textTertiary)
                     }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(colors.background)
             .navigationTitle("Transactions")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search transactions")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -167,6 +173,7 @@ struct TransactionLogView: View {
 // MARK: - Transaction Row Component
 
 struct TransactionRow: View {
+    @Environment(\.themeColors) private var colors
     let transaction: Transaction
     let runningBalance: Decimal
     var currencyCode: String = "USD"
@@ -177,32 +184,40 @@ struct TransactionRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(transaction.transactionDescription)
                         .font(.headline)
+						.foregroundColor(colors.textPrimary)
 
                     Text(transaction.category?.name ?? "Uncategorized")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+						.foregroundStyle(colors.textSecondary)
 
                     if let account = transaction.account {
                         Text(account.name)
+							.italic()
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textTertiary)
                     }
 
                     Text(transaction.date, style: .date)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+						.foregroundStyle(colors.textSecondary)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(transaction.amount, format: .currency(code: currencyCode))
-                        .font(.body.bold())
-                        .foregroundStyle(transaction.type == .income ? Color.appSuccess : Color.appError)
+                    HStack(spacing: 6) {
+                        Image(systemName: transaction.type == .income ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                            .font(.body)
+                            .iconTransactionType(isIncome: transaction.type == .income)
+
+                        Text(transaction.amount, format: .currency(code: currencyCode))
+                            .font(.body.bold())
+                            .foregroundStyle(transaction.type == .income ? colors.success : colors.error)
+                    }
 
                     Text(transaction.type.rawValue.capitalized)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
 
@@ -210,11 +225,11 @@ struct TransactionRow: View {
             HStack {
                 Text("Net Worth:")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+					.foregroundStyle(colors.textTertiary)
                 Spacer()
                 Text(runningBalance, format: .currency(code: currencyCode))
                     .font(.caption.bold())
-                    .foregroundStyle(runningBalance >= 0 ? Color.appSuccess : Color.appError)
+                    .foregroundStyle(runningBalance >= 0 ? colors.success : colors.error)
             }
             .padding(.top, 4)
         }
@@ -227,6 +242,8 @@ struct TransactionRow: View {
 struct AddTransactionSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query private var accounts: [Account]
 
     let categories: [BudgetCategory]
@@ -268,7 +285,7 @@ struct AddTransactionSheet: View {
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(Color.appError)
+                            .foregroundStyle(colors.error)
                     }
                 }
 
@@ -290,7 +307,7 @@ struct AddTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(Color.appWarning)
+                            .foregroundStyle(colors.warning)
                     }
                 }
 
@@ -307,16 +324,16 @@ struct AddTransactionSheet: View {
                         HStack {
                             Text("Current Balance:")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(colors.textSecondary)
                             Spacer()
                             Text(account.balance, format: .currency(code: currencyCode))
                                 .font(.caption)
-                                .foregroundStyle(account.balance >= 0 ? Color.appSuccess : Color.appError)
+                                .foregroundStyle(account.balance >= 0 ? colors.success : colors.error)
                         }
                     } else {
                         Text("Optional - Select to track account balance")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
                 }
 
@@ -325,9 +342,13 @@ struct AddTransactionSheet: View {
                         .lineLimit(3...6)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(colors.background)
             .navigationTitle("Add Transaction")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar(content: {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -340,7 +361,7 @@ struct AddTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            }
+            })
         }
     }
 
@@ -377,6 +398,8 @@ struct AddTransactionSheet: View {
 struct EditTransactionSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query private var accounts: [Account]
 
     let transaction: Transaction
@@ -434,7 +457,7 @@ struct EditTransactionSheet: View {
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
-                            .foregroundStyle(Color.appError)
+                            .foregroundStyle(colors.error)
                     }
                 }
 
@@ -456,7 +479,7 @@ struct EditTransactionSheet: View {
                     if selectedCategory == nil {
                         Text("Please select a category")
                             .font(.caption)
-                            .foregroundStyle(Color.appWarning)
+                            .foregroundStyle(colors.warning)
                     }
                 }
 
@@ -473,16 +496,16 @@ struct EditTransactionSheet: View {
                         HStack {
                             Text("Current Balance:")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(colors.textSecondary)
                             Spacer()
                             Text(account.balance, format: .currency(code: currencyCode))
                                 .font(.caption)
-                                .foregroundStyle(account.balance >= 0 ? Color.appSuccess : Color.appError)
+                                .foregroundStyle(account.balance >= 0 ? colors.success : colors.error)
                         }
                     } else {
                         Text("Optional - Select to track account balance")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
                 }
 
@@ -491,9 +514,13 @@ struct EditTransactionSheet: View {
                         .lineLimit(3...6)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(colors.background)
             .navigationTitle("Edit Transaction")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar(content: {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -506,7 +533,7 @@ struct EditTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            }
+            })
         }
     }
 

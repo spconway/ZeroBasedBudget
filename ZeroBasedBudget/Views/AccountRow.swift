@@ -9,6 +9,7 @@ import SwiftUI
 
 /// Reusable row component for displaying account information in a list
 struct AccountRow: View {
+    @Environment(\.themeColors) private var colors
     let account: Account
     var currencyCode: String = "USD"
 
@@ -17,11 +18,12 @@ struct AccountRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(account.name)
                     .font(.headline)
+                    .foregroundStyle(colors.textPrimary)
 
                 if let accountType = account.accountType {
                     Text(accountType)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
 
@@ -29,7 +31,7 @@ struct AccountRow: View {
 
             Text(account.balance, format: .currency(code: currencyCode))
                 .font(.body.monospacedDigit())
-                .foregroundStyle(account.balance >= 0 ? Color.primary : Color.red)
+                .foregroundStyle(account.balance >= 0 ? colors.textPrimary : colors.error)
         }
     }
 }

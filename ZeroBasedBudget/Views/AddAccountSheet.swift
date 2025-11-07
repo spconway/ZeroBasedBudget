@@ -11,6 +11,7 @@ import SwiftData
 /// Sheet for adding a new account
 struct AddAccountSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.themeColors) private var colors
     @Query private var settings: [AppSettings]
     let onSave: (String, Decimal, String?) -> Void
 
@@ -75,8 +76,12 @@ struct AddAccountSheet: View {
                     .disabled(accountName.isEmpty)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(colors.background)
             .navigationTitle("Add Account")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {

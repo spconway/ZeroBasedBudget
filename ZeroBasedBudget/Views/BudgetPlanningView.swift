@@ -10,6 +10,8 @@ import SwiftData
 
 struct BudgetPlanningView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     @Query private var allCategories: [BudgetCategory]
     @Query private var allTransactions: [Transaction]
     @Query private var allMonthlyBudgets: [MonthlyBudget]
@@ -146,11 +148,11 @@ struct BudgetPlanningView: View {
     // Color coding for Ready to Assign
     private var readyToAssignColor: Color {
         if readyToAssign == 0 {
-            return .appSuccess  // Goal achieved!
+            return colors.success  // Goal achieved!
         } else if readyToAssign > 0 {
-            return .appWarning  // Money needs to be assigned
+            return colors.warning  // Money needs to be assigned
         } else {
-            return .appError  // Over-assigned, need to reduce categories
+            return colors.error  // Over-assigned, need to reduce categories
         }
     }
 
@@ -186,38 +188,7 @@ struct BudgetPlanningView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // Month Indicator Section
-                Section {
-                    HStack {
-                        Button(action: previousMonth) {
-                            Image(systemName: "chevron.left")
-                                .font(.title3)
-                                .foregroundStyle(Color.appAccent)
-                        }
-                        .buttonStyle(.plain)
-
-                        Spacer()
-
-                        Text(monthYearText)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.primary)
-
-                        Spacer()
-
-                        Button(action: nextMonth) {
-                            Image(systemName: "chevron.right")
-                                .font(.title3)
-                                .foregroundStyle(Color.appAccent)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.vertical, 8)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
-                }
-                .listRowBackground(Color.clear)
-
-                // NEW: Simple Ready to Assign Banner (Enhancement 3.1)
+                // Ready to Assign Banner (now first element after nav bar)
                 Section {
                     ReadyToAssignBanner(
                         amount: readyToAssign,
@@ -226,7 +197,7 @@ struct BudgetPlanningView: View {
                     )
                 }
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                .listRowBackground(Color.clear)
+                .listRowBackground(colors.surface)
 
                 // Fixed Expenses Section
                 Section(header: HStack {
@@ -234,11 +205,12 @@ struct BudgetPlanningView: View {
                     Spacer()
                     Button(action: { addCategory(type: "Fixed") }) {
                         Image(systemName: "plus.circle.fill")
+                            .iconAccent()
                     }
                 }) {
                     if fixedExpenseCategories.isEmpty {
                         Text("No fixed expenses yet. Tap + to add.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                             .italic()
                     } else {
                         ForEach(fixedExpenseCategories) { category in
@@ -276,11 +248,12 @@ struct BudgetPlanningView: View {
                     Spacer()
                     Button(action: { addCategory(type: "Variable") }) {
                         Image(systemName: "plus.circle.fill")
+                            .iconAccent()
                     }
                 }) {
                     if variableExpenseCategories.isEmpty {
                         Text("No variable expenses yet. Tap + to add.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                             .italic()
                     } else {
                         ForEach(variableExpenseCategories) { category in
@@ -318,11 +291,12 @@ struct BudgetPlanningView: View {
                     Spacer()
                     Button(action: { addCategory(type: "Quarterly") }) {
                         Image(systemName: "plus.circle.fill")
+                            .iconAccent()
                     }
                 }) {
                     if quarterlyExpenseCategories.isEmpty {
                         Text("No quarterly expenses yet. Tap + to add.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                             .italic()
                     } else {
                         ForEach(quarterlyExpenseCategories) { category in
@@ -358,7 +332,7 @@ struct BudgetPlanningView: View {
                 Section {
                     LabeledContent("Total Assigned") {
                         Text(totalAssigned, format: .currency(code: currencyCode))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
 
                     LabeledContent("Ready to Assign") {
@@ -372,26 +346,26 @@ struct BudgetPlanningView: View {
                         HStack {
                             Text("Previous Month (\(comparison.month))")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(colors.textSecondary)
                             Spacer()
                             HStack(spacing: 4) {
                                 Text(comparison.amount, format: .currency(code: currencyCode))
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(colors.textSecondary)
 
                                 // Show arrow indicator for change
                                 if comparison.amount < readyToAssign {
                                     Image(systemName: "arrow.up")
                                         .font(.caption2)
-                                        .foregroundStyle(Color.appSuccess)
+                                        .iconSuccess()
                                 } else if comparison.amount > readyToAssign {
                                     Image(systemName: "arrow.down")
                                         .font(.caption2)
-                                        .foregroundStyle(Color.appError)
+                                        .iconError()
                                 } else {
                                     Image(systemName: "arrow.right")
                                         .font(.caption2)
-                                        .foregroundStyle(Color.appMuted)
+                                        .iconNeutral()
                                 }
                             }
                         }
@@ -403,34 +377,34 @@ struct BudgetPlanningView: View {
                     if readyToAssign == 0 {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(Color.appSuccess)
+                                .iconSuccess()
                                 .font(.title2)
                             Text("Goal Achieved!")
                                 .font(.headline)
-                                .foregroundStyle(Color.appSuccess)
+                                .foregroundStyle(colors.success)
                             Spacer()
                         }
                         .padding(.vertical, 8)
-                        .listRowBackground(Color.appSuccess.opacity(0.1))
+                        .listRowBackground(colors.success.opacity(0.1))
                     } else if readyToAssign > 0 {
                         HStack {
                             Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundStyle(Color.appWarning)
+                                .iconWarning()
                                 .font(.title3)
                             Text("Assign \(readyToAssign, format: .currency(code: currencyCode)) to categories")
                                 .font(.subheadline)
-                                .foregroundStyle(Color.appWarning)
+                                .foregroundStyle(colors.warning)
                             Spacer()
                         }
                         .padding(.vertical, 4)
                     } else {
                         HStack {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(Color.appError)
+                                .iconError()
                                 .font(.title3)
                             Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: currencyCode))")
                                 .font(.subheadline)
-                                .foregroundStyle(Color.appError)
+                                .foregroundStyle(colors.error)
                             Spacer()
                         }
                         .padding(.vertical, 4)
@@ -441,14 +415,45 @@ struct BudgetPlanningView: View {
                     if readyToAssign == 0 {
                         Text("Perfect! Every dollar has a job. You've successfully budgeted all available money.")
                             .font(.caption)
-                            .foregroundStyle(Color.appSuccess)
+                            .foregroundStyle(colors.success)
                     }
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(colors.background)
             .listSectionSpacing(0)
-            .navigationTitle("Budget Planning")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                // Previous month button (leading)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: previousMonth) {
+                        Image(systemName: "chevron.left")
+                            .font(.headline)
+                            .iconAccent()
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                }
+
+                // Month/Year display (center)
+                ToolbarItem(placement: .principal) {
+                    Text(monthYearText)
+                        .font(theme.typography.headline)
+                        .foregroundStyle(colors.primary)
+                }
+
+                // Next month button (trailing)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: nextMonth) {
+                        Image(systemName: "chevron.right")
+                            .font(.headline)
+                            .iconAccent()
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                }
+            }
             .onAppear {
                 // NOTE: Enhancement 3.1 - Account balances now persist globally, no need to load per-month
                 // Budget data still created for month tracking
@@ -528,12 +533,12 @@ struct BudgetPlanningView: View {
 
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(Color.appSuccess)
+                                .iconSuccess()
                                 .font(.title3)
 
                             Text(action.actionDescription)
                                 .font(.subheadline)
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(colors.textPrimary)
 
                             Spacer()
 
@@ -541,7 +546,7 @@ struct BudgetPlanningView: View {
                                 performUndo()
                             }
                             .fontWeight(.semibold)
-                            .foregroundStyle(Color.appAccent)
+                            .foregroundStyle(colors.accent)
 
                             Button(action: {
                                 withAnimation {
@@ -551,11 +556,11 @@ struct BudgetPlanningView: View {
                             }) {
                                 Image(systemName: "xmark")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .iconNeutral()
                             }
                         }
                         .padding()
-                        .background(.ultraThinMaterial)
+                        .background(colors.surfaceElevated)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .shadow(radius: 10)
                         .padding()
@@ -829,6 +834,8 @@ struct BudgetPlanningView: View {
 
 // MARK: - CategoryRow View
 struct CategoryRow: View {
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let category: BudgetCategory
     let readyToAssign: Decimal
     let actualSpent: Decimal  // NEW: Enhancement 7.2 - Track actual spending
@@ -859,12 +866,12 @@ struct CategoryRow: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(category.name)
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(colors.textPrimary)
 
                         if let dueDateText = dueDateText {
                             Text(dueDateText)
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(colors.textSecondary)
                         }
 
                         // NEW: Enhancement 7.2 - Progress bar showing spending
@@ -875,11 +882,11 @@ struct CategoryRow: View {
                     Spacer()
 
                     Text(category.budgetedAmount, format: .currency(code: currencyCode))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(colors.textSecondary)
 
                     Image(systemName: "chevron.right")
                         .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .iconNeutral()
                 }
             }
 
@@ -888,9 +895,9 @@ struct CategoryRow: View {
                 Button(action: onQuickAssign) {
                     Image(systemName: "bolt.fill")
                         .font(.system(size: 14))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(colors.onPrimary)
                         .frame(width: 28, height: 28)
-                        .background(Color.appWarning)
+                        .background(colors.warning)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
@@ -903,6 +910,8 @@ struct CategoryRow: View {
 // MARK: - AddCategorySheet
 struct AddCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let categoryType: String
 	var currencyCode: String = "USD"
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
@@ -995,7 +1004,7 @@ struct AddCategorySheet: View {
                         // Show effective date preview
                         LabeledContent("Effective Date") {
                             Text(displayDate, style: .date)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(colors.textSecondary)
                         }
                     }
                 }
@@ -1016,7 +1025,7 @@ struct AddCategorySheet: View {
 
                 Section {
                     Text("Category Type: \(categoryType)")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
             .navigationTitle("Add \(categoryType) Expense")
@@ -1053,6 +1062,8 @@ struct AddCategorySheet: View {
 // MARK: - EditCategorySheet
 struct EditCategorySheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
     let category: BudgetCategory
     let onSave: (Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
     var currencyCode: String = "USD"
@@ -1146,12 +1157,12 @@ struct EditCategorySheet: View {
                 Section(header: Text("Category Details")) {
                     LabeledContent("Name") {
                         Text(category.name)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
 
                     LabeledContent("Type") {
                         Text(category.categoryType)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(colors.textSecondary)
                     }
 
                     LabeledContent("Budgeted Amount") {
@@ -1179,7 +1190,7 @@ struct EditCategorySheet: View {
                         // Show effective date preview
                         LabeledContent("Effective Date") {
                             Text(displayDate, style: .date)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(colors.textSecondary)
                         }
                     }
                 }

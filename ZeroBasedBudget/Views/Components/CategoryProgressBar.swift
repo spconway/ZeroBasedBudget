@@ -11,6 +11,7 @@ import SwiftUI
 /// Visual progress bar showing spending against budgeted amount
 /// Color-coded: Green (0-75%), Yellow (75-100%), Red (>100%)
 struct CategoryProgressBar: View {
+    @Environment(\.themeColors) private var colors
     let spent: Decimal
     let budgeted: Decimal
 
@@ -30,11 +31,11 @@ struct CategoryProgressBar: View {
         let rawPercentage = budgeted > 0 ? Double(truncating: (spent / budgeted) as NSNumber) : 0
 
         if rawPercentage >= 1.0 {
-            return .appError // Overspent (red)
+            return colors.error // Overspent (red)
         } else if rawPercentage >= 0.75 {
-            return .appWarning // Approaching limit (yellow/orange)
+            return colors.warning // Approaching limit (yellow/orange)
         } else {
-            return .appSuccess // Healthy (green)
+            return colors.success // Healthy (green)
         }
     }
 
@@ -43,7 +44,7 @@ struct CategoryProgressBar: View {
             ZStack(alignment: .leading) {
                 // Background track
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.gray.opacity(0.2))
+                    .fill(colors.borderSubtle.opacity(0.3))
                     .frame(height: 6)
 
                 // Progress fill with smooth animation

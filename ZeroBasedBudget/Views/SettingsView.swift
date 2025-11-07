@@ -21,6 +21,9 @@ import UniformTypeIdentifiers
 /// - About
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.theme) private var theme
+    @Environment(\.themeColors) private var colors
+    @Environment(\.themeManager) private var themeManager
     @Query private var settings: [AppSettings]
     @Query private var accounts: [Account]
     @Query private var categories: [BudgetCategory]
@@ -63,6 +66,9 @@ struct SettingsView: View {
                 // MARK: - Appearance Section
                 appearanceSection
 
+                // MARK: - Theme Section
+                themeSection
+
                 // MARK: - Currency & Formatting Section
                 currencyFormattingSection
 
@@ -78,7 +84,12 @@ struct SettingsView: View {
                 // MARK: - About Section
                 aboutSection
             }
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(colors.background)
             .navigationTitle("Settings")
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .alert("Clear All Data", isPresented: $showingClearDataAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Clear All Data", role: .destructive) {
@@ -135,6 +146,21 @@ struct SettingsView: View {
             Text("Appearance")
         } footer: {
             Text("Choose your preferred color scheme. System will match your device settings.")
+        }
+    }
+
+    private var themeSection: some View {
+        Section {
+            if let themeManager = themeManager {
+                ThemePicker(themeManager: themeManager)
+            } else {
+                Text("Theme selection unavailable")
+                    .foregroundStyle(colors.textSecondary)
+            }
+        } header: {
+            Text("Visual Theme")
+        } footer: {
+            Text("Choose your preferred visual theme. Theme changes apply instantly throughout the app.")
         }
     }
 
@@ -238,7 +264,7 @@ struct SettingsView: View {
             if !appSettings.notificationsEnabled {
                 Text("Notifications are disabled. Category due date reminders will not appear.")
                     .font(.caption)
-                    .foregroundStyle(Color.appWarning)
+                    .foregroundStyle(colors.warning)
             }
         } header: {
             Text("Notifications")
@@ -275,7 +301,7 @@ struct SettingsView: View {
                 showingClearDataAlert = true
             } label: {
                 Label("Clear All Data", systemImage: "trash")
-                    .foregroundStyle(Color.appError)
+                    .foregroundStyle(colors.error)
             }
 
             // Storage Info
@@ -283,7 +309,7 @@ struct SettingsView: View {
                 Text("Storage")
                 Spacer()
                 Text("Local Only")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(colors.textSecondary)
             }
         } header: {
             Text("Data Management")
@@ -299,7 +325,7 @@ struct SettingsView: View {
                 Text("Version")
                 Spacer()
                 Text("1.4.0")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(colors.textSecondary)
             }
 
             // Build
@@ -307,7 +333,7 @@ struct SettingsView: View {
                 Text("Build")
                 Spacer()
                 Text("Enhancement 3.2")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(colors.textSecondary)
             }
 
             // YNAB Methodology
@@ -322,7 +348,7 @@ struct SettingsView: View {
                 Text("Privacy")
                 Spacer()
                 Text("Local Only")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(colors.textSecondary)
             }
 
             // GitHub Link (placeholder)
@@ -371,13 +397,16 @@ struct SettingsView: View {
 
                     Text("This app follows YNAB principles by tracking real account balances and helping you assign every dollar a specific job.")
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(colors.textSecondary)
                         .padding(.top)
                 }
                 .padding()
             }
+            .background(colors.background)
             .navigationTitle("YNAB Methodology")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(colors.surface, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
