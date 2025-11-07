@@ -95,8 +95,14 @@ struct AccountsView: View {
                     .background(theme.colors.background)
                 }
             }
+			.navigationBarTitleDisplayMode(.inline)
             .background(theme.colors.background)
-            .navigationTitle("Accounts")
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					Text("My title")
+						.foregroundColor(theme.colors.textPrimary)
+				}
+			}
             .toolbarBackground(theme.colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {

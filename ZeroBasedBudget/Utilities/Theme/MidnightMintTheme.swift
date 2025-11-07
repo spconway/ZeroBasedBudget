@@ -29,9 +29,9 @@ struct MidnightMintTheme: Theme {
         let warningColor = Color(hex: "F59E0B")
         let errorColor = Color(hex: "EF4444")
 
-        let textPrimaryColor = Color(hex: "FFFFFF")
-        let textSecondaryColor = Color(hex: "9CA3AF")
-        let textTertiaryColor = Color(hex: "6B7280")
+        let textPrimaryColor = Color(hex: "3BFFB4")
+        let textSecondaryColor = Color(hex: "14B8A6")
+        let textTertiaryColor = Color(hex: "FFFFFF")
 
         let borderColor = Color(hex: "2A3138")
         let borderSubtleColor = Color(hex: "1C2128")

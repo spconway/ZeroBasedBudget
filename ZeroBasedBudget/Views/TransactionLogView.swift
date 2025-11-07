@@ -117,7 +117,7 @@ struct TransactionLogView: View {
                     } header: {
                         Text(BudgetCalculations.formatTransactionSectionDate(date))
                             .font(.headline)
-                            .foregroundStyle(theme.colors.textPrimary)
+							.foregroundStyle(theme.colors.textTertiary)
                     }
                 }
             }
@@ -184,20 +184,22 @@ struct TransactionRow: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(transaction.transactionDescription)
                         .font(.headline)
+						.foregroundColor(theme.colors.textPrimary)
 
                     Text(transaction.category?.name ?? "Uncategorized")
                         .font(.caption)
-                        .foregroundStyle(theme.colors.textSecondary)
+						.foregroundStyle(theme.colors.textSecondary)
 
                     if let account = transaction.account {
                         Text(account.name)
+							.italic()
                             .font(.caption)
-                            .foregroundStyle(theme.colors.textSecondary)
+                            .foregroundStyle(theme.colors.textTertiary)
                     }
 
                     Text(transaction.date, style: .date)
                         .font(.caption)
-                        .foregroundStyle(theme.colors.textSecondary)
+						.foregroundStyle(theme.colors.textSecondary)
                 }
 
                 Spacer()
@@ -223,7 +225,7 @@ struct TransactionRow: View {
             HStack {
                 Text("Net Worth:")
                     .font(.caption)
-                    .foregroundStyle(theme.colors.textSecondary)
+					.foregroundStyle(theme.colors.textTertiary)
                 Spacer()
                 Text(runningBalance, format: .currency(code: currencyCode))
                     .font(.caption.bold())

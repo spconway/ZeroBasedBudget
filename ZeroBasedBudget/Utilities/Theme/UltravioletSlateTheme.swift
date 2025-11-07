@@ -29,9 +29,9 @@ struct UltravioletSlateTheme: Theme {
         let warningColor = Color(hex: "FB923C")
         let errorColor = Color(hex: "F43F5E")
 
-        let textPrimaryColor = Color(hex: "FFFFFF")
-        let textSecondaryColor = Color(hex: "A1A1AA")
-        let textTertiaryColor = Color(hex: "71717A")
+        let textPrimaryColor = Color(hex: "6366F1")
+        let textSecondaryColor = Color(hex: "22D3EE")
+        let textTertiaryColor = Color(hex: "FFFFFF")
 
         let borderColor = Color(hex: "3A3A42")
         let borderSubtleColor = Color(hex: "2A2A32")

@@ -23,7 +23,7 @@ struct AccountRow: View {
                 if let accountType = account.accountType {
                     Text(accountType)
                         .font(.caption)
-                        .foregroundStyle(theme.colors.textSecondary)
+						.foregroundStyle(theme.colors.textSecondary)
                 }
             }
 

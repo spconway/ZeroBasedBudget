@@ -28,10 +28,10 @@ struct NeonLedgerTheme: Theme {
         let successColor = Color(hex: "00FF88")
         let warningColor = Color(hex: "FFB800")
         let errorColor = Color(hex: "FF006E")
-
-        let textPrimaryColor = Color(hex: "FFFFFF")
-        let textSecondaryColor = Color(hex: "999999")
-        let textTertiaryColor = Color(hex: "6B6B6B")
+		
+		let textPrimaryColor = Color(hex: "00E5CC")
+		let textSecondaryColor = Color(hex: "FF006E")
+		let textTertiaryColor = Color(hex: "FFFFFF")
 
         let borderColor = Color(hex: "2A2A2A")
         let borderSubtleColor = Color(hex: "1A1A1A")
