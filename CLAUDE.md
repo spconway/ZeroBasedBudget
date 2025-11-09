@@ -203,6 +203,154 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
+### 🔴 Priority 1: Critical Bugs
+
+**Bug 12.1: No Standard Light & Dark Mode Theme**
+
+**Objective**: Create a "Standard" theme that uses iOS system colors to provide a native, familiar look and feel for users who prefer the default Apple aesthetic.
+
+**Current Behavior**:
+- App ships with three custom themes: Neon Ledger (cyberpunk), Midnight Mint (calm fintech), Ultraviolet Slate (bold design)
+- All themes have strong visual identities with custom color palettes
+- No "neutral" or "stock iOS" option for users who want a minimal, system-native appearance
+- New users default to Midnight Mint theme (seafoam accents)
+
+**Problem**:
+- Users expecting a standard iOS app appearance get custom themes by default
+- No option for users who prefer Apple's design language
+- May feel jarring for users who want consistency with other iOS apps
+- Current themes are all "opinionated" - no neutral baseline option
+
+**Impact**:
+- UX: Users cannot choose a familiar, native iOS look
+- Accessibility: Some users may prefer system colors for consistency with iOS accessibility settings
+- First impression: New users see custom theme before they know themes are customizable
+
+**Solution**: Create "Standard" Theme with iOS System Colors
+
+**Files to Modify**:
+- [ ] Create `Utilities/Themes/StandardTheme.swift` - New theme file
+- [ ] `Utilities/ThemeManager.swift` - Add StandardTheme to available themes
+- [ ] `Models/AppSettings.swift` - Change default theme from "MidnightMint" to "Standard"
+
+**Implementation Approach**:
+
+1. **Create StandardTheme.swift** conforming to Theme protocol:
+   ```swift
+   struct StandardTheme: Theme {
+       let id = "Standard"
+       let name = "Standard"
+       let description = "Clean and familiar iOS system colors"
+
+       // Light mode colors (iOS system defaults)
+       let lightColors = ThemeColors(
+           // Primary: iOS Blue
+           primary: Color(red: 0/255, green: 122/255, blue: 255/255),
+           accent: Color(red: 0/255, green: 122/255, blue: 255/255),
+
+           // Semantic colors
+           success: Color(red: 52/255, green: 199/255, blue: 89/255),  // iOS Green
+           error: Color(red: 255/255, green: 59/255, blue: 48/255),    // iOS Red
+           warning: Color(red: 255/255, green: 149/255, blue: 0/255),  // iOS Orange
+
+           // Backgrounds (system grays)
+           background: Color(red: 242/255, green: 242/255, blue: 247/255),  // systemGroupedBackground
+           surface: Color.white,                                              // systemBackground
+           surfaceElevated: Color.white,
+
+           // Text colors
+           textPrimary: Color.primary,      // .label
+           textSecondary: Color.secondary,  // .secondaryLabel
+           textTertiary: Color(UIColor.tertiaryLabel),
+
+           // UI elements
+           onPrimary: Color.white,
+           readyToAssignBackground: Color(red: 242/255, green: 242/255, blue: 247/255)
+       )
+
+       // Dark mode colors (iOS system defaults)
+       let darkColors = ThemeColors(
+           // Primary: iOS Blue (lighter for dark mode)
+           primary: Color(red: 10/255, green: 132/255, blue: 255/255),
+           accent: Color(red: 10/255, green: 132/255, blue: 255/255),
+
+           // Semantic colors (dark mode variants)
+           success: Color(red: 48/255, green: 209/255, blue: 88/255),
+           error: Color(red: 255/255, green: 69/255, blue: 58/255),
+           warning: Color(red: 255/255, green: 159/255, blue: 10/255),
+
+           // Backgrounds
+           background: Color(red: 0/255, green: 0/255, blue: 0/255),        // systemGroupedBackground
+           surface: Color(red: 28/255, green: 28/255, blue: 30/255),        // systemBackground
+           surfaceElevated: Color(red: 44/255, green: 44/255, blue: 46/255),
+
+           // Text colors
+           textPrimary: Color.primary,
+           textSecondary: Color.secondary,
+           textTertiary: Color(UIColor.tertiaryLabel),
+
+           // UI elements
+           onPrimary: Color.white,
+           readyToAssignBackground: Color(red: 28/255, green: 28/255, blue: 30/255)
+       )
+
+       // Typography, spacing, radius same as other themes
+       let typography = ThemeTypography()
+       let spacing = ThemeSpacing()
+       let radius = ThemeRadius()
+   }
+   ```
+
+2. **Update ThemeManager**:
+   - Add `StandardTheme()` to `allThemes` array
+   - Ensure it appears first in the list (as the default)
+
+3. **Update AppSettings**:
+   - Change `selectedTheme` default from `"MidnightMint"` to `"Standard"`
+   - New users will see Standard theme on first launch
+   - Existing users keep their current theme selection
+
+**Design Considerations**:
+- **Conservative approach**: Use exact iOS system colors for authenticity
+- **WCAG compliance**: iOS system colors already meet accessibility standards
+- **Color scheme aware**: Automatically switches between light/dark variants
+- **Subtle accents**: Blue is recognizable but not overwhelming
+- **Familiar**: Matches iOS Settings, Mail, Messages aesthetic
+- **Non-intrusive**: Lets content be the focus, not the theme
+
+**Testing Checklist**:
+- [ ] Theme appears as "Standard" in Settings > Visual Theme
+- [ ] Theme listed first in theme picker
+- [ ] New user launches app → sees Standard theme by default
+- [ ] Existing users keep current theme (no forced switch)
+- [ ] Light mode: backgrounds are light gray, text is black, blue accents
+- [ ] Dark mode: backgrounds are dark gray/black, text is white, blue accents
+- [ ] Success indicators are green (iOS green)
+- [ ] Error indicators are red (iOS red)
+- [ ] Warning indicators are orange (iOS orange)
+- [ ] Tab bar uses blue tint for selected state
+- [ ] All 5 tabs render correctly with Standard theme
+- [ ] Theme switching works (Standard → other theme → back to Standard)
+- [ ] Appearance setting (System/Light/Dark) works with Standard theme
+- [ ] Colors match iOS native apps (Settings, Mail, etc.)
+- [ ] WCAG AA contrast ratios maintained in both modes
+
+**Acceptance Criteria**:
+- ✅ StandardTheme.swift created with iOS system colors
+- ✅ Theme appears in Settings as "Standard"
+- ✅ Theme is set as default for new users
+- ✅ Existing users keep their current theme
+- ✅ Light and dark mode variants work correctly
+- ✅ All semantic colors (success, error, warning) use iOS colors
+- ✅ Backgrounds and text colors match iOS system defaults
+- ✅ Theme provides familiar, native iOS appearance
+- ✅ No visual bugs or color conflicts
+
+**YNAB Alignment Check**:
+✅ No YNAB methodology impact - purely visual/UI change
+
+---
+
 ### 🏗️ Architecture / Project Changes
 
 **Architecture 2: Bank Account Linking Research Spike**
