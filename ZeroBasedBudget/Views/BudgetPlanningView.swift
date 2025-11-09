@@ -1106,9 +1106,10 @@ struct EditCategorySheet: View {
     @State private var showingNameError: Bool = false
     @State private var nameErrorMessage: String = ""
 
-    init(category: BudgetCategory, currencyCode: String = "USD", onSave: @escaping (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
+    init(category: BudgetCategory, currencyCode: String = "USD", dateFormat: String = "MM/DD/YYYY", onSave: @escaping (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
         self.category = category
         self.currencyCode = currencyCode
+        self.dateFormat = dateFormat
         self.onSave = onSave
         _categoryName = State(initialValue: category.name)
         _budgetedAmount = State(initialValue: category.budgetedAmount)
