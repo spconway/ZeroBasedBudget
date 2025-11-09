@@ -102,12 +102,22 @@ ZeroBasedBudget/
 ## Recent Version History
 
 **v1.9.0 (In Progress):**
+- ✅ Bug 11.1: Fixed Date Format setting to apply throughout app
 - ✅ Enhancement 11.1: Made category name editable in Edit Category sheet
+- ✅ Created: DateFormatHelpers.swift centralized utility with three format options
+- ✅ Added: Support for MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD date formats
+- ✅ Added: Smart year handling (shows year only for non-current year dates)
+- ✅ Added: Format-specific section headers (US: "Nov 5", EU: "5 Nov", ISO: "Nov 5")
+- ✅ Updated: Transaction section headers and row dates respect user preference
+- ✅ Updated: Budget Planning and Analysis views use DateFormatHelpers
+- ✅ Updated: Accessibility labels delegate to DateFormatHelpers (long format for VoiceOver)
 - ✅ Added: TextField for category name (previously read-only text)
-- ✅ Added: Validation for empty names and duplicate names
+- ✅ Added: Validation for empty names and duplicate category names
 - ✅ Added: Case-insensitive duplicate detection with clear error messages
 - ✅ Added: Automatic whitespace trimming on save
-- ✅ Improved: Category management UX - users can now rename categories without losing transaction history
+- ✅ Fixed: Compilation errors (dateFormat scope, unused variables)
+- ✅ Improved: Date formatting consistency across all tabs
+- ✅ Improved: Category management UX - users can rename categories without losing transaction history
 
 **v1.8.1 (Complete):**
 - ✅ Bug 10.1: Implemented light/dark color variants for all three themes
@@ -187,81 +197,6 @@ ZeroBasedBudget/
 ## Active Issues & Enhancement Backlog
 
 ### 🔴 Priority 1: Critical Bugs
-
-**Bug 11.1: Date Format Setting Not Applied**
-
-**Objective**: Fix Date Format setting in Settings to actually format dates throughout the app according to user preference.
-
-**Current Behavior**:
-- Settings has Date Format picker with options: "MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD" (SettingsView.swift:58, 182-193)
-- Setting is stored in AppSettings.dateFormat (AppSettings.swift:34)
-- Footer claims "Changes apply immediately to all monetary values and dates in the app" (SettingsView.swift:210)
-- **BUT**: Setting is never actually used for formatting - all date formatting uses hardcoded formats
-
-**Impact Analysis**:
-- **Transaction section headers**: Uses `formatTransactionSectionDate()` with hardcoded `.formatted(.dateTime.month(.abbreviated).day())` (BudgetCalculations.swift:42-57)
-- **Transaction rows**: Uses `Text(transaction.date, style: .date)` with system default (TransactionLogView.swift:200)
-- **Date pickers**: Display dates but formatting happens in system UI
-- **Total affected locations**: ~11 files with date formatting
-
-**Files to Modify**:
-- [ ] `BudgetCalculations.swift` - Add dateFormat parameter to formatTransactionSectionDate()
-- [ ] Create new `Utilities/DateFormatHelpers.swift` utility file with centralized date formatting
-- [ ] `TransactionLogView.swift` - Update transaction date display (line 200)
-- [ ] `BudgetAnalysisView.swift` - Update any date displays
-- [ ] `BudgetPlanningView.swift` - Update any date displays
-- [ ] `NotificationManager.swift` - Update notification date formatting
-- [ ] `AccessibilityHelpers.swift` - Update accessibility date strings
-
-**Implementation Approach**:
-1. Create centralized DateFormatHelpers utility:
-   ```swift
-   enum DateFormatHelpers {
-       static func formatDate(_ date: Date, using formatPreference: String) -> String {
-           // Parse formatPreference (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD)
-           // Return formatted string respecting user preference
-       }
-
-       static func formatTransactionSectionDate(_ date: Date, formatPreference: String) -> String {
-           // Smart formatting: include/exclude year based on current year
-           // Apply user's date format preference
-       }
-   }
-   ```
-
-2. Update all views to pass AppSettings.dateFormat to formatting functions
-3. Use @Query to access settings in views that need date formatting
-4. Maintain locale awareness for month names (abbreviated vs full based on format)
-
-**Design Considerations**:
-- Must respect user's locale for month names (localized)
-- Year display logic: show year only for dates not in current year (preserve existing behavior)
-- Section headers vs inline dates may need different formats
-- Consider creating FormatStyle extension for reusability
-
-**Testing Checklist**:
-- [ ] Change date format to MM/DD/YYYY → verify transaction dates update
-- [ ] Change date format to DD/MM/YYYY → verify transaction dates update
-- [ ] Change date format to YYYY-MM-DD → verify transaction dates update
-- [ ] Test transaction section headers with all three formats
-- [ ] Test transaction row dates with all three formats
-- [ ] Test dates in different years (year should still appear for non-current year)
-- [ ] Test with transactions from multiple years
-- [ ] Test date formatting persists after app restart
-- [ ] Test all date displays across Budget, Transaction, Analysis tabs
-- [ ] Verify notification dates respect format preference
-- [ ] Run smoke tests to verify no regressions
-
-**Acceptance Criteria**:
-- ✅ Changing Date Format setting immediately updates all date displays app-wide
-- ✅ All three date formats (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD) work correctly
-- ✅ Year logic preserved (show year for non-current year dates)
-- ✅ Month names remain localized
-- ✅ No hardcoded date formats remain in codebase
-- ✅ Footer text in Settings remains accurate
-- ✅ All existing date-related tests pass
-
----
 
 **Bug 11.2: Number Format Setting Not Applied**
 
@@ -483,29 +418,29 @@ ZeroBasedBudget/
 **Status**: 158 tests passing (140 comprehensive + 18 smoke tests); v1.8.1 stable
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
-2. [2025-11-07] 📋 **Backlog Updated**: Added Bug 11.1 (Date Format), Bug 11.2 (Number Format), Architecture 2 (Bank Linking Research)
-3. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
-4. [2025-11-06] ✅ **Bug 10.1 COMPLETE**: Light/dark variants for all three themes with WCAG AA compliance
-5. [2025-11-06] ✅ **Bug 10.2 COMPLETE**: Account tab theme color updates fixed
+1. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
+2. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
+3. [2025-11-07] 📋 **Backlog Updated**: Added Bug 11.1 (Date Format), Bug 11.2 (Number Format), Architecture 2 (Bank Linking Research)
+4. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
+5. [2025-11-06] ✅ **Bug 10.1 COMPLETE**: Light/dark variants for all three themes with WCAG AA compliance
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.9.0 (in progress - Enhancement 11.1 complete)
+1. **Current Version**: v1.9.0 (in progress - Bug 11.1 and Enhancement 11.1 complete)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors
 4. **Recently Completed**:
+   - ✅ Bug 11.1: Date Format setting now applies throughout app
    - ✅ Enhancement 11.1: Category name editing (with validation)
 5. **Active Backlog**:
-   - 🔴 **Bug 11.1**: Date Format setting not applied (~11 files with date displays)
    - 🔴 **Bug 11.2**: Number Format setting not applied (30 currency displays across 8 view files)
    - 🏗️ **Architecture 2**: Bank account linking research spike (Plaid, Yodlee, etc.)
 6. **Recommended Priority**:
-   - Bug 11.1 (Date Format) → Bug 11.2 (Number Format) → Architecture 2 (Research)
+   - Bug 11.2 (Number Format) → Architecture 2 (Research)
 7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
 8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-9. **Ready For**: Bug 11.1 (Date Format fix) or Architecture 2 (Bank linking research)
+9. **Ready For**: Bug 11.2 (Number Format fix) or Architecture 2 (Bank linking research)
 
 ## Git Commit Strategy
 
