@@ -95,6 +95,13 @@ ZeroBasedBudget/
 │   ├── DateFormatHelpers.swift      # NEW: Centralized date formatting with format preference support
 │   ├── NotificationManager.swift    # Local push notification scheduling
 │   ├── ValidationHelpers.swift      # Input validation utilities
+│   ├── Theme/
+│   │   ├── Theme.swift              # Theme protocol and color system
+│   │   ├── ThemeManager.swift       # Theme state management
+│   │   ├── StandardTheme.swift      # NEW: iOS system colors theme (default)
+│   │   ├── MidnightMintTheme.swift  # Calm fintech theme
+│   │   ├── NeonLedgerTheme.swift    # Cyberpunk theme
+│   │   └── UltravioletSlateTheme.swift  # Bold violet theme
 │   └── [Other utility files...]
 └── Docs/
     ├── TechnicalSpec.md              # Complete technical specification
@@ -106,17 +113,21 @@ ZeroBasedBudget/
 **v1.9.0 (In Progress):**
 - ✅ Bug 11.1: Fixed Date Format setting to apply throughout app
 - ✅ Bug 11.2: Fixed Number Format setting to apply throughout app
+- ✅ Bug 12.1: Added Standard theme with iOS system colors
 - ✅ Enhancement 11.1: Made category name editable in Edit Category sheet
 - ✅ Created: DateFormatHelpers.swift centralized utility with three format options
 - ✅ Created: CurrencyFormatHelpers.swift centralized utility with three number formats
+- ✅ Created: StandardTheme.swift with native iOS appearance (Blue, Green, Red, Orange)
 - ✅ Added: Support for MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD date formats
 - ✅ Added: Support for "1,234.56" (US), "1.234,56" (EU), "1 234,56" (space) number formats
+- ✅ Added: Standard theme as 4th theme option with iOS system colors
 - ✅ Added: Smart year handling (shows year only for non-current year dates)
 - ✅ Added: Format-specific section headers (US: "Nov 5", EU: "5 Nov", ISO: "Nov 5")
 - ✅ Updated: 30 currency displays across 8 view files to use CurrencyFormatHelpers
 - ✅ Updated: Transaction section headers and row dates respect user preference
 - ✅ Updated: Budget Planning and Analysis views use DateFormatHelpers
 - ✅ Updated: Accessibility labels delegate to DateFormatHelpers (long format for VoiceOver)
+- ✅ Updated: Default theme changed from Midnight Mint to Standard for new users
 - ✅ Added: TextField for category name (previously read-only text)
 - ✅ Added: Validation for empty names and duplicate category names
 - ✅ Added: Case-insensitive duplicate detection with clear error messages
@@ -125,6 +136,7 @@ ZeroBasedBudget/
 - ✅ Improved: Date formatting consistency across all tabs
 - ✅ Improved: Number formatting consistency across all currency displays
 - ✅ Improved: Category management UX - users can rename categories without losing transaction history
+- ✅ Improved: App now defaults to familiar iOS look for new users
 
 **v1.8.1 (Complete):**
 - ✅ Bug 10.1: Implemented light/dark color variants for all three themes
@@ -202,154 +214,6 @@ ZeroBasedBudget/
 - Donut chart visualization in Analysis view
 
 ## Active Issues & Enhancement Backlog
-
-### 🔴 Priority 1: Critical Bugs
-
-**Bug 12.1: No Standard Light & Dark Mode Theme**
-
-**Objective**: Create a "Standard" theme that uses iOS system colors to provide a native, familiar look and feel for users who prefer the default Apple aesthetic.
-
-**Current Behavior**:
-- App ships with three custom themes: Neon Ledger (cyberpunk), Midnight Mint (calm fintech), Ultraviolet Slate (bold design)
-- All themes have strong visual identities with custom color palettes
-- No "neutral" or "stock iOS" option for users who want a minimal, system-native appearance
-- New users default to Midnight Mint theme (seafoam accents)
-
-**Problem**:
-- Users expecting a standard iOS app appearance get custom themes by default
-- No option for users who prefer Apple's design language
-- May feel jarring for users who want consistency with other iOS apps
-- Current themes are all "opinionated" - no neutral baseline option
-
-**Impact**:
-- UX: Users cannot choose a familiar, native iOS look
-- Accessibility: Some users may prefer system colors for consistency with iOS accessibility settings
-- First impression: New users see custom theme before they know themes are customizable
-
-**Solution**: Create "Standard" Theme with iOS System Colors
-
-**Files to Modify**:
-- [ ] Create `Utilities/Themes/StandardTheme.swift` - New theme file
-- [ ] `Utilities/ThemeManager.swift` - Add StandardTheme to available themes
-- [ ] `Models/AppSettings.swift` - Change default theme from "MidnightMint" to "Standard"
-
-**Implementation Approach**:
-
-1. **Create StandardTheme.swift** conforming to Theme protocol:
-   ```swift
-   struct StandardTheme: Theme {
-       let id = "Standard"
-       let name = "Standard"
-       let description = "Clean and familiar iOS system colors"
-
-       // Light mode colors (iOS system defaults)
-       let lightColors = ThemeColors(
-           // Primary: iOS Blue
-           primary: Color(red: 0/255, green: 122/255, blue: 255/255),
-           accent: Color(red: 0/255, green: 122/255, blue: 255/255),
-
-           // Semantic colors
-           success: Color(red: 52/255, green: 199/255, blue: 89/255),  // iOS Green
-           error: Color(red: 255/255, green: 59/255, blue: 48/255),    // iOS Red
-           warning: Color(red: 255/255, green: 149/255, blue: 0/255),  // iOS Orange
-
-           // Backgrounds (system grays)
-           background: Color(red: 242/255, green: 242/255, blue: 247/255),  // systemGroupedBackground
-           surface: Color.white,                                              // systemBackground
-           surfaceElevated: Color.white,
-
-           // Text colors
-           textPrimary: Color.primary,      // .label
-           textSecondary: Color.secondary,  // .secondaryLabel
-           textTertiary: Color(UIColor.tertiaryLabel),
-
-           // UI elements
-           onPrimary: Color.white,
-           readyToAssignBackground: Color(red: 242/255, green: 242/255, blue: 247/255)
-       )
-
-       // Dark mode colors (iOS system defaults)
-       let darkColors = ThemeColors(
-           // Primary: iOS Blue (lighter for dark mode)
-           primary: Color(red: 10/255, green: 132/255, blue: 255/255),
-           accent: Color(red: 10/255, green: 132/255, blue: 255/255),
-
-           // Semantic colors (dark mode variants)
-           success: Color(red: 48/255, green: 209/255, blue: 88/255),
-           error: Color(red: 255/255, green: 69/255, blue: 58/255),
-           warning: Color(red: 255/255, green: 159/255, blue: 10/255),
-
-           // Backgrounds
-           background: Color(red: 0/255, green: 0/255, blue: 0/255),        // systemGroupedBackground
-           surface: Color(red: 28/255, green: 28/255, blue: 30/255),        // systemBackground
-           surfaceElevated: Color(red: 44/255, green: 44/255, blue: 46/255),
-
-           // Text colors
-           textPrimary: Color.primary,
-           textSecondary: Color.secondary,
-           textTertiary: Color(UIColor.tertiaryLabel),
-
-           // UI elements
-           onPrimary: Color.white,
-           readyToAssignBackground: Color(red: 28/255, green: 28/255, blue: 30/255)
-       )
-
-       // Typography, spacing, radius same as other themes
-       let typography = ThemeTypography()
-       let spacing = ThemeSpacing()
-       let radius = ThemeRadius()
-   }
-   ```
-
-2. **Update ThemeManager**:
-   - Add `StandardTheme()` to `allThemes` array
-   - Ensure it appears first in the list (as the default)
-
-3. **Update AppSettings**:
-   - Change `selectedTheme` default from `"MidnightMint"` to `"Standard"`
-   - New users will see Standard theme on first launch
-   - Existing users keep their current theme selection
-
-**Design Considerations**:
-- **Conservative approach**: Use exact iOS system colors for authenticity
-- **WCAG compliance**: iOS system colors already meet accessibility standards
-- **Color scheme aware**: Automatically switches between light/dark variants
-- **Subtle accents**: Blue is recognizable but not overwhelming
-- **Familiar**: Matches iOS Settings, Mail, Messages aesthetic
-- **Non-intrusive**: Lets content be the focus, not the theme
-
-**Testing Checklist**:
-- [ ] Theme appears as "Standard" in Settings > Visual Theme
-- [ ] Theme listed first in theme picker
-- [ ] New user launches app → sees Standard theme by default
-- [ ] Existing users keep current theme (no forced switch)
-- [ ] Light mode: backgrounds are light gray, text is black, blue accents
-- [ ] Dark mode: backgrounds are dark gray/black, text is white, blue accents
-- [ ] Success indicators are green (iOS green)
-- [ ] Error indicators are red (iOS red)
-- [ ] Warning indicators are orange (iOS orange)
-- [ ] Tab bar uses blue tint for selected state
-- [ ] All 5 tabs render correctly with Standard theme
-- [ ] Theme switching works (Standard → other theme → back to Standard)
-- [ ] Appearance setting (System/Light/Dark) works with Standard theme
-- [ ] Colors match iOS native apps (Settings, Mail, etc.)
-- [ ] WCAG AA contrast ratios maintained in both modes
-
-**Acceptance Criteria**:
-- ✅ StandardTheme.swift created with iOS system colors
-- ✅ Theme appears in Settings as "Standard"
-- ✅ Theme is set as default for new users
-- ✅ Existing users keep their current theme
-- ✅ Light and dark mode variants work correctly
-- ✅ All semantic colors (success, error, warning) use iOS colors
-- ✅ Backgrounds and text colors match iOS system defaults
-- ✅ Theme provides familiar, native iOS appearance
-- ✅ No visual bugs or color conflicts
-
-**YNAB Alignment Check**:
-✅ No YNAB methodology impact - purely visual/UI change
-
----
 
 ### 🏗️ Architecture / Project Changes
 
@@ -455,25 +319,26 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: v1.9.0 Stable - Settings Bug Fixes Complete
+**Current Focus**: v1.9.0 Stable - Standard Theme Added
 **Status**: 158 tests passing (140 comprehensive + 18 smoke tests); v1.9.0 ready for release
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
-2. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
-3. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
-4. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
-5. [2025-11-06] ✅ **Bug 10.1 COMPLETE**: Light/dark variants for all three themes with WCAG AA compliance
+1. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
+2. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
+3. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
+4. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
+5. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.9.0 (ready for release - all bugs fixed)
+1. **Current Version**: v1.9.0 (ready for release - all bugs fixed, Standard theme added)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors (assumed - needs user verification)
 4. **Recently Completed**:
    - ✅ Bug 11.1: Date Format setting now applies throughout app (DateFormatHelpers.swift)
    - ✅ Bug 11.2: Number Format setting now applies throughout app (CurrencyFormatHelpers.swift)
+   - ✅ Bug 12.1: Standard theme with iOS system colors (StandardTheme.swift)
    - ✅ Enhancement 11.1: Category name editing (with validation)
 5. **Active Backlog**:
    - 🏗️ **Architecture 2**: Bank account linking research spike (Plaid, Yodlee, etc.)
