@@ -27,6 +27,11 @@ struct TransactionLogView: View {
         settings.first?.currencyCode ?? "USD"
     }
 
+    // Date format from settings
+    private var dateFormat: String {
+        settings.first?.dateFormat ?? "MM/DD/YYYY"
+    }
+
     // Filtered transactions based on search
     private var filteredTransactions: [Transaction] {
         if searchText.isEmpty {
@@ -115,7 +120,7 @@ struct TransactionLogView: View {
                                 }
                         }
                     } header: {
-                        Text(BudgetCalculations.formatTransactionSectionDate(date))
+                        Text(BudgetCalculations.formatTransactionSectionDate(date, using: dateFormat))
                             .font(.headline)
 							.foregroundStyle(colors.textTertiary)
                     }
@@ -197,7 +202,7 @@ struct TransactionRow: View {
                             .foregroundStyle(colors.textTertiary)
                     }
 
-                    Text(transaction.date, style: .date)
+                    Text(DateFormatHelpers.formatDate(transaction.date, using: dateFormat))
                         .font(.caption)
 						.foregroundStyle(colors.textSecondary)
                 }

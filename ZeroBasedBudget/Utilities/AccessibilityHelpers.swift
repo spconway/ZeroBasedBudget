@@ -97,17 +97,12 @@ enum AccessibilityHelpers {
 
     /// Creates VoiceOver-friendly label for date
     static func dateLabel(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        return formatter.string(from: date)
+        return DateFormatHelpers.accessibilityDateLabel(for: date)
     }
 
     /// Creates VoiceOver-friendly label for month
     static func monthLabel(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: date)
+        return DateFormatHelpers.accessibilityMonthLabel(for: date)
     }
 
     // MARK: - Button Accessibility

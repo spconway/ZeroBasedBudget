@@ -49,6 +49,11 @@ struct BudgetPlanningView: View {
         settings.first?.currencyCode ?? "USD"
     }
 
+    // Date format from settings
+    private var dateFormat: String {
+        settings.first?.dateFormat ?? "MM/DD/YYYY"
+    }
+
     // Computed property to filter categories by type
     private var fixedExpenseCategories: [BudgetCategory] {
         allCategories.filter { $0.categoryType == "Fixed" }
@@ -460,7 +465,7 @@ struct BudgetPlanningView: View {
                 _ = getOrCreateMonthlyBudget(for: selectedMonth)
             }
             .sheet(isPresented: $showingAddCategory) {
-                AddCategorySheet(categoryType: newCategoryType, currencyCode: currencyCode, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                AddCategorySheet(categoryType: newCategoryType, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     saveNewCategory(
                         name: name,
                         amount: amount,
@@ -476,7 +481,7 @@ struct BudgetPlanningView: View {
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, currencyCode: currencyCode, onSave: { updatedName, updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                EditCategorySheet(category: category, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { updatedName, updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     updateCategory(
                         category,
                         name: updatedName,
@@ -917,6 +922,7 @@ struct AddCategorySheet: View {
     @Environment(\.themeColors) private var colors
     let categoryType: String
 	var currencyCode: String = "USD"
+    var dateFormat: String = "MM/DD/YYYY"
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
 
     @State private var categoryName: String = ""
@@ -1006,7 +1012,7 @@ struct AddCategorySheet: View {
 
                         // Show effective date preview
                         LabeledContent("Effective Date") {
-                            Text(displayDate, style: .date)
+                            Text(DateFormatHelpers.formatDate(displayDate, using: dateFormat))
                                 .foregroundStyle(colors.textSecondary)
                         }
                     }
@@ -1072,6 +1078,7 @@ struct EditCategorySheet: View {
     let category: BudgetCategory
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
     var currencyCode: String = "USD"
+    var dateFormat: String = "MM/DD/YYYY"
 
     @State private var categoryName: String
     @State private var budgetedAmount: Decimal
@@ -1205,7 +1212,7 @@ struct EditCategorySheet: View {
 
                         // Show effective date preview
                         LabeledContent("Effective Date") {
-                            Text(displayDate, style: .date)
+                            Text(DateFormatHelpers.formatDate(displayDate, using: dateFormat))
                                 .foregroundStyle(colors.textSecondary)
                         }
                     }

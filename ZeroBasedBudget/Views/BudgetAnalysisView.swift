@@ -115,9 +115,7 @@ struct MonthPickerSection: View {
     @Binding var selectedMonth: Date
 
     private var monthYearString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: selectedMonth)
+        return DateFormatHelpers.formatMonthYear(selectedMonth, abbreviated: false)
     }
 
     var body: some View {
