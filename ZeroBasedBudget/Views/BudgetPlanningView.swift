@@ -239,7 +239,8 @@ struct BudgetPlanningView: View {
                         onQuickAssign: {
                             quickAssignToCategory(category)
                         },
-                        currencyCode: currencyCode
+                        currencyCode: currencyCode,
+                        numberFormat: numberFormat
                     )
                 }
                 .onDelete { indexSet in
@@ -283,7 +284,8 @@ struct BudgetPlanningView: View {
                         onQuickAssign: {
                             quickAssignToCategory(category)
                         },
-                        currencyCode: currencyCode
+                        currencyCode: currencyCode,
+                        numberFormat: numberFormat
                     )
                 }
                 .onDelete { indexSet in
@@ -327,7 +329,8 @@ struct BudgetPlanningView: View {
                         onQuickAssign: {
                             quickAssignToCategory(category)
                         },
-                        currencyCode: currencyCode
+                        currencyCode: currencyCode,
+                        numberFormat: numberFormat
                     )
                 }
                 .onDelete { indexSet in
@@ -869,6 +872,7 @@ struct CategoryRow: View {
     let onEdit: () -> Void
     let onQuickAssign: () -> Void
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     private var dueDateText: String? {
         guard let effectiveDate = category.effectiveDueDate else { return nil }
