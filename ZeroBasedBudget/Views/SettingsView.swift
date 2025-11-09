@@ -87,7 +87,13 @@ struct SettingsView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(colors.background)
-            .navigationTitle("Settings")
+			.navigationBarTitleDisplayMode(.inline)
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					Text("Settings")
+						.foregroundColor(colors.textPrimary)
+				}
+			}
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .alert("Clear All Data", isPresented: $showingClearDataAlert) {

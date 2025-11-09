@@ -105,7 +105,12 @@ struct BudgetAnalysisView: View {
                 .padding()
             }
             .background(colors.background)
-            .navigationTitle("Budget Analysis")
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					Text("Budget Analysis")
+						.foregroundColor(colors.textPrimary)
+				}
+			}
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)

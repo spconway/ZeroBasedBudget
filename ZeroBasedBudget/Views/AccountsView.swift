@@ -105,7 +105,7 @@ struct AccountsView: View {
             .background(colors.background)
 			.toolbar {
 				ToolbarItem(placement: .principal) {
-					Text("My title")
+					Text("Accounts")
 						.foregroundColor(colors.textPrimary)
 				}
 			}

@@ -134,7 +134,12 @@ struct TransactionLogView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(colors.background)
-            .navigationTitle("Transactions")
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					Text("Transactions")
+						.foregroundColor(colors.textPrimary)
+				}
+			}
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -144,7 +149,8 @@ struct TransactionLogView: View {
                     Button {
                         showingAddSheet = true
                     } label: {
-                        Label("Add Transaction", systemImage: "plus")
+						Image(systemName: "plus")
+							.iconAccent()
                     }
                 }
             }

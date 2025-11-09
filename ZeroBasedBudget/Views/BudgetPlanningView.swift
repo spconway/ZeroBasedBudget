@@ -468,7 +468,7 @@ struct BudgetPlanningView: View {
                 ToolbarItem(placement: .principal) {
                     Text(monthYearText)
                         .font(theme.typography.headline)
-                        .foregroundStyle(colors.primary)
+						.foregroundStyle(colors.textPrimary)
                 }
 
                 // Next month button (trailing)
