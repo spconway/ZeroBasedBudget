@@ -190,239 +190,252 @@ struct BudgetPlanningView: View {
         totalFixedExpenses + totalVariableExpenses + totalQuarterlyExpenses
     }
 
-    var body: some View {
-        NavigationStack {
-            Form {
-                // Ready to Assign Banner (now first element after nav bar)
-                Section {
-                    ReadyToAssignBanner(
-                        amount: readyToAssign,
-                        color: readyToAssignColor,
+    // MARK: - View Sections
+
+    private var readyToAssignSection: some View {
+        Section {
+            ReadyToAssignBanner(
+                amount: readyToAssign,
+                color: readyToAssignColor,
+                currencyCode: currencyCode
+            )
+        }
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+        .listRowBackground(colors.surface)
+    }
+
+    private var fixedExpensesSection: some View {
+        Section(header: HStack {
+            Text("Fixed Expenses")
+            Spacer()
+            Button(action: { addCategory(type: "Fixed") }) {
+                Image(systemName: "plus.circle.fill")
+                    .iconAccent()
+            }
+        }) {
+            if fixedExpenseCategories.isEmpty {
+                Text("No fixed expenses yet. Tap + to add.")
+                    .foregroundStyle(colors.textSecondary)
+                    .italic()
+            } else {
+                ForEach(fixedExpenseCategories) { category in
+                    CategoryRow(
+                        category: category,
+                        readyToAssign: readyToAssign,
+                        actualSpent: BudgetCalculations.calculateActualSpending(
+                            for: category,
+                            in: selectedMonth,
+                            from: allTransactions
+                        ),
+                        onEdit: {
+                            editingCategory = category
+                        },
+                        onQuickAssign: {
+                            quickAssignToCategory(category)
+                        },
                         currencyCode: currencyCode
                     )
                 }
-                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                .listRowBackground(colors.surface)
-
-                // Fixed Expenses Section
-                Section(header: HStack {
-                    Text("Fixed Expenses")
-                    Spacer()
-                    Button(action: { addCategory(type: "Fixed") }) {
-                        Image(systemName: "plus.circle.fill")
-                            .iconAccent()
-                    }
-                }) {
-                    if fixedExpenseCategories.isEmpty {
-                        Text("No fixed expenses yet. Tap + to add.")
-                            .foregroundStyle(colors.textSecondary)
-                            .italic()
-                    } else {
-                        ForEach(fixedExpenseCategories) { category in
-                            CategoryRow(
-                                category: category,
-                                readyToAssign: readyToAssign,
-                                actualSpent: BudgetCalculations.calculateActualSpending(
-                                    for: category,
-                                    in: selectedMonth,
-                                    from: allTransactions
-                                ),
-                                onEdit: {
-                                    editingCategory = category
-                                },
-                                onQuickAssign: {
-                                    quickAssignToCategory(category)
-                                },
-                                currencyCode: currencyCode
-                            )
-                        }
-                        .onDelete { indexSet in
-                            deleteCategories(at: indexSet, from: fixedExpenseCategories)
-                        }
-
-                        LabeledContent("Total Fixed") {
-                            Text(totalFixedExpenses, format: .currency(code: currencyCode))
-                                .fontWeight(.semibold)
-                        }
-                    }
+                .onDelete { indexSet in
+                    deleteCategories(at: indexSet, from: fixedExpenseCategories)
                 }
 
-                // Variable Expenses Section
-                Section(header: HStack {
-                    Text("Variable Expenses")
-                    Spacer()
-                    Button(action: { addCategory(type: "Variable") }) {
-                        Image(systemName: "plus.circle.fill")
-                            .iconAccent()
-                    }
-                }) {
-                    if variableExpenseCategories.isEmpty {
-                        Text("No variable expenses yet. Tap + to add.")
-                            .foregroundStyle(colors.textSecondary)
-                            .italic()
-                    } else {
-                        ForEach(variableExpenseCategories) { category in
-                            CategoryRow(
-                                category: category,
-                                readyToAssign: readyToAssign,
-                                actualSpent: BudgetCalculations.calculateActualSpending(
-                                    for: category,
-                                    in: selectedMonth,
-                                    from: allTransactions
-                                ),
-                                onEdit: {
-                                    editingCategory = category
-                                },
-                                onQuickAssign: {
-                                    quickAssignToCategory(category)
-                                },
-                                currencyCode: currencyCode
-                            )
-                        }
-                        .onDelete { indexSet in
-                            deleteCategories(at: indexSet, from: variableExpenseCategories)
-                        }
+                LabeledContent("Total Fixed") {
+                    Text(totalFixedExpenses, format: .currency(code: currencyCode))
+                        .fontWeight(.semibold)
+                }
+            }
+        }
+    }
 
-                        LabeledContent("Total Variable") {
-                            Text(totalVariableExpenses, format: .currency(code: currencyCode))
-                                .fontWeight(.semibold)
-                        }
-                    }
+    private var variableExpensesSection: some View {
+        Section(header: HStack {
+            Text("Variable Expenses")
+            Spacer()
+            Button(action: { addCategory(type: "Variable") }) {
+                Image(systemName: "plus.circle.fill")
+                    .iconAccent()
+            }
+        }) {
+            if variableExpenseCategories.isEmpty {
+                Text("No variable expenses yet. Tap + to add.")
+                    .foregroundStyle(colors.textSecondary)
+                    .italic()
+            } else {
+                ForEach(variableExpenseCategories) { category in
+                    CategoryRow(
+                        category: category,
+                        readyToAssign: readyToAssign,
+                        actualSpent: BudgetCalculations.calculateActualSpending(
+                            for: category,
+                            in: selectedMonth,
+                            from: allTransactions
+                        ),
+                        onEdit: {
+                            editingCategory = category
+                        },
+                        onQuickAssign: {
+                            quickAssignToCategory(category)
+                        },
+                        currencyCode: currencyCode
+                    )
+                }
+                .onDelete { indexSet in
+                    deleteCategories(at: indexSet, from: variableExpenseCategories)
                 }
 
-                // Quarterly Expenses Section (shown as monthly equivalent)
-                Section(header: HStack {
-                    Text("Quarterly Expenses (Monthly)")
-                    Spacer()
-                    Button(action: { addCategory(type: "Quarterly") }) {
-                        Image(systemName: "plus.circle.fill")
-                            .iconAccent()
-                    }
-                }) {
-                    if quarterlyExpenseCategories.isEmpty {
-                        Text("No quarterly expenses yet. Tap + to add.")
-                            .foregroundStyle(colors.textSecondary)
-                            .italic()
-                    } else {
-                        ForEach(quarterlyExpenseCategories) { category in
-                            CategoryRow(
-                                category: category,
-                                readyToAssign: readyToAssign,
-                                actualSpent: BudgetCalculations.calculateActualSpending(
-                                    for: category,
-                                    in: selectedMonth,
-                                    from: allTransactions
-                                ),
-                                onEdit: {
-                                    editingCategory = category
-                                },
-                                onQuickAssign: {
-                                    quickAssignToCategory(category)
-                                },
-                                currencyCode: currencyCode
-                            )
-                        }
-                        .onDelete { indexSet in
-                            deleteCategories(at: indexSet, from: quarterlyExpenseCategories)
-                        }
+                LabeledContent("Total Variable") {
+                    Text(totalVariableExpenses, format: .currency(code: currencyCode))
+                        .fontWeight(.semibold)
+                }
+            }
+        }
+    }
 
-                        LabeledContent("Total Quarterly") {
-                            Text(totalQuarterlyExpenses, format: .currency(code: currencyCode))
-                                .fontWeight(.semibold)
-                        }
-                    }
+    private var quarterlyExpensesSection: some View {
+        Section(header: HStack {
+            Text("Quarterly Expenses (Monthly)")
+            Spacer()
+            Button(action: { addCategory(type: "Quarterly") }) {
+                Image(systemName: "plus.circle.fill")
+                    .iconAccent()
+            }
+        }) {
+            if quarterlyExpenseCategories.isEmpty {
+                Text("No quarterly expenses yet. Tap + to add.")
+                    .foregroundStyle(colors.textSecondary)
+                    .italic()
+            } else {
+                ForEach(quarterlyExpenseCategories) { category in
+                    CategoryRow(
+                        category: category,
+                        readyToAssign: readyToAssign,
+                        actualSpent: BudgetCalculations.calculateActualSpending(
+                            for: category,
+                            in: selectedMonth,
+                            from: allTransactions
+                        ),
+                        onEdit: {
+                            editingCategory = category
+                        },
+                        onQuickAssign: {
+                            quickAssignToCategory(category)
+                        },
+                        currencyCode: currencyCode
+                    )
+                }
+                .onDelete { indexSet in
+                    deleteCategories(at: indexSet, from: quarterlyExpenseCategories)
                 }
 
-                // Budget Summary Section
-                Section {
-                    LabeledContent("Total Assigned") {
-                        Text(totalAssigned, format: .currency(code: currencyCode))
-                            .foregroundStyle(colors.textSecondary)
-                    }
+                LabeledContent("Total Quarterly") {
+                    Text(totalQuarterlyExpenses, format: .currency(code: currencyCode))
+                        .fontWeight(.semibold)
+                }
+            }
+        }
+    }
 
-                    LabeledContent("Ready to Assign") {
-                        Text(readyToAssign, format: .currency(code: currencyCode))
-                            .fontWeight(.bold)
-                            .foregroundStyle(readyToAssignColor)
-                    }
+    private var budgetSummarySection: some View {
+        Section {
+            LabeledContent("Total Assigned") {
+                Text(totalAssigned, format: .currency(code: currencyCode))
+                    .foregroundStyle(colors.textSecondary)
+            }
 
-                    // Previous month comparison (Enhancement 3.3)
-                    if let comparison = previousMonthComparison {
-                        HStack {
-                            Text("Previous Month (\(comparison.month))")
-                                .font(.caption)
-                                .foregroundStyle(colors.textSecondary)
-                            Spacer()
-                            HStack(spacing: 4) {
-                                Text(comparison.amount, format: .currency(code: currencyCode))
-                                    .font(.caption)
-                                    .foregroundStyle(colors.textSecondary)
+            LabeledContent("Ready to Assign") {
+                Text(readyToAssign, format: .currency(code: currencyCode))
+                    .fontWeight(.bold)
+                    .foregroundStyle(readyToAssignColor)
+            }
 
-                                // Show arrow indicator for change
-                                if comparison.amount < readyToAssign {
-                                    Image(systemName: "arrow.up")
-                                        .font(.caption2)
-                                        .iconSuccess()
-                                } else if comparison.amount > readyToAssign {
-                                    Image(systemName: "arrow.down")
-                                        .font(.caption2)
-                                        .iconError()
-                                } else {
-                                    Image(systemName: "arrow.right")
-                                        .font(.caption2)
-                                        .iconNeutral()
-                                }
-                            }
-                        }
-                    }
-
-                    Divider()
-
-                    // Goal Status - Visual celebration when Ready to Assign = $0
-                    if readyToAssign == 0 {
-                        HStack {
-                            Image(systemName: "checkmark.circle.fill")
-                                .iconSuccess()
-                                .font(.title2)
-                            Text("Goal Achieved!")
-                                .font(.headline)
-                                .foregroundStyle(colors.success)
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
-                        .listRowBackground(colors.success.opacity(0.1))
-                    } else if readyToAssign > 0 {
-                        HStack {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .iconWarning()
-                                .font(.title3)
-                            Text("Assign \(readyToAssign, format: .currency(code: currencyCode)) to categories")
-                                .font(.subheadline)
-                                .foregroundStyle(colors.warning)
-                            Spacer()
-                        }
-                        .padding(.vertical, 4)
-                    } else {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .iconError()
-                                .font(.title3)
-                            Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: currencyCode))")
-                                .font(.subheadline)
-                                .foregroundStyle(colors.error)
-                            Spacer()
-                        }
-                        .padding(.vertical, 4)
-                    }
-                } header: {
-                    Text("Budget Summary")
-                } footer: {
-                    if readyToAssign == 0 {
-                        Text("Perfect! Every dollar has a job. You've successfully budgeted all available money.")
+            // Previous month comparison (Enhancement 3.3)
+            if let comparison = previousMonthComparison {
+                HStack {
+                    Text("Previous Month (\(comparison.month))")
+                        .font(.caption)
+                        .foregroundStyle(colors.textSecondary)
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Text(comparison.amount, format: .currency(code: currencyCode))
                             .font(.caption)
-                            .foregroundStyle(colors.success)
+                            .foregroundStyle(colors.textSecondary)
+
+                        // Show arrow indicator for change
+                        if comparison.amount < readyToAssign {
+                            Image(systemName: "arrow.up")
+                                .font(.caption2)
+                                .iconSuccess()
+                        } else if comparison.amount > readyToAssign {
+                            Image(systemName: "arrow.down")
+                                .font(.caption2)
+                                .iconError()
+                        } else {
+                            Image(systemName: "arrow.right")
+                                .font(.caption2)
+                                .iconNeutral()
+                        }
                     }
                 }
+            }
+
+            Divider()
+
+            // Goal Status - Visual celebration when Ready to Assign = $0
+            if readyToAssign == 0 {
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .iconSuccess()
+                        .font(.title2)
+                    Text("Goal Achieved!")
+                        .font(.headline)
+                        .foregroundStyle(colors.success)
+                    Spacer()
+                }
+                .padding(.vertical, 8)
+                .listRowBackground(colors.success.opacity(0.1))
+            } else if readyToAssign > 0 {
+                HStack {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .iconWarning()
+                        .font(.title3)
+                    Text("Assign \(readyToAssign, format: .currency(code: currencyCode)) to categories")
+                        .font(.subheadline)
+                        .foregroundStyle(colors.warning)
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            } else {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .iconError()
+                        .font(.title3)
+                    Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: currencyCode))")
+                        .font(.subheadline)
+                        .foregroundStyle(colors.error)
+                    Spacer()
+                }
+                .padding(.vertical, 4)
+            }
+        } header: {
+            Text("Budget Summary")
+        } footer: {
+            if readyToAssign == 0 {
+                Text("Perfect! Every dollar has a job. You've successfully budgeted all available money.")
+                    .font(.caption)
+                    .foregroundStyle(colors.success)
+            }
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                readyToAssignSection
+                fixedExpensesSection
+                variableExpensesSection
+                quarterlyExpensesSection
+                budgetSummarySection
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
