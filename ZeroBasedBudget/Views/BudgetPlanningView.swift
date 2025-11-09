@@ -54,6 +54,11 @@ struct BudgetPlanningView: View {
         settings.first?.dateFormat ?? "MM/DD/YYYY"
     }
 
+    // Number format from settings
+    private var numberFormat: String {
+        settings.first?.numberFormat ?? "1,234.56"
+    }
+
     // Computed property to filter categories by type
     private var fixedExpenseCategories: [BudgetCategory] {
         allCategories.filter { $0.categoryType == "Fixed" }
@@ -197,7 +202,8 @@ struct BudgetPlanningView: View {
             ReadyToAssignBanner(
                 amount: readyToAssign,
                 color: readyToAssignColor,
-                currencyCode: currencyCode
+                currencyCode: currencyCode,
+                numberFormat: numberFormat
             )
         }
         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
@@ -241,7 +247,7 @@ struct BudgetPlanningView: View {
                 }
 
                 LabeledContent("Total Fixed") {
-                    Text(totalFixedExpenses, format: .currency(code: currencyCode))
+                    Text(CurrencyFormatHelpers.formatCurrency(totalFixedExpenses, currencyCode: currencyCode, numberFormat: numberFormat))
                         .fontWeight(.semibold)
                 }
             }
@@ -285,7 +291,7 @@ struct BudgetPlanningView: View {
                 }
 
                 LabeledContent("Total Variable") {
-                    Text(totalVariableExpenses, format: .currency(code: currencyCode))
+                    Text(CurrencyFormatHelpers.formatCurrency(totalVariableExpenses, currencyCode: currencyCode, numberFormat: numberFormat))
                         .fontWeight(.semibold)
                 }
             }
@@ -329,7 +335,7 @@ struct BudgetPlanningView: View {
                 }
 
                 LabeledContent("Total Quarterly") {
-                    Text(totalQuarterlyExpenses, format: .currency(code: currencyCode))
+                    Text(CurrencyFormatHelpers.formatCurrency(totalQuarterlyExpenses, currencyCode: currencyCode, numberFormat: numberFormat))
                         .fontWeight(.semibold)
                 }
             }
@@ -339,12 +345,12 @@ struct BudgetPlanningView: View {
     private var budgetSummarySection: some View {
         Section {
             LabeledContent("Total Assigned") {
-                Text(totalAssigned, format: .currency(code: currencyCode))
+                Text(CurrencyFormatHelpers.formatCurrency(totalAssigned, currencyCode: currencyCode, numberFormat: numberFormat))
                     .foregroundStyle(colors.textSecondary)
             }
 
             LabeledContent("Ready to Assign") {
-                Text(readyToAssign, format: .currency(code: currencyCode))
+                Text(CurrencyFormatHelpers.formatCurrency(readyToAssign, currencyCode: currencyCode, numberFormat: numberFormat))
                     .fontWeight(.bold)
                     .foregroundStyle(readyToAssignColor)
             }
@@ -357,7 +363,7 @@ struct BudgetPlanningView: View {
                         .foregroundStyle(colors.textSecondary)
                     Spacer()
                     HStack(spacing: 4) {
-                        Text(comparison.amount, format: .currency(code: currencyCode))
+                        Text(CurrencyFormatHelpers.formatCurrency(comparison.amount, currencyCode: currencyCode, numberFormat: numberFormat))
                             .font(.caption)
                             .foregroundStyle(colors.textSecondary)
 
@@ -399,7 +405,7 @@ struct BudgetPlanningView: View {
                     Image(systemName: "exclamationmark.circle.fill")
                         .iconWarning()
                         .font(.title3)
-                    Text("Assign \(readyToAssign, format: .currency(code: currencyCode)) to categories")
+                    Text("Assign \(CurrencyFormatHelpers.formatCurrency(readyToAssign, currencyCode: currencyCode, numberFormat: numberFormat)) to categories")
                         .font(.subheadline)
                         .foregroundStyle(colors.warning)
                     Spacer()
@@ -410,7 +416,7 @@ struct BudgetPlanningView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .iconError()
                         .font(.title3)
-                    Text("Over-assigned by \(abs(readyToAssign), format: .currency(code: currencyCode))")
+                    Text("Over-assigned by \(CurrencyFormatHelpers.formatCurrency(abs(readyToAssign), currencyCode: currencyCode, numberFormat: numberFormat))")
                         .font(.subheadline)
                         .foregroundStyle(colors.error)
                     Spacer()
@@ -902,7 +908,7 @@ struct CategoryRow: View {
 
                     Spacer()
 
-                    Text(category.budgetedAmount, format: .currency(code: currencyCode))
+                    Text(CurrencyFormatHelpers.formatCurrency(category.budgetedAmount, currencyCode: currencyCode, numberFormat: numberFormat))
                         .foregroundStyle(colors.textSecondary)
 
                     Image(systemName: "chevron.right")
@@ -922,7 +928,7 @@ struct CategoryRow: View {
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Quick assign \(readyToAssign, format: .currency(code: currencyCode)) to \(category.name)")
+                .accessibilityLabel("Quick assign \(CurrencyFormatHelpers.formatCurrency(readyToAssign, currencyCode: currencyCode, numberFormat: numberFormat)) to \(category.name)")
             }
         }
     }

@@ -32,6 +32,11 @@ struct TransactionLogView: View {
         settings.first?.dateFormat ?? "MM/DD/YYYY"
     }
 
+    // Number format from settings
+    private var numberFormat: String {
+        settings.first?.numberFormat ?? "1,234.56"
+    }
+
     // Filtered transactions based on search
     private var filteredTransactions: [Transaction] {
         if searchText.isEmpty {
@@ -107,7 +112,7 @@ struct TransactionLogView: View {
                 ForEach(groupedTransactions, id: \.0) { date, transactions in
                     Section {
                         ForEach(transactions, id: \.0.id) { transaction, balance in
-                            TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode, dateFormat: dateFormat)
+                            TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode, dateFormat: dateFormat, numberFormat: numberFormat)
                                 .onTapGesture {
                                     transactionToEdit = transaction
                                 }
@@ -144,10 +149,10 @@ struct TransactionLogView: View {
                 }
             }
             .sheet(isPresented: $showingAddSheet) {
-                AddTransactionSheet(categories: categories, currencyCode: currencyCode)
+                AddTransactionSheet(categories: categories, currencyCode: currencyCode, numberFormat: numberFormat)
             }
             .sheet(item: $transactionToEdit) { transaction in
-                EditTransactionSheet(transaction: transaction, categories: categories, currencyCode: currencyCode)
+                EditTransactionSheet(transaction: transaction, categories: categories, currencyCode: currencyCode, numberFormat: numberFormat)
             }
             .overlay {
                 if allTransactions.isEmpty {
@@ -183,6 +188,7 @@ struct TransactionRow: View {
     let runningBalance: Decimal
     var currencyCode: String = "USD"
     var dateFormat: String = "MM/DD/YYYY"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         VStack(spacing: 8) {
@@ -216,7 +222,7 @@ struct TransactionRow: View {
                             .font(.body)
                             .iconTransactionType(isIncome: transaction.type == .income)
 
-                        Text(transaction.amount, format: .currency(code: currencyCode))
+                        Text(CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat))
                             .font(.body.bold())
                             .foregroundStyle(transaction.type == .income ? colors.success : colors.error)
                     }
@@ -233,7 +239,7 @@ struct TransactionRow: View {
                     .font(.caption)
 					.foregroundStyle(colors.textTertiary)
                 Spacer()
-                Text(runningBalance, format: .currency(code: currencyCode))
+                Text(CurrencyFormatHelpers.formatCurrency(runningBalance, currencyCode: currencyCode, numberFormat: numberFormat))
                     .font(.caption.bold())
                     .foregroundStyle(runningBalance >= 0 ? colors.success : colors.error)
             }
@@ -254,6 +260,7 @@ struct AddTransactionSheet: View {
 
     let categories: [BudgetCategory]
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     @State private var date = Date()
     @State private var description = ""
@@ -332,7 +339,7 @@ struct AddTransactionSheet: View {
                                 .font(.caption)
                                 .foregroundStyle(colors.textSecondary)
                             Spacer()
-                            Text(account.balance, format: .currency(code: currencyCode))
+                            Text(CurrencyFormatHelpers.formatCurrency(account.balance, currencyCode: currencyCode, numberFormat: numberFormat))
                                 .font(.caption)
                                 .foregroundStyle(account.balance >= 0 ? colors.success : colors.error)
                         }
@@ -411,6 +418,7 @@ struct EditTransactionSheet: View {
     let transaction: Transaction
     let categories: [BudgetCategory]
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     @State private var date: Date
     @State private var description: String
@@ -420,10 +428,11 @@ struct EditTransactionSheet: View {
     @State private var transactionType: TransactionType
     @State private var notes: String
 
-    init(transaction: Transaction, categories: [BudgetCategory], currencyCode: String = "USD") {
+    init(transaction: Transaction, categories: [BudgetCategory], currencyCode: String = "USD", numberFormat: String = "1,234.56") {
         self.transaction = transaction
         self.categories = categories
         self.currencyCode = currencyCode
+        self.numberFormat = numberFormat
 
         // Initialize state from transaction
         _date = State(initialValue: transaction.date)
@@ -504,7 +513,7 @@ struct EditTransactionSheet: View {
                                 .font(.caption)
                                 .foregroundStyle(colors.textSecondary)
                             Spacer()
-                            Text(account.balance, format: .currency(code: currencyCode))
+                            Text(CurrencyFormatHelpers.formatCurrency(account.balance, currencyCode: currencyCode, numberFormat: numberFormat))
                                 .font(.caption)
                                 .foregroundStyle(account.balance >= 0 ? colors.success : colors.error)
                         }
