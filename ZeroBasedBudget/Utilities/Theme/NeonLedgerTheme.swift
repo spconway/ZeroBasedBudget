@@ -23,7 +23,7 @@ struct NeonLedgerTheme: Theme {
         let surfaceColor = Color(hex: "121212")
         let surfaceElevatedColor = Color(hex: "1A1A1A")
 
-        let primaryColor = Color(hex: "00E5CC")
+        let primaryColor = Color(hex: "008B7A")
         let onPrimaryColor = Color(hex: "000000")
         let accentColor = Color(hex: "FF006E")
 
@@ -31,7 +31,7 @@ struct NeonLedgerTheme: Theme {
         let warningColor = Color(hex: "FFB800")
         let errorColor = Color(hex: "FF006E")
 
-        let textPrimaryColor = Color(hex: "00E5CC")
+        let textPrimaryColor = Color(hex: "008B7A")
         let textSecondaryColor = Color(hex: "FF006E")
         let textTertiaryColor = Color(hex: "FFFFFF")
 
