@@ -17,6 +17,7 @@ struct ReadyToAssignBanner: View {
     let amount: Decimal
     let color: Color
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         HStack {
@@ -25,7 +26,7 @@ struct ReadyToAssignBanner: View {
                     .font(.subheadline)
                     .foregroundStyle(colors.textSecondary)
 
-                Text(amount, format: .currency(code: currencyCode))
+                Text(CurrencyFormatHelpers.formatCurrency(amount, currencyCode: currencyCode, numberFormat: numberFormat))
                     .font(.title2.bold())
                     .foregroundStyle(color)
             }

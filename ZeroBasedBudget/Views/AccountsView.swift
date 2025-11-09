@@ -27,6 +27,11 @@ struct AccountsView: View {
         settings.first?.currencyCode ?? "USD"
     }
 
+    /// Number format from settings
+    private var numberFormat: String {
+        settings.first?.numberFormat ?? "1,234.56"
+    }
+
     /// Calculate total across all accounts
     private var totalAccountBalances: Decimal {
         allAccounts.reduce(0) { $0 + $1.balance }
@@ -41,7 +46,7 @@ struct AccountsView: View {
                         .font(.subheadline)
                         .foregroundStyle(colors.textSecondary)
 
-                    Text(totalAccountBalances, format: .currency(code: currencyCode))
+                    Text(CurrencyFormatHelpers.formatCurrency(totalAccountBalances, currencyCode: currencyCode, numberFormat: numberFormat))
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundStyle(colors.textPrimary)
                 }
@@ -82,7 +87,7 @@ struct AccountsView: View {
                     // Accounts list
                     List {
                         ForEach(allAccounts) { account in
-                            AccountRow(account: account, currencyCode: currencyCode)
+                            AccountRow(account: account, currencyCode: currencyCode, numberFormat: numberFormat)
                                 .listRowBackground(colors.surface)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
@@ -100,7 +105,7 @@ struct AccountsView: View {
             .background(colors.background)
 			.toolbar {
 				ToolbarItem(placement: .principal) {
-					Text("My title")
+					Text("Accounts")
 						.foregroundColor(colors.textPrimary)
 				}
 			}

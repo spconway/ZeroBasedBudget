@@ -12,6 +12,7 @@ struct AccountRow: View {
     @Environment(\.themeColors) private var colors
     let account: Account
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         HStack {
@@ -29,7 +30,7 @@ struct AccountRow: View {
 
             Spacer()
 
-            Text(account.balance, format: .currency(code: currencyCode))
+            Text(CurrencyFormatHelpers.formatCurrency(account.balance, currencyCode: currencyCode, numberFormat: numberFormat))
                 .font(.body.monospacedDigit())
                 .foregroundStyle(account.balance >= 0 ? colors.textPrimary : colors.error)
         }

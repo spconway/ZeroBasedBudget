@@ -30,6 +30,11 @@ struct BudgetAnalysisView: View {
         settings.first?.currencyCode ?? "USD"
     }
 
+    // Number format from settings
+    private var numberFormat: String {
+        settings.first?.numberFormat ?? "1,234.56"
+    }
+
     // Generate category comparisons for selected month
     private var categoryComparisons: [CategoryComparison] {
         BudgetCalculations.generateCategoryComparisons(
@@ -73,7 +78,8 @@ struct BudgetAnalysisView: View {
                             totalBudgeted: totalBudgeted,
                             totalActual: totalActual,
                             totalDifference: totalDifference,
-                            currencyCode: currencyCode
+                            currencyCode: currencyCode,
+                            numberFormat: numberFormat
                         )
 
                         // Chart Type Picker
@@ -89,17 +95,22 @@ struct BudgetAnalysisView: View {
                         if selectedChartType == .bar {
                             BarChartSection(categoryComparisons: categoryComparisons)
                         } else {
-                            DonutChartSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode)
+                            DonutChartSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode, numberFormat: numberFormat)
                         }
 
                         // Detailed List Section
-                        DetailedListSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode)
+                        DetailedListSection(categoryComparisons: categoryComparisons, currencyCode: currencyCode, numberFormat: numberFormat)
                     }
                 }
                 .padding()
             }
             .background(colors.background)
-            .navigationTitle("Budget Analysis")
+			.toolbar {
+				ToolbarItem(placement: .principal) {
+					Text("Budget Analysis")
+						.foregroundColor(colors.textPrimary)
+				}
+			}
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -115,9 +126,7 @@ struct MonthPickerSection: View {
     @Binding var selectedMonth: Date
 
     private var monthYearString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: selectedMonth)
+        return DateFormatHelpers.formatMonthYear(selectedMonth, abbreviated: false)
     }
 
     var body: some View {
@@ -174,6 +183,7 @@ struct SummarySection: View {
     let totalActual: Decimal
     let totalDifference: Decimal
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         VStack(spacing: 12) {
@@ -186,14 +196,16 @@ struct SummarySection: View {
                     title: "Total Budgeted",
                     amount: totalBudgeted,
                     color: colors.accent,
-                    currencyCode: currencyCode
+                    currencyCode: currencyCode,
+                    numberFormat: numberFormat
                 )
 
                 SummaryCard(
                     title: "Total Actual",
                     amount: totalActual,
                     color: totalActual > totalBudgeted ? colors.error : colors.success,
-                    currencyCode: currencyCode
+                    currencyCode: currencyCode,
+                    numberFormat: numberFormat
                 )
             }
 
@@ -202,7 +214,8 @@ struct SummarySection: View {
                 amount: abs(totalDifference),
                 color: totalDifference >= 0 ? colors.success : colors.error,
                 isFullWidth: true,
-                currencyCode: currencyCode
+                currencyCode: currencyCode,
+                numberFormat: numberFormat
             )
         }
         .padding()
@@ -219,6 +232,7 @@ struct SummaryCard: View {
     let color: Color
     var isFullWidth: Bool = false
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         VStack(spacing: 4) {
@@ -226,7 +240,7 @@ struct SummaryCard: View {
                 .font(.caption)
                 .foregroundStyle(colors.textSecondary)
 
-            Text(amount, format: .currency(code: currencyCode))
+            Text(CurrencyFormatHelpers.formatCurrency(amount, currencyCode: currencyCode, numberFormat: numberFormat))
                 .font(isFullWidth ? .title2.bold() : .headline.bold())
                 .foregroundStyle(color)
         }
@@ -288,6 +302,7 @@ struct DonutChartSection: View {
     @Environment(\.themeColors) private var colors
     let categoryComparisons: [CategoryComparison]
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     private let maxCategories = 10
 
@@ -382,7 +397,7 @@ struct DonutChartSection: View {
                                 Text("Total")
                                     .font(.caption)
                                     .foregroundStyle(colors.textSecondary)
-                                Text(totalSpending, format: .currency(code: currencyCode))
+                                Text(CurrencyFormatHelpers.formatCurrency(totalSpending, currencyCode: currencyCode, numberFormat: numberFormat))
                                     .font(.title2.bold())
                             }
                             .position(x: frame.midX, y: frame.midY)
@@ -403,7 +418,7 @@ struct DonutChartSection: View {
                                         .font(.caption)
                                         .lineLimit(1)
 
-                                    Text(data.amount, format: .currency(code: currencyCode))
+                                    Text(CurrencyFormatHelpers.formatCurrency(data.amount, currencyCode: currencyCode, numberFormat: numberFormat))
                                         .font(.caption2.bold())
                                         .foregroundStyle(colors.textSecondary)
                                 }
@@ -434,6 +449,7 @@ struct DonutChartData: Identifiable {
 struct DetailedListSection: View {
     let categoryComparisons: [CategoryComparison]
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         VStack(spacing: 12) {
@@ -443,7 +459,7 @@ struct DetailedListSection: View {
 
             VStack(spacing: 12) {
                 ForEach(categoryComparisons) { comparison in
-                    CategoryComparisonRow(comparison: comparison, currencyCode: currencyCode)
+                    CategoryComparisonRow(comparison: comparison, currencyCode: currencyCode, numberFormat: numberFormat)
                 }
             }
         }
@@ -455,6 +471,7 @@ struct CategoryComparisonRow: View {
     @Environment(\.themeColors) private var colors
     let comparison: CategoryComparison
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -481,7 +498,8 @@ struct CategoryComparisonRow: View {
                     title: "Budgeted",
                     value: comparison.budgeted,
                     color: .primary,
-                    currencyCode: currencyCode
+                    currencyCode: currencyCode,
+                    numberFormat: numberFormat
                 )
 
                 Divider()
@@ -490,7 +508,8 @@ struct CategoryComparisonRow: View {
                     title: "Actual",
                     value: comparison.actual,
                     color: comparison.isOverBudget ? colors.error : colors.success,
-                    currencyCode: currencyCode
+                    currencyCode: currencyCode,
+                    numberFormat: numberFormat
                 )
 
                 Divider()
@@ -499,7 +518,8 @@ struct CategoryComparisonRow: View {
                     title: "Difference",
                     value: comparison.difference,
                     color: comparison.difference >= 0 ? colors.success : colors.error,
-                    currencyCode: currencyCode
+                    currencyCode: currencyCode,
+                    numberFormat: numberFormat
                 )
 
                 Divider()
@@ -530,6 +550,7 @@ struct MetricColumn: View {
     let value: Decimal
     let color: Color
     var currencyCode: String = "USD"
+    var numberFormat: String = "1,234.56"
 
     var body: some View {
         VStack(spacing: 4) {
@@ -537,7 +558,7 @@ struct MetricColumn: View {
                 .font(.caption)
                 .foregroundStyle(colors.textSecondary)
 
-            Text(value, format: .currency(code: currencyCode))
+            Text(CurrencyFormatHelpers.formatCurrency(value, currencyCode: currencyCode, numberFormat: numberFormat))
                 .font(.body.bold())
                 .foregroundStyle(color)
         }

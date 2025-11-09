@@ -91,8 +91,17 @@ ZeroBasedBudget/
 ├── Utilities/
 │   ├── AppColors.swift              # NEW: Semantic color system for dark mode
 │   ├── BudgetCalculations.swift     # Financial aggregation functions
+│   ├── CurrencyFormatHelpers.swift  # NEW: Centralized currency formatting with number format support
+│   ├── DateFormatHelpers.swift      # NEW: Centralized date formatting with format preference support
 │   ├── NotificationManager.swift    # Local push notification scheduling
 │   ├── ValidationHelpers.swift      # Input validation utilities
+│   ├── Theme/
+│   │   ├── Theme.swift              # Theme protocol and color system
+│   │   ├── ThemeManager.swift       # Theme state management
+│   │   ├── StandardTheme.swift      # NEW: iOS system colors theme (default)
+│   │   ├── MidnightMintTheme.swift  # Calm fintech theme
+│   │   ├── NeonLedgerTheme.swift    # Cyberpunk theme
+│   │   └── UltravioletSlateTheme.swift  # Bold violet theme
 │   └── [Other utility files...]
 └── Docs/
     ├── TechnicalSpec.md              # Complete technical specification
@@ -100,6 +109,34 @@ ZeroBasedBudget/
 ```
 
 ## Recent Version History
+
+**v1.9.0 (In Progress):**
+- ✅ Bug 11.1: Fixed Date Format setting to apply throughout app
+- ✅ Bug 11.2: Fixed Number Format setting to apply throughout app
+- ✅ Bug 12.1: Added Standard theme with iOS system colors
+- ✅ Enhancement 11.1: Made category name editable in Edit Category sheet
+- ✅ Created: DateFormatHelpers.swift centralized utility with three format options
+- ✅ Created: CurrencyFormatHelpers.swift centralized utility with three number formats
+- ✅ Created: StandardTheme.swift with native iOS appearance (Blue, Green, Red, Orange)
+- ✅ Added: Support for MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD date formats
+- ✅ Added: Support for "1,234.56" (US), "1.234,56" (EU), "1 234,56" (space) number formats
+- ✅ Added: Standard theme as 4th theme option with iOS system colors
+- ✅ Added: Smart year handling (shows year only for non-current year dates)
+- ✅ Added: Format-specific section headers (US: "Nov 5", EU: "5 Nov", ISO: "Nov 5")
+- ✅ Updated: 30 currency displays across 8 view files to use CurrencyFormatHelpers
+- ✅ Updated: Transaction section headers and row dates respect user preference
+- ✅ Updated: Budget Planning and Analysis views use DateFormatHelpers
+- ✅ Updated: Accessibility labels delegate to DateFormatHelpers (long format for VoiceOver)
+- ✅ Updated: Default theme changed from Midnight Mint to Standard for new users
+- ✅ Added: TextField for category name (previously read-only text)
+- ✅ Added: Validation for empty names and duplicate category names
+- ✅ Added: Case-insensitive duplicate detection with clear error messages
+- ✅ Added: Automatic whitespace trimming on save
+- ✅ Fixed: Compilation errors (dateFormat scope, unused variables)
+- ✅ Improved: Date formatting consistency across all tabs
+- ✅ Improved: Number formatting consistency across all currency displays
+- ✅ Improved: Category management UX - users can rename categories without losing transaction history
+- ✅ Improved: App now defaults to familiar iOS look for new users
 
 **v1.8.1 (Complete):**
 - ✅ Bug 10.1: Implemented light/dark color variants for all three themes
@@ -157,96 +194,159 @@ ZeroBasedBudget/
 - ✅ Migrated: All 7 view files systematically migrated to use theme colors (BudgetPlanningView, AccountsView, TransactionLogView, BudgetAnalysisView, SettingsView, AccountRow, CategoryProgressBar)
 - ✅ Complete: Full theme system with three selectable visual themes with comprehensive visual impact across entire app
 
-**v1.6.0:**
-- ✅ Added: Comprehensive unit testing suite (110 tests across 10 files)
-- ✅ Added: XCTest framework infrastructure with in-memory SwiftData testing
-- ✅ Added: TestDataFactory for consistent test data creation
-- ✅ Added: YNAB methodology validation tests (12 critical tests)
-- ✅ Added: Model tests (48 tests) for all SwiftData models
-- ✅ Added: Utility function tests (32 tests) for calculations and validation
-- ✅ Added: Edge case and boundary tests (10 tests)
-- ✅ Added: SwiftData persistence tests (8 tests)
-- ✅ Test coverage: Models, utilities, YNAB principles, edge cases, persistence
+**v1.6.0 - v1.4.0** (Earlier Releases):
+- Comprehensive unit testing suite (158 tests total by v1.8.1)
+- YNAB-style Accounts tab with account-based budgeting
+- 5-tab structure: Accounts → Budget → Transactions → Analysis → Settings
+- Full dark mode support with manual toggle (System / Light / Dark)
+- Global Settings Tab with data export/import (CSV and JSON)
+- Dynamic currency support (10 currencies)
+- Push notifications for category due dates
+- Transaction-account integration with automatic balance updates
+- Date-grouped transaction list with section headers
 
-**v1.5.0:**
-- ✅ Fixed: Ready to Assign double-counting bug (startingBalance field added to Account)
-- ✅ Fixed: Transaction-account integration with automatic balance updates
-- ✅ Added: Date-grouped transaction list with section headers
-- ✅ Added: Account picker in transaction Add/Edit sheets
-- ✅ Added: Account name display in transaction rows
-- ✅ Improved: Transaction list readability with relative dates ("Today", "Yesterday")
-
-**v1.4.0:**
-- ✅ YNAB-style Accounts tab with true account-based budgeting
-- ✅ Account model for tracking real money accounts (checking, savings, cash)
-- ✅ 5-tab structure: Accounts → Budget → Transactions → Analysis → Settings
-- ✅ Full dark mode support with manual toggle (System / Light / Dark)
-- ✅ Global Settings Tab with data export/import (CSV and JSON)
-- ✅ Dynamic currency support (USD, EUR, GBP, CAD, AUD, JPY)
-- ✅ Semantic color system (appSuccess, appWarning, appError, appAccent)
-
-**v1.3.0:**
-- ✅ Fixed: $0 category amounts now allowed (YNAB principle)
-- ✅ Fixed: Transaction detail sheet works after app restart
-- ✅ Added: Push notifications for category due dates
-- ✅ Added: Notification frequency settings (7-day, 2-day, on-date, custom)
-- ✅ Added: "Last day of month" due date option with smart date calculation
-- ✅ Added: Donut chart visualization for spending distribution in Analysis view
-
-**v1.2.0:**
-- ✅ Quick Assign and Undo functionality
-- ✅ Month navigation with carry-forward warnings
-- ✅ Enhanced Ready to Assign visual hierarchy
-
-**v1.1.0:**
-- ✅ Full YNAB methodology refactor (Ready to Assign section)
-- ✅ Removed income section (YNAB violation)
-- ✅ Income tracked via transactions only
-
-**v1.0.0:**
-- ✅ MVP: SwiftData models, three main views, local-only storage
+**v1.0.0 - v1.3.0** (Foundation):
+- MVP: SwiftData models, three main views, local-only storage
+- Full YNAB methodology refactor (Ready to Assign section)
+- Income tracked via transactions only (YNAB compliance)
+- Quick Assign and Undo functionality
+- Month navigation with carry-forward warnings
+- Donut chart visualization in Analysis view
 
 ## Active Issues & Enhancement Backlog
 
-**✅ No active issues or enhancements** - All planned v1.8.1 work completed.
-
-All Priority 1 bugs (Bug 10.1, Bug 10.2) and Architecture 1 (smoke test strategy) have been successfully implemented and merged.
-
----
-
 ### 🏗️ Architecture / Project Changes
 
-**No active architecture changes**. Architecture 1 (smoke test strategy) completed in v1.8.1.
+**Architecture 2: Bank Account Linking Research Spike**
+
+**Objective**: Research and evaluate top SDKs for securely linking bank accounts to enable automatic transaction import, with focus on security, pricing for personal use, and integration complexity.
+
+**Research Goals**:
+1. Identify top 3-5 bank account linking SDKs
+2. Compare security features, compliance, and data protection
+3. Analyze pricing models (focus on free tier for personal use or low-volume usage)
+4. Estimate integration effort (code changes, data model changes, UI changes)
+5. Evaluate compatibility with local-first, privacy-focused architecture
+6. Provide recommendation on viability for this project
+
+**Known Candidates**:
+- **Plaid** (mentioned by user as top choice)
+- **Yodlee**
+- **Finicity (Mastercard)**
+- **TrueLayer** (UK/EU focused)
+- **Teller**
+- **MX**
+- **Akoya**
+
+**Research Checklist**:
+- [ ] Compare security & compliance (OAuth 2.0, bank-level encryption, SOC 2, PCI compliance)
+- [ ] Pricing analysis for personal use:
+  - [ ] Free tier availability and limits
+  - [ ] Per-user pricing
+  - [ ] Per-transaction pricing
+  - [ ] Volume pricing breakpoints
+- [ ] Feature comparison:
+  - [ ] Number of supported financial institutions (US, international)
+  - [ ] Transaction history depth (days/months)
+  - [ ] Real-time vs batch transaction sync
+  - [ ] Balance checking
+  - [ ] Account metadata (name, type, routing numbers)
+- [ ] SDK/API evaluation:
+  - [ ] iOS SDK availability (Swift/SwiftUI native?)
+  - [ ] API documentation quality
+  - [ ] Code examples for SwiftUI
+  - [ ] Authentication flow (OAuth, Link, embedded UI)
+  - [ ] Error handling patterns
+- [ ] Integration complexity assessment:
+  - [ ] **Data model changes needed** (new tables? modify Transaction model?)
+  - [ ] **View changes needed** (new account linking UI, transaction import reconciliation)
+  - [ ] **Privacy impact** (conflicts with local-only storage? requires cloud sync?)
+  - [ ] **Testing requirements** (sandbox environments, test credentials)
+  - [ ] **Estimated LOC changes** (lines of code)
+  - [ ] **Estimated time to MVP** (basic account linking + transaction import)
+
+**Specific Questions to Answer**:
+1. **Plaid Analysis**:
+   - Free tier details for personal use?
+   - Pricing after free tier?
+   - iOS SDK quality and SwiftUI compatibility?
+   - Privacy concerns (data storage, sharing, retention)?
+
+2. **Architecture Impact**:
+   - Does bank linking require cloud backend? (Currently local-only via SwiftData)
+   - Can transaction import work with local-first approach?
+   - OAuth flow compatibility with iPhone-only app?
+   - Account reconciliation UX (manual vs automatic transaction matching)?
+
+3. **YNAB Methodology Compatibility**:
+   - How to handle automatic transaction imports while maintaining "budget money you have" principle?
+   - Should auto-imported transactions be unbudgeted until manually assigned?
+   - Account balance sync vs manual starting balance?
+
+**Deliverables**:
+- [ ] Comparison matrix (security, pricing, features, ease of integration)
+- [ ] Top recommendation with justification
+- [ ] Estimated code changes by file/module:
+  - Models/ (new models? Transaction changes?)
+  - Views/ (new UI? modified sheets?)
+  - Utilities/ (API client? sync manager?)
+  - Tests/ (integration tests? API mocks?)
+- [ ] LOC estimate (lines added/modified/deleted)
+- [ ] Time estimate for implementation (hours/days)
+- [ ] Privacy/security risk assessment
+- [ ] YNAB methodology impact assessment
+- [ ] Go/No-Go recommendation with reasoning
+
+**Design Considerations**:
+- **Local-first conflict**: Current app is 100% local (no cloud sync) - bank APIs typically require server communication
+- **Privacy preservation**: How to minimize data sharing while enabling bank linking?
+- **Manual override**: Always allow manual transaction entry (don't force bank linking)
+- **Transaction reconciliation**: UX for matching imported transactions to categories
+- **Multiple accounts**: Support linking multiple bank accounts to multiple app Accounts
+- **Error handling**: Bank connection failures, re-authentication, institution outages
+
+**Success Criteria**:
+- ✅ Comprehensive comparison of 3-5 SDKs across all criteria
+- ✅ Clear pricing breakdown for personal use case (1 user, 2-3 accounts, ~100 transactions/month)
+- ✅ Detailed integration estimate (files, LOC, time)
+- ✅ Security and privacy assessment
+- ✅ YNAB methodology compatibility evaluation
+- ✅ Clear recommendation with trade-offs documented
+
+**Note**: This is a research spike only - no implementation. Findings will inform future enhancement decisions.
 
 ---
 
 ## Active Development
 
-**Current Focus**: v1.8.1 Complete - Ready for Production
-**Status**: All planned work complete; 158 tests passing (140 comprehensive + 18 smoke tests)
+**Current Focus**: v1.9.0 Stable - Standard Theme Added
+**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); v1.9.0 ready for release
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
-2. [2025-11-06] ✅ **Bug 10.1 COMPLETE**: Light/dark variants for all three themes with WCAG AA compliance
-3. [2025-11-06] ✅ **Bug 10.2 COMPLETE**: Account tab theme color updates fixed
-4. [2025-11-06] ✅ **Architecture 1 COMPLETE**: Smoke test strategy (18 tests, ~0.2s, 70% token savings)
-5. [2025-11-06] ✅ **v1.8.0 COMPLETE**: Icon theming & navigation polish
+1. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
+2. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
+3. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
+4. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
+5. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: ✅ v1.8.1 complete and merged to main
+1. **Current Version**: v1.9.0 (ready for release - all bugs fixed, Standard theme added)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
-3. **Build Status**: ✅ Project builds successfully with 0 errors
-4. **Completed Features**:
-   - Light/dark theme support for all three themes
-   - WCAG AA-compliant color palettes
-   - Account tab theme color fixes
-   - Smoke test infrastructure for token efficiency
-5. **Test Strategy**: Use smoke tests for UI changes, full suite for releases
-6. **No Active Issues**: All planned v1.8.1 work complete
-7. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-8. **Ready For**: New feature development or enhancement planning
+3. **Build Status**: ✅ Project builds successfully with 0 errors (assumed - needs user verification)
+4. **Recently Completed**:
+   - ✅ Bug 11.1: Date Format setting now applies throughout app (DateFormatHelpers.swift)
+   - ✅ Bug 11.2: Number Format setting now applies throughout app (CurrencyFormatHelpers.swift)
+   - ✅ Bug 12.1: Standard theme with iOS system colors (StandardTheme.swift)
+   - ✅ Enhancement 11.1: Category name editing (with validation)
+5. **Active Backlog**:
+   - 🏗️ **Architecture 2**: Bank account linking research spike (Plaid, Yodlee, etc.)
+6. **Recommended Priority**:
+   - Test v1.9.0 in simulator/device → Architecture 2 (Bank linking research) → Future enhancements
+7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
+8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+9. **Ready For**: User testing of v1.9.0 or Architecture 2 (Bank linking research)
 
 ## Git Commit Strategy
 
