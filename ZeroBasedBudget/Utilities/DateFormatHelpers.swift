@@ -54,10 +54,6 @@ enum DateFormatHelpers {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
 
-        // Get month and day components
-        let month = calendar.component(.month, from: date)
-        let day = calendar.component(.day, from: date)
-
         // Format based on user preference
         switch formatPreference {
         case "MM/DD/YYYY":

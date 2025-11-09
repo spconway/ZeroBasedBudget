@@ -186,16 +186,8 @@ class NotificationManager {
     /// Cancel all notifications for a specific category
     /// - Parameter categoryID: The category's UUID
     func cancelNotification(for categoryID: UUID) async {
-        // Cancel all notification types for this category
-        let identifiers = [
-            notificationIdentifier(for: categoryID, type: .sevenDaysBefore),
-            notificationIdentifier(for: categoryID, type: .twoDaysBefore),
-            notificationIdentifier(for: categoryID, type: .onDueDate),
-            notificationIdentifier(for: categoryID, type: .customDays(0)) // Base identifier for custom
-        ]
-
-        // Also need to cancel any custom days notifications with different counts
         // Get all pending notifications and filter by category ID prefix
+        // This catches all notification types including custom day variations
         let pendingRequests = await UNUserNotificationCenter.current().pendingNotificationRequests()
         let categoryPrefix = "category-\(categoryID.uuidString)"
         let categoryIdentifiers = pendingRequests

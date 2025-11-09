@@ -107,7 +107,7 @@ struct TransactionLogView: View {
                 ForEach(groupedTransactions, id: \.0) { date, transactions in
                     Section {
                         ForEach(transactions, id: \.0.id) { transaction, balance in
-                            TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode)
+                            TransactionRow(transaction: transaction, runningBalance: balance, currencyCode: currencyCode, dateFormat: dateFormat)
                                 .onTapGesture {
                                     transactionToEdit = transaction
                                 }
@@ -182,6 +182,7 @@ struct TransactionRow: View {
     let transaction: Transaction
     let runningBalance: Decimal
     var currencyCode: String = "USD"
+    var dateFormat: String = "MM/DD/YYYY"
 
     var body: some View {
         VStack(spacing: 8) {
