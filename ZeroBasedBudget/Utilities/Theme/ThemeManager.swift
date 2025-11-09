@@ -32,6 +32,7 @@ final class ThemeManager {
 
     /// All available themes
     static let availableThemes: [Theme] = [
+        StandardTheme(),
         NeonLedgerTheme(),
         MidnightMintTheme(),
         UltravioletSlateTheme()
@@ -39,14 +40,14 @@ final class ThemeManager {
 
     /// Get theme by identifier
     static func theme(for identifier: String) -> Theme {
-        availableThemes.first { $0.identifier == identifier } ?? MidnightMintTheme()
+        availableThemes.first { $0.identifier == identifier } ?? StandardTheme()
     }
 
     // MARK: - Initialization
 
     /// Initialize with default theme (no persistence)
     init() {
-        self.currentTheme = MidnightMintTheme()
+        self.currentTheme = StandardTheme()
         self.appSettings = nil
         self.modelContext = nil
     }
@@ -105,6 +106,7 @@ final class ThemeManager {
 
 /// Enum for type-safe theme selection in UI
 enum ThemeType: String, CaseIterable, Identifiable {
+    case standard = "standard"
     case neonLedger = "neonLedger"
     case midnightMint = "midnightMint"
     case ultravioletSlate = "ultravioletSlate"
@@ -114,6 +116,8 @@ enum ThemeType: String, CaseIterable, Identifiable {
     /// Get Theme instance for this type
     var theme: Theme {
         switch self {
+        case .standard:
+            return StandardTheme()
         case .neonLedger:
             return NeonLedgerTheme()
         case .midnightMint:

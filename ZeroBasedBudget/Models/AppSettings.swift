@@ -52,7 +52,7 @@ final class AppSettings {
 
     init(
         colorSchemePreference: String = "system",
-        selectedTheme: String = "midnightMint",
+        selectedTheme: String = "standard",
         currencyCode: String = "USD",
         dateFormat: String = "MM/DD/YYYY",
         monthStartDate: Int = 1,
