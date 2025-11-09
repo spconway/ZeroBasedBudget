@@ -101,6 +101,14 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
+**v1.9.0 (In Progress):**
+- ✅ Enhancement 11.1: Made category name editable in Edit Category sheet
+- ✅ Added: TextField for category name (previously read-only text)
+- ✅ Added: Validation for empty names and duplicate names
+- ✅ Added: Case-insensitive duplicate detection with clear error messages
+- ✅ Added: Automatic whitespace trimming on save
+- ✅ Improved: Category management UX - users can now rename categories without losing transaction history
+
 **v1.8.1 (Complete):**
 - ✅ Bug 10.1: Implemented light/dark color variants for all three themes
 - ✅ Bug 10.2: Fixed Account tab theme color updates on theme switch
@@ -367,72 +375,6 @@ ZeroBasedBudget/
 
 ---
 
-### 🟡 Priority 2: UX Improvements
-
-**Enhancement 11.1: Make Category Name Editable in Edit Category Sheet**
-
-**Objective**: Allow users to edit category names in the EditCategorySheet (currently read-only).
-
-**Current Behavior**:
-- EditCategorySheet shows category name as read-only text (BudgetPlanningView.swift:1158-1161):
-  ```swift
-  LabeledContent("Name") {
-      Text(category.name)
-          .foregroundStyle(colors.textSecondary)
-  }
-  ```
-- User can edit: budgeted amount, due date, notification settings
-- User CANNOT edit: category name, category type
-- BudgetCategory.name is mutable (BudgetCategory.swift:14) with `@Attribute(.unique)` constraint
-
-**Files to Modify**:
-- [ ] `BudgetPlanningView.swift` - Update EditCategorySheet (lines 1158-1161, plus onSave callback signature)
-- [ ] `BudgetPlanningView.swift` - Update updateCategory() function to accept name parameter (line 480-491)
-
-**Implementation Approach**:
-1. Replace read-only `Text(category.name)` with `TextField("Name", text: $categoryName)`
-2. Add `@State private var categoryName: String` to EditCategorySheet
-3. Add validation:
-   - Name must not be empty (trim whitespace)
-   - Name must be unique across all categories (existing SwiftData constraint)
-   - Show error message if name already exists
-4. Update onSave callback to include categoryName parameter
-5. Update updateCategory() to set `category.name = newName` if changed
-6. Add "Name" parameter to onSave closure signature
-
-**Design Considerations**:
-- **Uniqueness validation**: Check for duplicate names before saving
-- **Empty name validation**: Require non-empty name (trimmed)
-- **Error handling**: Display error if save fails due to uniqueness constraint
-- **Transaction impact**: Changing category name updates all associated transactions (via relationship)
-- **Notification impact**: May need to update scheduled notifications if category name used in notification text
-
-**YNAB Alignment Check**:
-✅ No YNAB methodology impact - purely UX improvement for category management
-
-**Testing Checklist**:
-- [ ] Change category name to unique name → saves successfully
-- [ ] Change category name to existing name → shows error, prevents save
-- [ ] Change category name to empty string → shows validation error
-- [ ] Change category name to whitespace-only → shows validation error
-- [ ] Edit category name → verify transactions show updated category name
-- [ ] Edit category name → verify Budget tab shows updated name
-- [ ] Edit category name → verify Analysis tab shows updated name
-- [ ] Edit category name → verify notifications still work correctly
-- [ ] Cancel edit without saving → original name preserved
-- [ ] Run smoke tests to verify no regressions
-
-**Acceptance Criteria**:
-- ✅ Category name field is editable TextField in EditCategorySheet
-- ✅ Empty names are rejected with clear error message
-- ✅ Duplicate names are rejected with clear error message
-- ✅ Valid name changes save successfully
-- ✅ All transactions reflect updated category name
-- ✅ Category name updates throughout app (Budget, Analysis, Transactions tabs)
-- ✅ No impact on notifications or due date functionality
-
----
-
 ### 🏗️ Architecture / Project Changes
 
 **Architecture 2: Bank Account Linking Research Spike**
@@ -541,30 +483,29 @@ ZeroBasedBudget/
 **Status**: 158 tests passing (140 comprehensive + 18 smoke tests); v1.8.1 stable
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-07] 📋 **Backlog Updated**: Added Bug 11.1 (Date Format), Bug 11.2 (Number Format), Architecture 2 (Bank Linking Research)
-2. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
-3. [2025-11-06] ✅ **Bug 10.1 COMPLETE**: Light/dark variants for all three themes with WCAG AA compliance
-4. [2025-11-06] ✅ **Bug 10.2 COMPLETE**: Account tab theme color updates fixed
-5. [2025-11-06] ✅ **Architecture 1 COMPLETE**: Smoke test strategy (18 tests, ~0.2s, 70% token savings)
+1. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
+2. [2025-11-07] 📋 **Backlog Updated**: Added Bug 11.1 (Date Format), Bug 11.2 (Number Format), Architecture 2 (Bank Linking Research)
+3. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
+4. [2025-11-06] ✅ **Bug 10.1 COMPLETE**: Light/dark variants for all three themes with WCAG AA compliance
+5. [2025-11-06] ✅ **Bug 10.2 COMPLETE**: Account tab theme color updates fixed
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.8.1 (stable, production-ready)
+1. **Current Version**: v1.9.0 (in progress - Enhancement 11.1 complete)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors
-4. **Active Backlog**:
+4. **Recently Completed**:
+   - ✅ Enhancement 11.1: Category name editing (with validation)
+5. **Active Backlog**:
    - 🔴 **Bug 11.1**: Date Format setting not applied (~11 files with date displays)
    - 🔴 **Bug 11.2**: Number Format setting not applied (30 currency displays across 8 view files)
-   - 🟡 **Enhancement 11.1**: Make category name editable in Edit Category sheet
    - 🏗️ **Architecture 2**: Bank account linking research spike (Plaid, Yodlee, etc.)
-5. **Recommended Priority**:
-   - Quick win: Enhancement 11.1 (category name editing, ~1 hour)
-   - Then: Bug 11.1 (Date Format) → Bug 11.2 (Number Format)
-   - Research: Architecture 2 (Bank linking research spike)
-6. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
-7. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-8. **Ready For**: Enhancement 11.1 (quick win), Bug 11.1, or Architecture 2 research
+6. **Recommended Priority**:
+   - Bug 11.1 (Date Format) → Bug 11.2 (Number Format) → Architecture 2 (Research)
+7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
+8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+9. **Ready For**: Bug 11.1 (Date Format fix) or Architecture 2 (Bank linking research)
 
 ## Git Commit Strategy
 
