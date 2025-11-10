@@ -110,14 +110,13 @@ struct BudgetPlanningView: View {
 
     /// Calculate Ready to Assign for a specific month
     /// Calculate Ready to Assign using YNAB methodology
-    /// Formula: Starting Balances + All Income - Total Budgeted
-    /// This avoids double-counting expenses (which already reduced current balances)
+    /// Formula: Current Account Balances - Total Budgeted
+    /// Current balances already reflect all transactions (income and expenses)
     private func calculateReadyToAssign(for month: Date) -> Decimal {
-        let startingBalances = allAccounts.reduce(0) { $0 + $1.startingBalance }
-        let totalIncome = allTransactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+        let currentBalances = allAccounts.reduce(0) { $0 + $1.balance }
         let totalBudgeted = allCategories.reduce(0) { $0 + $1.budgetedAmount }
 
-        return startingBalances + totalIncome - totalBudgeted
+        return currentBalances - totalBudgeted
     }
 
     /// Get previous month's Ready to Assign for comparison
@@ -146,13 +145,12 @@ struct BudgetPlanningView: View {
     }
 
     // Ready to Assign calculation using YNAB methodology
-    // Formula: Starting Balances + All Income - Total Budgeted
-    // Avoids double-counting expenses (which already reduced current balances)
+    // Formula: Current Account Balances - Total Budgeted
+    // Current balances already reflect all transactions (income and expenses)
     private var readyToAssign: Decimal {
-        let startingBalances = allAccounts.reduce(0) { $0 + $1.startingBalance }
-        let totalIncome = allTransactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
+        let currentBalances = allAccounts.reduce(0) { $0 + $1.balance }
 
-        return startingBalances + totalIncome - totalAssigned
+        return currentBalances - totalAssigned
     }
 
     // Color coding for Ready to Assign
