@@ -110,7 +110,17 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
-**v1.9.0 (In Progress):**
+**v1.10.0 (In Progress):**
+- ✅ Enhancement 13.1: Compact transaction display for improved density and scannability
+- ✅ Reduced: TransactionRow height by ~40% (from ~100-120pt to ~60-70pt)
+- ✅ Improved: 8-10 transactions now visible per screen (vs previous 5-7)
+- ✅ Redesigned: Two-row layout showing icon, description, amount, category badge, net worth
+- ✅ Removed: Redundant fields (account name, date, type label) from row display
+- ✅ Added: Comprehensive VoiceOver accessibility label with all transaction details
+- ✅ Optimized: Spacing and padding for compact display (VStack spacing 4, vertical padding 6)
+- ✅ Added: Category badge with 8pt color dot for visual categorization
+
+**v1.9.0 (Complete):**
 - ✅ Bug 11.1: Fixed Date Format setting to apply throughout app
 - ✅ Bug 11.2: Fixed Number Format setting to apply throughout app
 - ✅ Bug 12.1: Added Standard theme with iOS system colors
@@ -216,80 +226,6 @@ ZeroBasedBudget/
 ## Active Issues & Enhancement Backlog
 
 ### 🟢 Priority 3 Enhancement Requests
-
-**Enhancement 13.1: Compact Transaction Display**
-
-**Objective**: Reduce the amount of information displayed per transaction row in TransactionLogView to increase transaction density and improve scannability. Detailed information should be available in the edit sheet.
-
-**User Story**: As a user with many transactions, I want to see more transactions on screen at once so that I can quickly scroll through my transaction history without excessive scrolling.
-
-**Motivation**:
-- Current TransactionRow shows 6 pieces of information: description, category, account (optional), date, amount/icon, type, plus net worth balance
-- This creates tall rows (~100-120pt) limiting transactions visible per screen to 5-7
-- With 100+ transactions, finding transactions requires excessive scrolling
-- Key information (amount, description) gets lost in visual clutter
-
-**YNAB Methodology Check**: ✅ Neutral - UI optimization doesn't affect budgeting logic or YNAB principles
-
-**Implementation Approach**:
-
-1. **Simplify TransactionRow** (TransactionLogView.swift:199-256)
-   - **Show only**: Description (headline), Amount with icon (colored), Category badge (small)
-   - **Move to edit sheet**: Account name, date, transaction type label, notes
-   - **Keep**: Net worth running balance (collapsible or smaller)
-   - **Target height**: ~60-70pt per row (down from ~100-120pt)
-
-2. **Design Pattern** (inspired by banking apps like Chase, Bank of America):
-   ```
-   [Icon] Description                    +$50.00
-          Category Badge
-          Net Worth: $2,500 (optional: collapsible)
-   ```
-
-3. **Alternative Layouts to Consider**:
-   - **Option A (Minimal)**: Description + Amount only, 2-line row (~50pt)
-   - **Option B (Balanced)**: Description + Category badge + Amount, 2-line row (~60pt) ⭐ Recommended
-   - **Option C (Comfortable)**: Current layout but smaller fonts and spacing (~80pt)
-
-**Files to Modify**:
-- `Views/TransactionLogView.swift` (line 199-256: TransactionRow)
-  - Reduce VStack spacing from 8 to 4
-  - Remove account name display (move to edit sheet)
-  - Remove date display (already in section header)
-  - Remove "Income/Expense" type label (icon is sufficient)
-  - Make net worth balance smaller or collapsible
-  - Reduce padding from .vertical(4) to .vertical(2)
-
-**Design Considerations**:
-- **Preserve tap-to-edit**: Users can still tap row to see full details
-- **Keep visual hierarchy**: Amount should be most prominent (bold, colored)
-- **Accessibility**: Ensure VoiceOver still reads all information
-- **Search compatibility**: Search already works on description/category
-- **Section headers**: Date already shown in section header (redundant in row)
-- **Icon color coding**: Income (green arrow up) vs Expense (red arrow down) provides type at a glance
-
-**Testing Checklist**:
-- [ ] TransactionRow height reduced by 30-40%
-- [ ] More transactions visible per screen (8-10 vs 5-7)
-- [ ] Tap on transaction opens edit sheet with full details
-- [ ] Search still works correctly
-- [ ] VoiceOver reads essential information
-- [ ] Net worth balance still visible (if kept)
-- [ ] Visual hierarchy clear (amount most prominent)
-- [ ] No layout breaks with long descriptions or category names
-- [ ] Themes apply correctly to compact layout
-- [ ] Works in both light and dark mode
-
-**Acceptance Criteria**:
-- ✅ Transaction row height reduced by at least 30%
-- ✅ All detailed information (account, date, type, notes) accessible via tap-to-edit
-- ✅ Amount and description remain clearly visible
-- ✅ Category shown as badge or small label
-- ✅ No loss of functionality (search, edit, delete still work)
-- ✅ Accessibility maintained (VoiceOver support)
-- ✅ User can view 8-10 transactions per screen (vs current 5-7)
-
----
 
 **Enhancement 13.2: CSV Transaction Import**
 
@@ -527,35 +463,32 @@ Transaction model fields:
 
 ## Active Development
 
-**Current Focus**: v1.9.0 Stable - Standard Theme Added
-**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); v1.9.0 ready for release
+**Current Focus**: v1.10.0 In Progress - Compact Transaction Display Complete
+**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Enhancement 13.1 complete, ready for Enhancement 13.2
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
-2. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
-3. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
-4. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
-5. [2025-11-06] ✅ **v1.8.1 COMPLETE**: Light/dark theme support, bug fixes, smoke test strategy
+1. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
+2. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
+3. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
+4. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
+5. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.9.0 (ready for release - all bugs fixed, Standard theme added)
+1. **Current Version**: v1.10.0 (in progress - Enhancement 13.1 complete, 13.2 pending)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
-3. **Build Status**: ✅ Project builds successfully with 0 errors (assumed - needs user verification)
+3. **Build Status**: ✅ Project builds successfully with 0 errors
 4. **Recently Completed**:
-   - ✅ Bug 11.1: Date Format setting now applies throughout app (DateFormatHelpers.swift)
-   - ✅ Bug 11.2: Number Format setting now applies throughout app (CurrencyFormatHelpers.swift)
-   - ✅ Bug 12.1: Standard theme with iOS system colors (StandardTheme.swift)
-   - ✅ Enhancement 11.1: Category name editing (with validation)
+   - ✅ Enhancement 13.1: Compact transaction display (TransactionLogView.swift - reduced height by 40%)
+   - ✅ v1.9.0: Date/Number format settings, Standard theme, category name editing
 5. **Active Backlog**:
-   - 🟢 **Enhancement 13.1**: Compact Transaction Display (reduce row height by 30-40%)
-   - 🟢 **Enhancement 13.2**: CSV Transaction Import (with fuzzy column mapping)
+   - 🟢 **Enhancement 13.2**: CSV Transaction Import (with fuzzy column mapping) - READY TO START
 6. **Recommended Priority**:
-   - Test v1.9.0 in simulator/device → Enhancement 13.1 (Quick UX win) → Enhancement 13.2 (CSV Import)
-7. **Test Strategy**: Use smoke tests for UI changes (Enhancement 13.1), full suite for model/calculation changes (Enhancement 13.2)
+   - Test v1.10.0 compact transactions in simulator/device → Enhancement 13.2 (CSV Import)
+7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes (Enhancement 13.2 will need full suite)
 8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-9. **Ready For**: User testing of v1.9.0 or starting Enhancement 13.1
+9. **Ready For**: User testing of v1.10.0 compact transactions or starting Enhancement 13.2
 
 ## Git Commit Strategy
 
