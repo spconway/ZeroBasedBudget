@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.8.1 (Light/Dark Theme Support)
-**Last Updated**: November 6, 2025 (v1.8.1 Complete - 158 Unit Tests)
+**Version**: 1.11.0 (CSV Transaction Import)
+**Last Updated**: November 9, 2025 (v1.11.0 Complete - 158 Unit Tests)
 **Methodology**: YNAB-Style Zero-Based Budgeting
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -110,7 +110,25 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
-**v1.10.0 (In Progress):**
+**v1.11.0 (Complete):**
+- ✅ Enhancement 13.2: CSV Transaction Import with fuzzy column mapping
+- ✅ Created: ImportManager.swift utility (CSV parser, fuzzy matching, date/amount parsing)
+- ✅ Created: ImportTransactionsSheet.swift (file picker with security-scoped resource handling)
+- ✅ Created: ImportColumnMappingSheet.swift (dropdown mapping with auto-suggestions and preview)
+- ✅ Created: ImportResultsSheet.swift (success/failure summary with error details)
+- ✅ Added: Levenshtein distance algorithm for intelligent column header detection
+- ✅ Added: Multi-format date support (ISO 8601, MM/DD/YYYY, DD/MM/YYYY)
+- ✅ Added: Multi-format number support (1,234.56 / 1.234,56 / 1 234,56)
+- ✅ Added: Debit/Credit column OR single Amount column support
+- ✅ Added: Duplicate detection (date + amount + description)
+- ✅ Added: Import button (download icon) to TransactionLogView toolbar
+- ✅ Added: Dismissal callback chain to close all sheets on completion
+- ✅ Improved: YNAB compliance - imported transactions have category = nil (user assigns later)
+- ✅ Improved: Three-sheet workflow with clear step-by-step progression
+- ✅ Improved: Full theme color support across all import views
+- ✅ Testing: User-tested with real CSV file (0 errors)
+
+**v1.10.0 (Complete):**
 - ✅ Enhancement 13.1: Compact transaction display for improved density and scannability
 - ✅ Reduced: TransactionRow height by ~40% (from ~100-120pt to ~60-70pt)
 - ✅ Improved: 8-10 transactions now visible per screen (vs previous 5-7)
@@ -227,268 +245,40 @@ ZeroBasedBudget/
 
 ### 🟢 Priority 3 Enhancement Requests
 
-**Enhancement 13.2: CSV Transaction Import**
-
-**Objective**: Enable users to import transactions from bank-exported CSV files with intelligent column mapping and fuzzy matching to streamline bulk transaction entry.
-
-**User Story**: As a user, I want to import my bank transactions from a CSV file so that I can quickly populate my budget with historical transactions without manual entry.
-
-**Motivation**:
-- Manual entry of 50-100 transactions is tedious and error-prone
-- Most banks support CSV export (universal format)
-- Users migrating from other tools or starting fresh need bulk import
-- Reduces onboarding friction for new users with transaction history
-
-**YNAB Methodology Check**: ✅ Compatible with YNAB principles
-- Imported transactions are **historical** (money that already existed)
-- Transactions still need manual category assignment (maintains "give every dollar a job")
-- Account balances update correctly based on transaction history
-- No automatic budgeting - user must still assign income to categories
-
-**CSV Format Analysis** (from Docs/Samples/transactions-2.csv):
-```
-Columns: Date, Bank RTN, Account Number, Transaction Type, Description, Debit, Credit, Check Number, Account Running Balance
-Sample row: 2025-11-07,211370545,8247596915,DIRECTDEBIT,L A FITNESS 9492558100,10,,,3006.65
-```
-
-**Key Observations**:
-- **Debit/Credit columns**: Separate columns (Debit = expense, Credit = income)
-- **Amount handling**: Debit OR Credit populated, never both
-- **Date format**: YYYY-MM-DD (ISO 8601)
-- **Transaction Type**: Bank-specific codes (DIRECTDEBIT, DEBIT, CREDIT, FEE)
-- **Description**: Often includes merchant name + location + codes
-- **Optional fields**: Bank RTN, Account Number, Check Number, Running Balance
-
-**Transaction Model Mapping**:
-```swift
-Transaction model fields:
-- date: Date                    → CSV "Date" column
-- amount: Decimal               → CSV "Debit" OR "Credit" column
-- transactionDescription: String → CSV "Description" column
-- type: TransactionType         → Infer from Debit/Credit (Debit=expense, Credit=income)
-- category: BudgetCategory?     → User assigns post-import (nil initially)
-- account: Account?             → User selects during import
-- notes: String?                → Optional (could use CSV "Transaction Type")
-```
-
-**Implementation Approach**:
-
-1. **Create ImportManager Utility** (`Utilities/ImportManager.swift`)
-   ```swift
-   class ImportManager {
-       // Parse CSV file into structured data
-       static func parseCSV(_ fileURL: URL) -> Result<[[String: String]], ImportError>
-
-       // Detect column headers and suggest mappings
-       static func suggestColumnMapping(headers: [String]) -> [String: String]
-
-       // Convert CSV rows to Transaction objects
-       static func convertToTransactions(rows: [[String: String]],
-                                         columnMapping: [String: String],
-                                         selectedAccount: Account?,
-                                         modelContext: ModelContext) -> [Transaction]
-
-       // Fuzzy matching for column names
-       static func fuzzyMatch(csvColumn: String, targetFields: [String]) -> String?
-   }
-
-   enum ImportError: Error {
-       case fileReadError, invalidCSVFormat, missingRequiredColumns,
-            invalidDateFormat, invalidAmountFormat
-   }
-   ```
-
-2. **Fuzzy Matching Logic** (for column mapping):
-   ```swift
-   Target fields: ["date", "amount", "description", "debit", "credit", "type"]
-
-   Fuzzy matches:
-   - "Date" / "Transaction Date" / "Posted Date" → "date"
-   - "Amount" / "Debit" / "Withdrawal" → "debit"
-   - "Credit" / "Deposit" → "credit"
-   - "Description" / "Memo" / "Merchant" / "Payee" → "description"
-   - "Transaction Type" / "Type" / "Category" → "type"
-
-   Strategy: Levenshtein distance or simple substring matching
-   ```
-
-3. **Import Flow Views**:
-
-   **Step 1: File Selection Sheet** (`Views/ImportTransactionsSheet.swift`)
-   - Present UIDocumentPickerViewController for CSV file selection
-   - Show file name and size after selection
-   - "Next" button to proceed to column mapping
-
-   **Step 2: Column Mapping Sheet** (`Views/ImportColumnMappingSheet.swift`)
-   ```
-   CSV Column               →    Transaction Field
-   [Date            ▼]      →    Date (required)
-   [Description     ▼]      →    Description (required)
-   [Debit           ▼]      →    Amount (Debit = Expense)
-   [Credit          ▼]      →    Amount (Credit = Income)
-   [Transaction Type▼]      →    Notes (optional)
-   [Ignore          ▼]      →    Bank RTN (ignored)
-   [Ignore          ▼]      →    Account Number (ignored)
-
-   Account to Import Into: [Select Account ▼] (required)
-
-   Preview: Shows first 3 rows with mapped values
-   [Cancel] [Import]
-   ```
-
-   **Step 3: Import Progress & Results** (`Views/ImportResultsSheet.swift`)
-   - Progress indicator during import
-   - Results summary: "45 transactions imported successfully, 2 failed"
-   - Error details for failed rows (invalid date, missing amount, etc.)
-   - "Assign Categories" button → navigates to Budget tab
-   - "Done" button → returns to Transactions tab
-
-4. **CSV Parsing Strategy**:
-   - Use Swift's `String.split()` or simple CSV parser (no 3rd party library needed)
-   - Handle quoted fields with commas: `"Merchant, LLC"` → `Merchant, LLC`
-   - Trim whitespace from all fields
-   - Validate required columns present (date, amount OR debit/credit, description)
-
-5. **Date Parsing Strategy** (handle multiple formats):
-   ```swift
-   Supported formats:
-   - YYYY-MM-DD (ISO 8601) - most common
-   - MM/DD/YYYY (US format)
-   - DD/MM/YYYY (EU format)
-   - M/D/YYYY (single digit variants)
-
-   Use DateFormatter with multiple format attempts
-   ```
-
-6. **Amount Parsing Strategy**:
-   ```swift
-   // If separate Debit/Credit columns:
-   if debitValue.isNotEmpty {
-       amount = parseDecimal(debitValue)
-       type = .expense
-   } else if creditValue.isNotEmpty {
-       amount = parseDecimal(creditValue)
-       type = .income
-   }
-
-   // If single Amount column:
-   amount = abs(parseDecimal(amountValue))
-   type = amountValue.hasPrefix("-") ? .expense : .income
-
-   // Handle number formats: 1,234.56 or 1234.56 or 1.234,56
-   ```
-
-**Files to Create**:
-- `Utilities/ImportManager.swift` - Core import logic and CSV parsing
-- `Views/ImportTransactionsSheet.swift` - File picker and import initiation
-- `Views/ImportColumnMappingSheet.swift` - Column mapping UI with fuzzy matching
-- `Views/ImportResultsSheet.swift` - Import results and error reporting
-
-**Files to Modify**:
-- `Views/TransactionLogView.swift` - Add "Import" button to toolbar
-  ```swift
-  .toolbar {
-      ToolbarItem(placement: .topBarLeading) {
-          Button { showingImportSheet = true } label: {
-              Image(systemName: "square.and.arrow.down").iconAccent()
-          }
-      }
-  }
-  ```
-- `Models/Transaction.swift` - No changes needed (model supports all required fields)
-
-**Design Considerations**:
-- **Duplicate detection**: Check for existing transactions with same date + amount + description (warn user)
-- **Category assignment**: All imported transactions have `category = nil` initially
-  - Show banner in Budget tab: "You have 45 uncategorized transactions - assign categories"
-- **Account selection**: Required during import (user selects which Account these transactions belong to)
-- **Account balance impact**:
-  - Option A: Update account balance based on imported transactions (RECOMMENDED)
-  - Option B: Ignore balance column from CSV, only use transaction amounts
-- **Error handling**:
-  - Skip rows with invalid data (log errors)
-  - Continue import for valid rows
-  - Show summary: "43 imported, 2 failed"
-- **Transaction dates**: Import uses CSV dates (historical), not current date
-- **YNAB compliance**: Imported income increases "Ready to Assign" immediately (already occurred)
-- **File size limits**: Warn if CSV > 1000 rows or > 5MB
-- **Column mapping persistence**: Save last mapping for convenience (optional enhancement)
-
-**Testing Checklist**:
-- [ ] CSV file picker opens correctly
-- [ ] CSV parsing handles quoted fields with commas
-- [ ] Fuzzy matching correctly suggests column mappings
-- [ ] User can manually override column mappings
-- [ ] Preview shows first 3 rows correctly mapped
-- [ ] Import creates Transaction objects with correct fields
-- [ ] Debit transactions set type = .expense
-- [ ] Credit transactions set type = .income
-- [ ] Account balance updates correctly after import
-- [ ] Duplicate detection works (date + amount + description)
-- [ ] Invalid rows are skipped with error messages
-- [ ] Import results show success/failure counts
-- [ ] All imported transactions have category = nil
-- [ ] "Ready to Assign" updates correctly after income import
-- [ ] Date formats YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY all parse correctly
-- [ ] Amount formats with commas (1,234.56) parse correctly
-- [ ] Large files (500+ rows) import without crashes
-- [ ] Themes apply correctly to all import views
-- [ ] Accessibility: VoiceOver describes import flow clearly
-- [ ] Import button appears in Transactions tab toolbar
-
-**Acceptance Criteria**:
-- ✅ User can select CSV file from Files app
-- ✅ App parses CSV headers and suggests column mappings
-- ✅ Fuzzy matching pre-selects best matches for date, amount, description
-- ✅ User can override column mappings manually
-- ✅ Preview shows first 3 rows with mapped values
-- ✅ User selects target Account for import
-- ✅ Import creates Transaction objects with correct date, amount, description, type
-- ✅ All imported transactions have category = nil (user assigns later)
-- ✅ Account balance updates correctly based on imported transactions
-- ✅ Import results show success count and error details
-- ✅ Duplicate detection warns user (optional: allow skip duplicates)
-- ✅ Invalid rows skipped with clear error messages
-- ✅ "Ready to Assign" reflects imported income immediately
-- ✅ No app crashes with large files (500+ rows)
-- ✅ Only CSV format supported initially (OFX/QFX/QBO deferred to future enhancement)
-
-**Future Enhancements** (NOT in scope for 13.2):
-- OFX/QFX/QBO file format support
-- Automatic category assignment based on description keywords (e.g., "Uber" → Transportation)
-- Import scheduling / recurring imports
-- Bank account linking via Plaid (see future Architecture research)
+(No active enhancement requests - backlog clear)
 
 ---
 
 ## Active Development
 
-**Current Focus**: v1.10.0 In Progress - Compact Transaction Display Complete
-**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Enhancement 13.1 complete, ready for Enhancement 13.2
+**Current Focus**: v1.11.0 Complete - CSV Transaction Import with Fuzzy Column Mapping
+**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Enhancement 13.2 complete and user-tested
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
-2. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
-3. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
-4. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
-5. [2025-11-07] ✅ **Enhancement 11.1 COMPLETE**: Made category name editable in Edit Category sheet
+1. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
+2. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
+3. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
+4. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
+5. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.10.0 (in progress - Enhancement 13.1 complete, 13.2 pending)
+1. **Current Version**: v1.11.0 (complete - CSV Import feature fully functional)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors
 4. **Recently Completed**:
-   - ✅ Enhancement 13.1: Compact transaction display (TransactionLogView.swift - reduced height by 40%)
-   - ✅ v1.9.0: Date/Number format settings, Standard theme, category name editing
+   - ✅ Enhancement 13.2: CSV Transaction Import (ImportManager + ImportTransactionsSheet + ImportColumnMappingSheet + ImportResultsSheet)
+   - ✅ Dismissal callback chain ensures all sheets close on completion (user feedback addressed)
+   - ✅ User-tested with real CSV file - 0 errors
 5. **Active Backlog**:
-   - 🟢 **Enhancement 13.2**: CSV Transaction Import (with fuzzy column mapping) - READY TO START
+   - No active enhancement requests - backlog clear
 6. **Recommended Priority**:
-   - Test v1.10.0 compact transactions in simulator/device → Enhancement 13.2 (CSV Import)
-7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes (Enhancement 13.2 will need full suite)
+   - Continue user testing of v1.11.0 CSV import feature with various CSV formats
+   - Consider future enhancements: OFX/QFX file support, automatic category suggestions, bank linking
+7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
 8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-9. **Ready For**: User testing of v1.10.0 compact transactions or starting Enhancement 13.2
+9. **Ready For**: Production deployment or additional user testing
 
 ## Git Commit Strategy
 
