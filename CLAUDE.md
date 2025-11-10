@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.11.1 (Ready to Assign Bug Fix)
-**Last Updated**: November 9, 2025 (v1.11.1 - Critical YNAB Bug Fix)
+**Version**: 1.12.0 (Notification Badge Clearing)
+**Last Updated**: November 10, 2025 (v1.12.0 - UX Bug Fixes)
 **Methodology**: YNAB-Style Zero-Based Budgeting
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -110,6 +110,20 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
+**v1.12.0 (Complete):**
+- ✅ Bug 15.1: Fixed notification badge not clearing from app icon
+- ✅ Problem: App icon showed persistent notification badge with no way to remove it
+- ✅ Root Cause: Badge was set to 1 when scheduling notifications, but never cleared
+- ✅ Fix: Added `clearBadge()` function to NotificationManager
+- ✅ Modified: NotificationManager.swift (added clearBadge and clearDeliveredNotifications functions)
+- ✅ Modified: ZeroBasedBudgetApp.swift (added badge clearing on app launch and when returning from background)
+- ✅ Behavior: Badge now clears automatically when user opens app or returns from background
+- ✅ Bug 15.2: Investigated Swift Concurrency warning on physical device
+- ✅ Status: Warning "unsafeForcedSync called from Swift Concurrent context" appears on physical iPhone 17 Pro Max
+- ✅ Analysis: No direct `unsafeForcedSync` calls in codebase - likely internal SwiftData/Theme initialization behavior
+- ✅ Impact: Warning only (functional) - requires physical device testing to reproduce and pinpoint exact source
+- ✅ Testing: All 18 smoke tests pass
+
 **v1.11.1 (Complete):**
 - ✅ Bug 14.1: Fixed critical "Ready to Assign" calculation bug
 - ✅ Problem: Ready to Assign was using `startingBalance + income - budgeted` instead of `currentBalance - budgeted`
@@ -117,7 +131,6 @@ ZeroBasedBudget/
 - ✅ Root Cause: Formula was double-counting expenses (expenses already reduced current balance)
 - ✅ Fix: Changed to correct YNAB formula: `currentAccountBalances - totalBudgeted`
 - ✅ Modified: BudgetPlanningView.swift (readyToAssign computed property and calculateReadyToAssign function)
-- ✅ Testing: All 18 smoke tests pass
 - ✅ YNAB Compliance: Now correctly reflects that "Ready to Assign = Money you have NOW - Money already assigned"
 
 **v1.11.0 (Complete):**
@@ -261,35 +274,35 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: v1.11.1 Complete - Critical YNAB Bug Fix (Ready to Assign)
-**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Bug 14.1 fixed and tested
+**Current Focus**: v1.12.0 Complete - UX Bug Fixes (Notification Badge Clearing)
+**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Bugs 15.1 and 15.2 addressed
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-09] ✅ **Bug 14.1 COMPLETE**: Fixed critical Ready to Assign calculation (now uses currentBalance not startingBalance)
-2. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
-3. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
-4. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
-5. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
+1. [2025-11-10] ✅ **Bug 15.1 COMPLETE**: Fixed notification badge not clearing from app icon
+2. [2025-11-10] ✅ **Bug 15.2 INVESTIGATED**: Swift Concurrency warning on physical device (warning only, functional)
+3. [2025-11-09] ✅ **Bug 14.1 COMPLETE**: Fixed critical Ready to Assign calculation (now uses currentBalance not startingBalance)
+4. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
+5. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.11.1 (critical YNAB bug fix - Ready to Assign now correct)
+1. **Current Version**: v1.12.0 (notification badge clearing + Swift Concurrency investigation)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors
 4. **Recently Completed**:
-   - ✅ Bug 14.1: Fixed critical Ready to Assign calculation (was double-counting expenses)
-   - ✅ Formula changed from `startingBalance + income - budgeted` to `currentBalance - budgeted`
-   - ✅ All smoke tests pass with corrected formula
+   - ✅ Bug 15.1: Fixed notification badge clearing (badge now clears on app launch and foreground)
+   - ✅ Bug 15.2: Investigated Swift Concurrency warning (warning only, likely internal SwiftData behavior)
+   - ✅ All smoke tests pass with new badge clearing functionality
 5. **Active Backlog**:
    - No active enhancement requests or bugs - backlog clear
 6. **Recommended Priority**:
-   - User testing of v1.11.1 with real accounts and transactions to verify fix
-   - Monitor for any edge cases with account balances and Ready to Assign
+   - User testing of v1.12.0 with notifications on physical device to verify badge clearing
+   - Monitor Swift Concurrency warning on physical device (if reproducible, investigate further)
    - Consider future enhancements: OFX/QFX file support, automatic category suggestions, bank linking
 7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
 8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-9. **Ready For**: Production deployment after user testing of Bug 14.1 fix
+9. **Ready For**: Production deployment after user testing of Bug 15.1 fix
 
 ## Git Commit Strategy
 

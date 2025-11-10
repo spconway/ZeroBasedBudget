@@ -204,6 +204,24 @@ class NotificationManager {
         print("🗑️ Cancelled all pending notifications")
     }
 
+    /// Clear app icon badge count
+    /// Call this when user opens the app or views notifications to remove the badge indicator
+    func clearBadge() async {
+        do {
+            try await UNUserNotificationCenter.current().setBadgeCount(0)
+            print("✨ Badge cleared")
+        } catch {
+            print("❌ Error clearing badge: \(error)")
+        }
+    }
+
+    /// Remove all delivered notifications from notification center
+    /// This clears notifications from the notification list without affecting pending scheduled notifications
+    func clearDeliveredNotifications() {
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+        print("🗑️ Cleared all delivered notifications")
+    }
+
     // MARK: - Notification Identifiers
 
     /// Notification type for different timing options

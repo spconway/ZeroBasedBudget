@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct ZeroBasedBudgetApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     let container: ModelContainer
 
     init() {
@@ -63,9 +64,19 @@ struct ZeroBasedBudgetApp: App {
                 .task {
                     // Request notification permissions on app launch
                     await requestNotificationPermissions()
+                    // Clear badge on app launch
+                    await clearBadgeOnLaunch()
                 }
         }
         .modelContainer(container)
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            // Clear badge when app becomes active (returns from background)
+            if newPhase == .active {
+                Task {
+                    await clearBadgeOnLaunch()
+                }
+            }
+        }
     }
 
     // MARK: - Notification Permissions
@@ -78,6 +89,12 @@ struct ZeroBasedBudgetApp: App {
         } else {
             print("⚠️ Notification permissions denied")
         }
+    }
+
+    /// Clear badge when app becomes active
+    /// This removes the notification badge from the app icon
+    private func clearBadgeOnLaunch() async {
+        await NotificationManager.shared.clearBadge()
     }
 }
 
