@@ -197,61 +197,68 @@ struct TransactionRow: View {
     var numberFormat: String = "1,234.56"
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(transaction.transactionDescription)
-                        .font(.headline)
-						.foregroundColor(colors.textPrimary)
+        VStack(spacing: 4) {
+            // Main row: Description and Amount with icon
+            HStack(alignment: .center, spacing: 8) {
+                // Transaction type icon
+                Image(systemName: transaction.type == .income ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                    .font(.title3)
+                    .iconTransactionType(isIncome: transaction.type == .income)
 
+                // Description
+                Text(transaction.transactionDescription)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(colors.textPrimary)
+                    .lineLimit(1)
+
+                Spacer(minLength: 8)
+
+                // Amount
+                Text(CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(transaction.type == .income ? colors.success : colors.error)
+            }
+
+            // Second row: Category badge and Net Worth
+            HStack(spacing: 8) {
+                // Category badge
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color(hex: transaction.category?.colorHex ?? "999999"))
+                        .frame(width: 8, height: 8)
                     Text(transaction.category?.name ?? "Uncategorized")
-                        .font(.caption)
-						.foregroundStyle(colors.textSecondary)
-
-                    if let account = transaction.account {
-                        Text(account.name)
-							.italic()
-                            .font(.caption)
-                            .foregroundStyle(colors.textTertiary)
-                    }
-
-                    Text(DateFormatHelpers.formatDate(transaction.date, using: dateFormat))
-                        .font(.caption)
-						.foregroundStyle(colors.textSecondary)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Image(systemName: transaction.type == .income ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                            .font(.body)
-                            .iconTransactionType(isIncome: transaction.type == .income)
-
-                        Text(CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat))
-                            .font(.body.bold())
-                            .foregroundStyle(transaction.type == .income ? colors.success : colors.error)
-                    }
-
-                    Text(transaction.type.rawValue.capitalized)
                         .font(.caption)
                         .foregroundStyle(colors.textSecondary)
                 }
-            }
 
-            // Running net worth display (total across all accounts after this transaction)
-            HStack {
-                Text("Net Worth:")
-                    .font(.caption)
-					.foregroundStyle(colors.textTertiary)
                 Spacer()
-                Text(CurrencyFormatHelpers.formatCurrency(runningBalance, currencyCode: currencyCode, numberFormat: numberFormat))
-                    .font(.caption.bold())
-                    .foregroundStyle(runningBalance >= 0 ? colors.success : colors.error)
+
+                // Net Worth (compact)
+                HStack(spacing: 4) {
+                    Text("Net:")
+                        .font(.caption2)
+                        .foregroundStyle(colors.textTertiary)
+                    Text(CurrencyFormatHelpers.formatCurrency(runningBalance, currencyCode: currencyCode, numberFormat: numberFormat))
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(runningBalance >= 0 ? colors.success : colors.error)
+                }
             }
-            .padding(.top, 4)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    // Accessibility label for VoiceOver - includes all information
+    private var accessibilityLabel: String {
+        let typeLabel = transaction.type == .income ? "Income" : "Expense"
+        let amountText = CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat)
+        let categoryText = transaction.category?.name ?? "Uncategorized"
+        let dateText = DateFormatHelpers.accessibilityDateLabel(for: transaction.date)
+        let accountText = transaction.account?.name ?? "No account"
+        let netWorthText = CurrencyFormatHelpers.formatCurrency(runningBalance, currencyCode: currencyCode, numberFormat: numberFormat)
+
+        return "\(typeLabel), \(transaction.transactionDescription), \(amountText), Category: \(categoryText), Date: \(dateText), Account: \(accountText), Net worth: \(netWorthText)"
     }
 }
 
