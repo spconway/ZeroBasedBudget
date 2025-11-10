@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.11.0 (CSV Transaction Import)
-**Last Updated**: November 9, 2025 (v1.11.0 Complete - 158 Unit Tests)
+**Version**: 1.11.1 (Ready to Assign Bug Fix)
+**Last Updated**: November 9, 2025 (v1.11.1 - Critical YNAB Bug Fix)
 **Methodology**: YNAB-Style Zero-Based Budgeting
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -109,6 +109,16 @@ ZeroBasedBudget/
 ```
 
 ## Recent Version History
+
+**v1.11.1 (Complete):**
+- ✅ Bug 14.1: Fixed critical "Ready to Assign" calculation bug
+- ✅ Problem: Ready to Assign was using `startingBalance + income - budgeted` instead of `currentBalance - budgeted`
+- ✅ Impact: When creating accounts or adding transactions, Ready to Assign showed incorrect amounts
+- ✅ Root Cause: Formula was double-counting expenses (expenses already reduced current balance)
+- ✅ Fix: Changed to correct YNAB formula: `currentAccountBalances - totalBudgeted`
+- ✅ Modified: BudgetPlanningView.swift (readyToAssign computed property and calculateReadyToAssign function)
+- ✅ Testing: All 18 smoke tests pass
+- ✅ YNAB Compliance: Now correctly reflects that "Ready to Assign = Money you have NOW - Money already assigned"
 
 **v1.11.0 (Complete):**
 - ✅ Enhancement 13.2: CSV Transaction Import with fuzzy column mapping
@@ -251,34 +261,35 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: v1.11.0 Complete - CSV Transaction Import with Fuzzy Column Mapping
-**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Enhancement 13.2 complete and user-tested
+**Current Focus**: v1.11.1 Complete - Critical YNAB Bug Fix (Ready to Assign)
+**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Bug 14.1 fixed and tested
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
-2. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
-3. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
-4. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
-5. [2025-11-07] ✅ **Bug 11.1 COMPLETE**: Fixed Date Format setting to apply throughout app (DateFormatHelpers.swift)
+1. [2025-11-09] ✅ **Bug 14.1 COMPLETE**: Fixed critical Ready to Assign calculation (now uses currentBalance not startingBalance)
+2. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
+3. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
+4. [2025-11-09] ✅ **Bug 12.1 COMPLETE**: Added Standard theme with iOS system colors (StandardTheme.swift)
+5. [2025-11-09] ✅ **Bug 11.2 COMPLETE**: Fixed Number Format setting to apply throughout app (CurrencyFormatHelpers.swift)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.11.0 (complete - CSV Import feature fully functional)
+1. **Current Version**: v1.11.1 (critical YNAB bug fix - Ready to Assign now correct)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors
 4. **Recently Completed**:
-   - ✅ Enhancement 13.2: CSV Transaction Import (ImportManager + ImportTransactionsSheet + ImportColumnMappingSheet + ImportResultsSheet)
-   - ✅ Dismissal callback chain ensures all sheets close on completion (user feedback addressed)
-   - ✅ User-tested with real CSV file - 0 errors
+   - ✅ Bug 14.1: Fixed critical Ready to Assign calculation (was double-counting expenses)
+   - ✅ Formula changed from `startingBalance + income - budgeted` to `currentBalance - budgeted`
+   - ✅ All smoke tests pass with corrected formula
 5. **Active Backlog**:
-   - No active enhancement requests - backlog clear
+   - No active enhancement requests or bugs - backlog clear
 6. **Recommended Priority**:
-   - Continue user testing of v1.11.0 CSV import feature with various CSV formats
+   - User testing of v1.11.1 with real accounts and transactions to verify fix
+   - Monitor for any edge cases with account balances and Ready to Assign
    - Consider future enhancements: OFX/QFX file support, automatic category suggestions, bank linking
 7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
 8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-9. **Ready For**: Production deployment or additional user testing
+9. **Ready For**: Production deployment after user testing of Bug 14.1 fix
 
 ## Git Commit Strategy
 
