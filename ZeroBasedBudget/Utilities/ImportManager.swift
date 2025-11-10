@@ -9,7 +9,6 @@ import Foundation
 import SwiftData
 
 /// Manages CSV transaction import with intelligent column mapping and fuzzy matching
-@MainActor
 class ImportManager {
 
     // MARK: - Types
