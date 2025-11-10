@@ -20,6 +20,7 @@ struct TransactionLogView: View {
 
     @State private var searchText = ""
     @State private var showingAddSheet = false
+    @State private var showingImportSheet = false
     @State private var transactionToEdit: Transaction?
 
     // Currency code from settings
@@ -145,6 +146,15 @@ struct TransactionLogView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search transactions")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showingImportSheet = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.down")
+                            .iconAccent()
+                    }
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingAddSheet = true
@@ -156,6 +166,9 @@ struct TransactionLogView: View {
             }
             .sheet(isPresented: $showingAddSheet) {
                 AddTransactionSheet(categories: categories, currencyCode: currencyCode, numberFormat: numberFormat)
+            }
+            .sheet(isPresented: $showingImportSheet) {
+                ImportTransactionsSheet()
             }
             .sheet(item: $transactionToEdit) { transaction in
                 EditTransactionSheet(transaction: transaction, categories: categories, currencyCode: currencyCode, numberFormat: numberFormat)
