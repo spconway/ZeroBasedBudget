@@ -215,105 +215,313 @@ ZeroBasedBudget/
 
 ## Active Issues & Enhancement Backlog
 
-### 🏗️ Architecture / Project Changes
+### 🟢 Priority 3 Enhancement Requests
 
-**Architecture 2: Bank Account Linking Research Spike**
+**Enhancement 13.1: Compact Transaction Display**
 
-**Objective**: Research and evaluate top SDKs for securely linking bank accounts to enable automatic transaction import, with focus on security, pricing for personal use, and integration complexity.
+**Objective**: Reduce the amount of information displayed per transaction row in TransactionLogView to increase transaction density and improve scannability. Detailed information should be available in the edit sheet.
 
-**Research Goals**:
-1. Identify top 3-5 bank account linking SDKs
-2. Compare security features, compliance, and data protection
-3. Analyze pricing models (focus on free tier for personal use or low-volume usage)
-4. Estimate integration effort (code changes, data model changes, UI changes)
-5. Evaluate compatibility with local-first, privacy-focused architecture
-6. Provide recommendation on viability for this project
+**User Story**: As a user with many transactions, I want to see more transactions on screen at once so that I can quickly scroll through my transaction history without excessive scrolling.
 
-**Known Candidates**:
-- **Plaid** (mentioned by user as top choice)
-- **Yodlee**
-- **Finicity (Mastercard)**
-- **TrueLayer** (UK/EU focused)
-- **Teller**
-- **MX**
-- **Akoya**
+**Motivation**:
+- Current TransactionRow shows 6 pieces of information: description, category, account (optional), date, amount/icon, type, plus net worth balance
+- This creates tall rows (~100-120pt) limiting transactions visible per screen to 5-7
+- With 100+ transactions, finding transactions requires excessive scrolling
+- Key information (amount, description) gets lost in visual clutter
 
-**Research Checklist**:
-- [ ] Compare security & compliance (OAuth 2.0, bank-level encryption, SOC 2, PCI compliance)
-- [ ] Pricing analysis for personal use:
-  - [ ] Free tier availability and limits
-  - [ ] Per-user pricing
-  - [ ] Per-transaction pricing
-  - [ ] Volume pricing breakpoints
-- [ ] Feature comparison:
-  - [ ] Number of supported financial institutions (US, international)
-  - [ ] Transaction history depth (days/months)
-  - [ ] Real-time vs batch transaction sync
-  - [ ] Balance checking
-  - [ ] Account metadata (name, type, routing numbers)
-- [ ] SDK/API evaluation:
-  - [ ] iOS SDK availability (Swift/SwiftUI native?)
-  - [ ] API documentation quality
-  - [ ] Code examples for SwiftUI
-  - [ ] Authentication flow (OAuth, Link, embedded UI)
-  - [ ] Error handling patterns
-- [ ] Integration complexity assessment:
-  - [ ] **Data model changes needed** (new tables? modify Transaction model?)
-  - [ ] **View changes needed** (new account linking UI, transaction import reconciliation)
-  - [ ] **Privacy impact** (conflicts with local-only storage? requires cloud sync?)
-  - [ ] **Testing requirements** (sandbox environments, test credentials)
-  - [ ] **Estimated LOC changes** (lines of code)
-  - [ ] **Estimated time to MVP** (basic account linking + transaction import)
+**YNAB Methodology Check**: ✅ Neutral - UI optimization doesn't affect budgeting logic or YNAB principles
 
-**Specific Questions to Answer**:
-1. **Plaid Analysis**:
-   - Free tier details for personal use?
-   - Pricing after free tier?
-   - iOS SDK quality and SwiftUI compatibility?
-   - Privacy concerns (data storage, sharing, retention)?
+**Implementation Approach**:
 
-2. **Architecture Impact**:
-   - Does bank linking require cloud backend? (Currently local-only via SwiftData)
-   - Can transaction import work with local-first approach?
-   - OAuth flow compatibility with iPhone-only app?
-   - Account reconciliation UX (manual vs automatic transaction matching)?
+1. **Simplify TransactionRow** (TransactionLogView.swift:199-256)
+   - **Show only**: Description (headline), Amount with icon (colored), Category badge (small)
+   - **Move to edit sheet**: Account name, date, transaction type label, notes
+   - **Keep**: Net worth running balance (collapsible or smaller)
+   - **Target height**: ~60-70pt per row (down from ~100-120pt)
 
-3. **YNAB Methodology Compatibility**:
-   - How to handle automatic transaction imports while maintaining "budget money you have" principle?
-   - Should auto-imported transactions be unbudgeted until manually assigned?
-   - Account balance sync vs manual starting balance?
+2. **Design Pattern** (inspired by banking apps like Chase, Bank of America):
+   ```
+   [Icon] Description                    +$50.00
+          Category Badge
+          Net Worth: $2,500 (optional: collapsible)
+   ```
 
-**Deliverables**:
-- [ ] Comparison matrix (security, pricing, features, ease of integration)
-- [ ] Top recommendation with justification
-- [ ] Estimated code changes by file/module:
-  - Models/ (new models? Transaction changes?)
-  - Views/ (new UI? modified sheets?)
-  - Utilities/ (API client? sync manager?)
-  - Tests/ (integration tests? API mocks?)
-- [ ] LOC estimate (lines added/modified/deleted)
-- [ ] Time estimate for implementation (hours/days)
-- [ ] Privacy/security risk assessment
-- [ ] YNAB methodology impact assessment
-- [ ] Go/No-Go recommendation with reasoning
+3. **Alternative Layouts to Consider**:
+   - **Option A (Minimal)**: Description + Amount only, 2-line row (~50pt)
+   - **Option B (Balanced)**: Description + Category badge + Amount, 2-line row (~60pt) ⭐ Recommended
+   - **Option C (Comfortable)**: Current layout but smaller fonts and spacing (~80pt)
+
+**Files to Modify**:
+- `Views/TransactionLogView.swift` (line 199-256: TransactionRow)
+  - Reduce VStack spacing from 8 to 4
+  - Remove account name display (move to edit sheet)
+  - Remove date display (already in section header)
+  - Remove "Income/Expense" type label (icon is sufficient)
+  - Make net worth balance smaller or collapsible
+  - Reduce padding from .vertical(4) to .vertical(2)
 
 **Design Considerations**:
-- **Local-first conflict**: Current app is 100% local (no cloud sync) - bank APIs typically require server communication
-- **Privacy preservation**: How to minimize data sharing while enabling bank linking?
-- **Manual override**: Always allow manual transaction entry (don't force bank linking)
-- **Transaction reconciliation**: UX for matching imported transactions to categories
-- **Multiple accounts**: Support linking multiple bank accounts to multiple app Accounts
-- **Error handling**: Bank connection failures, re-authentication, institution outages
+- **Preserve tap-to-edit**: Users can still tap row to see full details
+- **Keep visual hierarchy**: Amount should be most prominent (bold, colored)
+- **Accessibility**: Ensure VoiceOver still reads all information
+- **Search compatibility**: Search already works on description/category
+- **Section headers**: Date already shown in section header (redundant in row)
+- **Icon color coding**: Income (green arrow up) vs Expense (red arrow down) provides type at a glance
 
-**Success Criteria**:
-- ✅ Comprehensive comparison of 3-5 SDKs across all criteria
-- ✅ Clear pricing breakdown for personal use case (1 user, 2-3 accounts, ~100 transactions/month)
-- ✅ Detailed integration estimate (files, LOC, time)
-- ✅ Security and privacy assessment
-- ✅ YNAB methodology compatibility evaluation
-- ✅ Clear recommendation with trade-offs documented
+**Testing Checklist**:
+- [ ] TransactionRow height reduced by 30-40%
+- [ ] More transactions visible per screen (8-10 vs 5-7)
+- [ ] Tap on transaction opens edit sheet with full details
+- [ ] Search still works correctly
+- [ ] VoiceOver reads essential information
+- [ ] Net worth balance still visible (if kept)
+- [ ] Visual hierarchy clear (amount most prominent)
+- [ ] No layout breaks with long descriptions or category names
+- [ ] Themes apply correctly to compact layout
+- [ ] Works in both light and dark mode
 
-**Note**: This is a research spike only - no implementation. Findings will inform future enhancement decisions.
+**Acceptance Criteria**:
+- ✅ Transaction row height reduced by at least 30%
+- ✅ All detailed information (account, date, type, notes) accessible via tap-to-edit
+- ✅ Amount and description remain clearly visible
+- ✅ Category shown as badge or small label
+- ✅ No loss of functionality (search, edit, delete still work)
+- ✅ Accessibility maintained (VoiceOver support)
+- ✅ User can view 8-10 transactions per screen (vs current 5-7)
+
+---
+
+**Enhancement 13.2: CSV Transaction Import**
+
+**Objective**: Enable users to import transactions from bank-exported CSV files with intelligent column mapping and fuzzy matching to streamline bulk transaction entry.
+
+**User Story**: As a user, I want to import my bank transactions from a CSV file so that I can quickly populate my budget with historical transactions without manual entry.
+
+**Motivation**:
+- Manual entry of 50-100 transactions is tedious and error-prone
+- Most banks support CSV export (universal format)
+- Users migrating from other tools or starting fresh need bulk import
+- Reduces onboarding friction for new users with transaction history
+
+**YNAB Methodology Check**: ✅ Compatible with YNAB principles
+- Imported transactions are **historical** (money that already existed)
+- Transactions still need manual category assignment (maintains "give every dollar a job")
+- Account balances update correctly based on transaction history
+- No automatic budgeting - user must still assign income to categories
+
+**CSV Format Analysis** (from Docs/Samples/transactions-2.csv):
+```
+Columns: Date, Bank RTN, Account Number, Transaction Type, Description, Debit, Credit, Check Number, Account Running Balance
+Sample row: 2025-11-07,211370545,8247596915,DIRECTDEBIT,L A FITNESS 9492558100,10,,,3006.65
+```
+
+**Key Observations**:
+- **Debit/Credit columns**: Separate columns (Debit = expense, Credit = income)
+- **Amount handling**: Debit OR Credit populated, never both
+- **Date format**: YYYY-MM-DD (ISO 8601)
+- **Transaction Type**: Bank-specific codes (DIRECTDEBIT, DEBIT, CREDIT, FEE)
+- **Description**: Often includes merchant name + location + codes
+- **Optional fields**: Bank RTN, Account Number, Check Number, Running Balance
+
+**Transaction Model Mapping**:
+```swift
+Transaction model fields:
+- date: Date                    → CSV "Date" column
+- amount: Decimal               → CSV "Debit" OR "Credit" column
+- transactionDescription: String → CSV "Description" column
+- type: TransactionType         → Infer from Debit/Credit (Debit=expense, Credit=income)
+- category: BudgetCategory?     → User assigns post-import (nil initially)
+- account: Account?             → User selects during import
+- notes: String?                → Optional (could use CSV "Transaction Type")
+```
+
+**Implementation Approach**:
+
+1. **Create ImportManager Utility** (`Utilities/ImportManager.swift`)
+   ```swift
+   class ImportManager {
+       // Parse CSV file into structured data
+       static func parseCSV(_ fileURL: URL) -> Result<[[String: String]], ImportError>
+
+       // Detect column headers and suggest mappings
+       static func suggestColumnMapping(headers: [String]) -> [String: String]
+
+       // Convert CSV rows to Transaction objects
+       static func convertToTransactions(rows: [[String: String]],
+                                         columnMapping: [String: String],
+                                         selectedAccount: Account?,
+                                         modelContext: ModelContext) -> [Transaction]
+
+       // Fuzzy matching for column names
+       static func fuzzyMatch(csvColumn: String, targetFields: [String]) -> String?
+   }
+
+   enum ImportError: Error {
+       case fileReadError, invalidCSVFormat, missingRequiredColumns,
+            invalidDateFormat, invalidAmountFormat
+   }
+   ```
+
+2. **Fuzzy Matching Logic** (for column mapping):
+   ```swift
+   Target fields: ["date", "amount", "description", "debit", "credit", "type"]
+
+   Fuzzy matches:
+   - "Date" / "Transaction Date" / "Posted Date" → "date"
+   - "Amount" / "Debit" / "Withdrawal" → "debit"
+   - "Credit" / "Deposit" → "credit"
+   - "Description" / "Memo" / "Merchant" / "Payee" → "description"
+   - "Transaction Type" / "Type" / "Category" → "type"
+
+   Strategy: Levenshtein distance or simple substring matching
+   ```
+
+3. **Import Flow Views**:
+
+   **Step 1: File Selection Sheet** (`Views/ImportTransactionsSheet.swift`)
+   - Present UIDocumentPickerViewController for CSV file selection
+   - Show file name and size after selection
+   - "Next" button to proceed to column mapping
+
+   **Step 2: Column Mapping Sheet** (`Views/ImportColumnMappingSheet.swift`)
+   ```
+   CSV Column               →    Transaction Field
+   [Date            ▼]      →    Date (required)
+   [Description     ▼]      →    Description (required)
+   [Debit           ▼]      →    Amount (Debit = Expense)
+   [Credit          ▼]      →    Amount (Credit = Income)
+   [Transaction Type▼]      →    Notes (optional)
+   [Ignore          ▼]      →    Bank RTN (ignored)
+   [Ignore          ▼]      →    Account Number (ignored)
+
+   Account to Import Into: [Select Account ▼] (required)
+
+   Preview: Shows first 3 rows with mapped values
+   [Cancel] [Import]
+   ```
+
+   **Step 3: Import Progress & Results** (`Views/ImportResultsSheet.swift`)
+   - Progress indicator during import
+   - Results summary: "45 transactions imported successfully, 2 failed"
+   - Error details for failed rows (invalid date, missing amount, etc.)
+   - "Assign Categories" button → navigates to Budget tab
+   - "Done" button → returns to Transactions tab
+
+4. **CSV Parsing Strategy**:
+   - Use Swift's `String.split()` or simple CSV parser (no 3rd party library needed)
+   - Handle quoted fields with commas: `"Merchant, LLC"` → `Merchant, LLC`
+   - Trim whitespace from all fields
+   - Validate required columns present (date, amount OR debit/credit, description)
+
+5. **Date Parsing Strategy** (handle multiple formats):
+   ```swift
+   Supported formats:
+   - YYYY-MM-DD (ISO 8601) - most common
+   - MM/DD/YYYY (US format)
+   - DD/MM/YYYY (EU format)
+   - M/D/YYYY (single digit variants)
+
+   Use DateFormatter with multiple format attempts
+   ```
+
+6. **Amount Parsing Strategy**:
+   ```swift
+   // If separate Debit/Credit columns:
+   if debitValue.isNotEmpty {
+       amount = parseDecimal(debitValue)
+       type = .expense
+   } else if creditValue.isNotEmpty {
+       amount = parseDecimal(creditValue)
+       type = .income
+   }
+
+   // If single Amount column:
+   amount = abs(parseDecimal(amountValue))
+   type = amountValue.hasPrefix("-") ? .expense : .income
+
+   // Handle number formats: 1,234.56 or 1234.56 or 1.234,56
+   ```
+
+**Files to Create**:
+- `Utilities/ImportManager.swift` - Core import logic and CSV parsing
+- `Views/ImportTransactionsSheet.swift` - File picker and import initiation
+- `Views/ImportColumnMappingSheet.swift` - Column mapping UI with fuzzy matching
+- `Views/ImportResultsSheet.swift` - Import results and error reporting
+
+**Files to Modify**:
+- `Views/TransactionLogView.swift` - Add "Import" button to toolbar
+  ```swift
+  .toolbar {
+      ToolbarItem(placement: .topBarLeading) {
+          Button { showingImportSheet = true } label: {
+              Image(systemName: "square.and.arrow.down").iconAccent()
+          }
+      }
+  }
+  ```
+- `Models/Transaction.swift` - No changes needed (model supports all required fields)
+
+**Design Considerations**:
+- **Duplicate detection**: Check for existing transactions with same date + amount + description (warn user)
+- **Category assignment**: All imported transactions have `category = nil` initially
+  - Show banner in Budget tab: "You have 45 uncategorized transactions - assign categories"
+- **Account selection**: Required during import (user selects which Account these transactions belong to)
+- **Account balance impact**:
+  - Option A: Update account balance based on imported transactions (RECOMMENDED)
+  - Option B: Ignore balance column from CSV, only use transaction amounts
+- **Error handling**:
+  - Skip rows with invalid data (log errors)
+  - Continue import for valid rows
+  - Show summary: "43 imported, 2 failed"
+- **Transaction dates**: Import uses CSV dates (historical), not current date
+- **YNAB compliance**: Imported income increases "Ready to Assign" immediately (already occurred)
+- **File size limits**: Warn if CSV > 1000 rows or > 5MB
+- **Column mapping persistence**: Save last mapping for convenience (optional enhancement)
+
+**Testing Checklist**:
+- [ ] CSV file picker opens correctly
+- [ ] CSV parsing handles quoted fields with commas
+- [ ] Fuzzy matching correctly suggests column mappings
+- [ ] User can manually override column mappings
+- [ ] Preview shows first 3 rows correctly mapped
+- [ ] Import creates Transaction objects with correct fields
+- [ ] Debit transactions set type = .expense
+- [ ] Credit transactions set type = .income
+- [ ] Account balance updates correctly after import
+- [ ] Duplicate detection works (date + amount + description)
+- [ ] Invalid rows are skipped with error messages
+- [ ] Import results show success/failure counts
+- [ ] All imported transactions have category = nil
+- [ ] "Ready to Assign" updates correctly after income import
+- [ ] Date formats YYYY-MM-DD, MM/DD/YYYY, DD/MM/YYYY all parse correctly
+- [ ] Amount formats with commas (1,234.56) parse correctly
+- [ ] Large files (500+ rows) import without crashes
+- [ ] Themes apply correctly to all import views
+- [ ] Accessibility: VoiceOver describes import flow clearly
+- [ ] Import button appears in Transactions tab toolbar
+
+**Acceptance Criteria**:
+- ✅ User can select CSV file from Files app
+- ✅ App parses CSV headers and suggests column mappings
+- ✅ Fuzzy matching pre-selects best matches for date, amount, description
+- ✅ User can override column mappings manually
+- ✅ Preview shows first 3 rows with mapped values
+- ✅ User selects target Account for import
+- ✅ Import creates Transaction objects with correct date, amount, description, type
+- ✅ All imported transactions have category = nil (user assigns later)
+- ✅ Account balance updates correctly based on imported transactions
+- ✅ Import results show success count and error details
+- ✅ Duplicate detection warns user (optional: allow skip duplicates)
+- ✅ Invalid rows skipped with clear error messages
+- ✅ "Ready to Assign" reflects imported income immediately
+- ✅ No app crashes with large files (500+ rows)
+- ✅ Only CSV format supported initially (OFX/QFX/QBO deferred to future enhancement)
+
+**Future Enhancements** (NOT in scope for 13.2):
+- OFX/QFX/QBO file format support
+- Automatic category assignment based on description keywords (e.g., "Uber" → Transportation)
+- Import scheduling / recurring imports
+- Bank account linking via Plaid (see future Architecture research)
 
 ---
 
@@ -341,12 +549,13 @@ ZeroBasedBudget/
    - ✅ Bug 12.1: Standard theme with iOS system colors (StandardTheme.swift)
    - ✅ Enhancement 11.1: Category name editing (with validation)
 5. **Active Backlog**:
-   - 🏗️ **Architecture 2**: Bank account linking research spike (Plaid, Yodlee, etc.)
+   - 🟢 **Enhancement 13.1**: Compact Transaction Display (reduce row height by 30-40%)
+   - 🟢 **Enhancement 13.2**: CSV Transaction Import (with fuzzy column mapping)
 6. **Recommended Priority**:
-   - Test v1.9.0 in simulator/device → Architecture 2 (Bank linking research) → Future enhancements
-7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
+   - Test v1.9.0 in simulator/device → Enhancement 13.1 (Quick UX win) → Enhancement 13.2 (CSV Import)
+7. **Test Strategy**: Use smoke tests for UI changes (Enhancement 13.1), full suite for model/calculation changes (Enhancement 13.2)
 8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-9. **Ready For**: User testing of v1.9.0 or Architecture 2 (Bank linking research)
+9. **Ready For**: User testing of v1.9.0 or starting Enhancement 13.1
 
 ## Git Commit Strategy
 
