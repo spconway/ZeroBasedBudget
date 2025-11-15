@@ -1,0 +1,78 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="390" height="844" fill="#F8F9FA"/>
+
+  <!-- Title -->
+  <text x="20" y="60" font-family="Georgia, serif" font-size="32" font-weight="700" fill="#1A3A52">Banking Professional</text>
+  <text x="20" y="85" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7589">Traditional, trustworthy, classic design</text>
+
+  <!-- Input Fields Section -->
+  <text x="20" y="130" font-family="SF Pro Text, -apple-system" font-size="12" font-weight="600" letter-spacing="1.5" fill="#7B8794">INPUT FIELDS</text>
+
+  <!-- Amount Input -->
+  <rect x="20" y="145" width="350" height="70" rx="4" fill="#FFFFFF"/>
+  <rect x="20" y="145" width="350" height="70" rx="4" stroke="#D1D9E0" stroke-width="1.5"/>
+  <line x1="20" y1="214" x2="370" y2="214" stroke="#2C5F8D" stroke-width="2"/>
+  <text x="32" y="163" font-family="SF Pro Text, -apple-system" font-size="11" font-weight="600" letter-spacing="0.5" fill="#7B8794">AMOUNT</text>
+  <text x="32" y="198" font-family="Georgia, serif" font-size="32" font-weight="400" fill="#1A3A52">$1,250.00</text>
+
+  <!-- Description Input -->
+  <rect x="20" y="230" width="350" height="58" rx="4" fill="#FFFFFF"/>
+  <rect x="20" y="230" width="350" height="58" rx="4" stroke="#D1D9E0" stroke-width="1.5"/>
+  <line x1="20" y1="287" x2="370" y2="287" stroke="#7B8794" stroke-width="1"/>
+  <text x="32" y="248" font-family="SF Pro Text, -apple-system" font-size="11" font-weight="600" letter-spacing="0.5" fill="#7B8794">DESCRIPTION</text>
+  <text x="32" y="272" font-family="SF Pro Text, -apple-system" font-size="16" fill="#1A3A52">Grocery shopping</text>
+
+  <!-- List Display Section -->
+  <text x="20" y="330" font-family="SF Pro Text, -apple-system" font-size="12" font-weight="600" letter-spacing="1.5" fill="#7B8794">LIST ITEMS</text>
+
+  <!-- Transaction Item 1 (Expense) -->
+  <rect x="20" y="345" width="350" height="76" rx="4" fill="#FFFFFF"/>
+  <rect x="20" y="345" width="350" height="76" rx="4" stroke="#D1D9E0" stroke-width="1.5"/>
+  <line x1="20" y1="420" x2="370" y2="420" stroke="#E8EDF2" stroke-width="1"/>
+  <rect x="32" y="361" width="44" height="44" rx="4" fill="#FFF5F5"/>
+  <rect x="32" y="361" width="44" height="44" rx="4" stroke="#E8B4B8" stroke-width="1"/>
+  <text x="54" y="390" font-family="SF Pro Text, -apple-system" font-size="20" text-anchor="middle" fill="#C53030">↓</text>
+  <text x="88" y="376" font-family="Georgia, serif" font-size="17" font-weight="600" fill="#1A3A52">Whole Foods</text>
+  <text x="88" y="396" font-family="SF Pro Text, -apple-system" font-size="13" fill="#7B8794">Groceries</text>
+  <text x="340" y="376" font-family="SF Pro Text, -apple-system" font-size="11" fill="#7B8794" text-anchor="end">NOV 14, 2025</text>
+  <text x="340" y="398" font-family="Georgia, serif" font-size="19" font-weight="600" fill="#C53030" text-anchor="end">-$127.43</text>
+
+  <!-- Transaction Item 2 (Income) -->
+  <rect x="20" y="433" width="350" height="76" rx="4" fill="#FFFFFF"/>
+  <rect x="20" y="433" width="350" height="76" rx="4" stroke="#D1D9E0" stroke-width="1.5"/>
+  <line x1="20" y1="508" x2="370" y2="508" stroke="#E8EDF2" stroke-width="1"/>
+  <rect x="32" y="449" width="44" height="44" rx="4" fill="#F0F9F4"/>
+  <rect x="32" y="449" width="44" height="44" rx="4" stroke="#B8DCC8" stroke-width="1"/>
+  <text x="54" y="478" font-family="SF Pro Text, -apple-system" font-size="20" text-anchor="middle" fill="#2F7C4F">↑</text>
+  <text x="88" y="464" font-family="Georgia, serif" font-size="17" font-weight="600" fill="#1A3A52">Paycheck</text>
+  <text x="88" y="484" font-family="SF Pro Text, -apple-system" font-size="13" fill="#7B8794">Income</text>
+  <text x="340" y="464" font-family="SF Pro Text, -apple-system" font-size="11" fill="#7B8794" text-anchor="end">NOV 13, 2025</text>
+  <text x="340" y="486" font-family="Georgia, serif" font-size="19" font-weight="600" fill="#2F7C4F" text-anchor="end">+$3,200.00</text>
+
+  <!-- Category Budget Item -->
+  <rect x="20" y="521" width="350" height="86" rx="4" fill="#FFFFFF"/>
+  <rect x="20" y="521" width="350" height="86" rx="4" stroke="#D1D9E0" stroke-width="1.5"/>
+  <line x1="20" y1="606" x2="370" y2="606" stroke="#E8EDF2" stroke-width="1"/>
+  <text x="32" y="545" font-family="Georgia, serif" font-size="18" font-weight="600" fill="#1A3A52">Groceries</text>
+  <text x="32" y="565" font-family="SF Pro Text, -apple-system" font-size="13" fill="#7B8794">Spent: $450.00</text>
+  <text x="32" y="583" font-family="SF Pro Text, -apple-system" font-size="13" fill="#7B8794">Budget: $600.00</text>
+  <rect x="280" y="534" width="78" height="28" rx="4" fill="#FFF9E6"/>
+  <rect x="280" y="534" width="78" height="28" rx="4" stroke="#E8D7A6" stroke-width="1"/>
+  <text x="319" y="553" font-family="Georgia, serif" font-size="15" font-weight="600" fill="#9C6F19" text-anchor="middle">$150.00</text>
+  <text x="340" y="580" font-family="SF Pro Text, -apple-system" font-size="10" fill="#7B8794" text-anchor="end">REMAINING</text>
+  <!-- Progress bar -->
+  <rect x="32" y="592" width="326" height="6" rx="3" fill="#E8EDF2"/>
+  <rect x="32" y="592" width="245" height="6" rx="3" fill="#9C6F19"/>
+
+  <!-- Key Features -->
+  <rect x="20" y="640" width="350" height="165" rx="4" fill="#FFFFFF"/>
+  <rect x="20" y="640" width="350" height="165" rx="4" stroke="#D1D9E0" stroke-width="1.5"/>
+  <rect x="20" y="640" width="350" height="3" rx="1" fill="#2C5F8D"/>
+  <text x="32" y="670" font-family="Georgia, serif" font-size="16" font-weight="700" fill="#1A3A52">Key Features</text>
+  <text x="32" y="695" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7589">• Serif typography for amounts/headings</text>
+  <text x="32" y="717" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7589">• Conservative color palette (blues, grays)</text>
+  <text x="32" y="739" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7589">• Small corner radius (4px) for formality</text>
+  <text x="32" y="761" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7589">• Bottom border lines for emphasis</text>
+  <text x="32" y="783" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7589">• Square icon boxes with subtle backgrounds</text>
+</svg>

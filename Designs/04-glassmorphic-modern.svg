@@ -1,0 +1,97 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Glass effect filters -->
+    <filter id="glass">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0" result="blur"/>
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo"/>
+    </filter>
+
+    <filter id="glassBlur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="390" height="844" fill="url(#bgGrad)"/>
+
+  <!-- Noise texture overlay -->
+  <rect width="390" height="844" fill="#FFFFFF" opacity="0.03"/>
+
+  <!-- Title -->
+  <text x="20" y="60" font-family="SF Pro Display, -apple-system" font-size="32" font-weight="700" fill="#FFFFFF">Glassmorphic</text>
+  <text x="20" y="85" font-family="SF Pro Text, -apple-system" font-size="14" fill="#E0E7FF">Frosted glass, backdrop blur, translucent layers</text>
+
+  <!-- Input Fields Section -->
+  <text x="20" y="130" font-family="SF Pro Text, -apple-system" font-size="13" font-weight="600" fill="#E0E7FF">INPUT FIELDS</text>
+
+  <!-- Amount Input Glass Card -->
+  <rect x="20" y="145" width="350" height="70" rx="20" fill="#FFFFFF" opacity="0.15"/>
+  <rect x="20" y="145" width="350" height="70" rx="20" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.3"/>
+  <text x="36" y="167" font-family="SF Pro Text, -apple-system" font-size="11" font-weight="600" fill="#E0E7FF">AMOUNT</text>
+  <text x="36" y="199" font-family="SF Pro Display, -apple-system" font-size="32" font-weight="600" fill="#FFFFFF">$1,250.00</text>
+
+  <!-- Description Input Glass Card -->
+  <rect x="20" y="230" width="350" height="58" rx="20" fill="#FFFFFF" opacity="0.15"/>
+  <rect x="20" y="230" width="350" height="58" rx="20" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.3"/>
+  <text x="36" y="252" font-family="SF Pro Text, -apple-system" font-size="11" font-weight="600" fill="#E0E7FF">DESCRIPTION</text>
+  <text x="36" y="274" font-family="SF Pro Text, -apple-system" font-size="16" fill="#FFFFFF">Grocery shopping</text>
+
+  <!-- List Display Section -->
+  <text x="20" y="330" font-family="SF Pro Text, -apple-system" font-size="13" font-weight="600" fill="#E0E7FF">LIST ITEMS</text>
+
+  <!-- Transaction Item 1 (Expense) -->
+  <rect x="20" y="345" width="350" height="76" rx="24" fill="#FFFFFF" opacity="0.18"/>
+  <rect x="20" y="345" width="350" height="76" rx="24" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.4"/>
+  <circle cx="50" cy="383" r="22" fill="#FF6B9D" opacity="0.25"/>
+  <circle cx="50" cy="383" r="22" fill="none" stroke="#FF6B9D" stroke-width="2" opacity="0.6"/>
+  <path d="M50 377 L50 389 M56 383 L50 389 L44 383" stroke="#FFE5ED" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="84" y="378" font-family="SF Pro Text, -apple-system" font-size="17" font-weight="600" fill="#FFFFFF">Whole Foods</text>
+  <text x="84" y="397" font-family="SF Pro Text, -apple-system" font-size="13" fill="#E0E7FF">Groceries • Nov 14</text>
+  <text x="340" y="388" font-family="SF Pro Display, -apple-system" font-size="20" font-weight="700" fill="#FFB3C6" text-anchor="end">-$127.43</text>
+
+  <!-- Transaction Item 2 (Income) -->
+  <rect x="20" y="433" width="350" height="76" rx="24" fill="#FFFFFF" opacity="0.18"/>
+  <rect x="20" y="433" width="350" height="76" rx="24" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.4"/>
+  <circle cx="50" cy="471" r="22" fill="#4ECDC4" opacity="0.25"/>
+  <circle cx="50" cy="471" r="22" fill="none" stroke="#4ECDC4" stroke-width="2" opacity="0.6"/>
+  <path d="M50 477 L50 465 M44 471 L50 465 L56 471" stroke="#D4F4F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="84" y="466" font-family="SF Pro Text, -apple-system" font-size="17" font-weight="600" fill="#FFFFFF">Paycheck</text>
+  <text x="84" y="485" font-family="SF Pro Text, -apple-system" font-size="13" fill="#E0E7FF">Income • Nov 13</text>
+  <text x="340" y="476" font-family="SF Pro Display, -apple-system" font-size="20" font-weight="700" fill="#A3F3ED" text-anchor="end">+$3,200.00</text>
+
+  <!-- Category Budget Item -->
+  <rect x="20" y="521" width="350" height="86" rx="24" fill="#FFFFFF" opacity="0.18"/>
+  <rect x="20" y="521" width="350" height="86" rx="24" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.4"/>
+  <text x="36" y="548" font-family="SF Pro Text, -apple-system" font-size="18" font-weight="700" fill="#FFFFFF">Groceries</text>
+  <text x="36" y="568" font-family="SF Pro Text, -apple-system" font-size="13" fill="#E0E7FF">$450 of $600</text>
+  <circle cx="349" cy="543" r="4" fill="#FFC947"/>
+  <text x="340" y="548" font-family="SF Pro Display, -apple-system" font-size="18" font-weight="700" fill="#FFC947" text-anchor="end">$150</text>
+  <text x="340" y="565" font-family="SF Pro Text, -apple-system" font-size="10" font-weight="600" fill="#E0E7FF" text-anchor="end">REMAINING</text>
+  <!-- Glass progress bar -->
+  <rect x="36" y="578" width="318" height="8" rx="4" fill="#FFFFFF" opacity="0.15"/>
+  <rect x="36" y="578" width="318" height="8" rx="4" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.2"/>
+  <defs>
+    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFC947;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#FFE066;stop-opacity:0.9" />
+    </linearGradient>
+  </defs>
+  <rect x="36" y="578" width="239" height="8" rx="4" fill="url(#progressGrad)"/>
+  <rect x="36" y="578" width="239" height="8" rx="4" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+
+  <!-- Key Features -->
+  <rect x="20" y="640" width="350" height="165" rx="24" fill="#FFFFFF" opacity="0.2"/>
+  <rect x="20" y="640" width="350" height="165" rx="24" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.5"/>
+  <text x="36" y="670" font-family="SF Pro Text, -apple-system" font-size="15" font-weight="700" fill="#FFFFFF">Key Features</text>
+  <text x="36" y="695" font-family="SF Pro Text, -apple-system" font-size="14" fill="#E0E7FF">• Translucent white overlays (15-20% opacity)</text>
+  <text x="36" y="717" font-family="SF Pro Text, -apple-system" font-size="14" fill="#E0E7FF">• Subtle border strokes for definition</text>
+  <text x="36" y="739" font-family="SF Pro Text, -apple-system" font-size="14" fill="#E0E7FF">• Vibrant gradient background</text>
+  <text x="36" y="761" font-family="SF Pro Text, -apple-system" font-size="14" fill="#E0E7FF">• Large corner radius (20-24px)</text>
+  <text x="36" y="783" font-family="SF Pro Text, -apple-system" font-size="14" fill="#E0E7FF">• Light text on dark/colorful backgrounds</text>
+</svg>
