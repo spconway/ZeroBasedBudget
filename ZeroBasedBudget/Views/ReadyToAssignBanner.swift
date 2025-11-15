@@ -52,7 +52,7 @@ struct ReadyToAssignBanner: View {
     }
 }
 
-#Preview {
+#Preview("Ready to Assign States") {
     VStack(spacing: 20) {
         // Zero balance (goal state)
         ReadyToAssignBanner(amount: 0, color: .green)

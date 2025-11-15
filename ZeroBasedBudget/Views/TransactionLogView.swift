@@ -393,7 +393,7 @@ struct AddTransactionSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar(content: {
+            .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -406,7 +406,7 @@ struct AddTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            })
+            }
         }
     }
 
@@ -567,7 +567,7 @@ struct EditTransactionSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar(content: {
+            .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -580,7 +580,7 @@ struct EditTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            })
+            }
         }
     }
 
