@@ -210,7 +210,9 @@ struct BudgetPlanningView: View {
 
     private var fixedExpensesSection: some View {
         Section(header: HStack {
-            Text("Fixed Expenses")
+            Text("FIXED EXPENSES")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
             Spacer()
             Button(action: { addCategory(type: "Fixed") }) {
                 Image(systemName: "plus.circle.fill")
@@ -255,7 +257,9 @@ struct BudgetPlanningView: View {
 
     private var variableExpensesSection: some View {
         Section(header: HStack {
-            Text("Variable Expenses")
+            Text("VARIABLE EXPENSES")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
             Spacer()
             Button(action: { addCategory(type: "Variable") }) {
                 Image(systemName: "plus.circle.fill")
@@ -300,7 +304,9 @@ struct BudgetPlanningView: View {
 
     private var quarterlyExpensesSection: some View {
         Section(header: HStack {
-            Text("Quarterly Expenses (Monthly)")
+            Text("QUARTERLY EXPENSES (MONTHLY)")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
             Spacer()
             Button(action: { addCategory(type: "Quarterly") }) {
                 Image(systemName: "plus.circle.fill")
@@ -425,7 +431,9 @@ struct BudgetPlanningView: View {
                 .padding(.vertical, 4)
             }
         } header: {
-            Text("Budget Summary")
+            Text("BUDGET SUMMARY")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
         } footer: {
             if readyToAssign == 0 {
                 Text("Perfect! Every dollar has a job. You've successfully budgeted all available money.")
@@ -911,6 +919,8 @@ struct CategoryRow: View {
                     Spacer()
 
                     Text(CurrencyFormatHelpers.formatCurrency(category.budgetedAmount, currencyCode: currencyCode, numberFormat: numberFormat))
+                        .font(.system(size: 17, weight: .light))  // Light weight for amounts
+                        .monospacedDigit()
                         .foregroundStyle(colors.textSecondary)
 
                     Image(systemName: "chevron.right")
