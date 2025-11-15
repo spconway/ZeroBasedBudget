@@ -311,7 +311,7 @@ struct AddTransactionSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Transaction Details") {
+                Section {
                     DatePicker("Date", selection: $date, displayedComponents: .date)
 
                     TextField("Description", text: $description)
@@ -321,9 +321,14 @@ struct AddTransactionSheet: View {
                         Text("Expense").tag(TransactionType.expense)
                     }
                     .pickerStyle(.segmented)
+                } header: {
+                    Text("TRANSACTION DETAILS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Amount") {
+                Section {
                     TextField("Amount", value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
 
@@ -332,9 +337,14 @@ struct AddTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.error)
                     }
+                } header: {
+                    Text("AMOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Category") {
+                Section {
                     Picker("Category", selection: $selectedCategory) {
                         Text("Select Category").tag(nil as BudgetCategory?)
                         ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
@@ -354,9 +364,14 @@ struct AddTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.warning)
                     }
+                } header: {
+                    Text("CATEGORY")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Account") {
+                Section {
                     Picker("Account", selection: $selectedAccount) {
                         Text("Select Account").tag(nil as Account?)
                         ForEach(accounts.sorted(by: { $0.name < $1.name })) { account in
@@ -380,11 +395,21 @@ struct AddTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.textSecondary)
                     }
+                } header: {
+                    Text("ACCOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Notes (Optional)") {
+                Section {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
+                } header: {
+                    Text("NOTES (OPTIONAL)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -485,7 +510,7 @@ struct EditTransactionSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Transaction Details") {
+                Section {
                     DatePicker("Date", selection: $date, displayedComponents: .date)
 
                     TextField("Description", text: $description)
@@ -495,9 +520,14 @@ struct EditTransactionSheet: View {
                         Text("Expense").tag(TransactionType.expense)
                     }
                     .pickerStyle(.segmented)
+                } header: {
+                    Text("TRANSACTION DETAILS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Amount") {
+                Section {
                     TextField("Amount", value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
 
@@ -506,9 +536,14 @@ struct EditTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.error)
                     }
+                } header: {
+                    Text("AMOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Category") {
+                Section {
                     Picker("Category", selection: $selectedCategory) {
                         Text("Select Category").tag(nil as BudgetCategory?)
                         ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
@@ -528,9 +563,14 @@ struct EditTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.warning)
                     }
+                } header: {
+                    Text("CATEGORY")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Account") {
+                Section {
                     Picker("Account", selection: $selectedAccount) {
                         Text("Select Account").tag(nil as Account?)
                         ForEach(accounts.sorted(by: { $0.name < $1.name })) { account in
@@ -554,11 +594,21 @@ struct EditTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.textSecondary)
                     }
+                } header: {
+                    Text("ACCOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Notes (Optional)") {
+                Section {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
+                } header: {
+                    Text("NOTES (OPTIONAL)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
             .scrollContentBackground(.hidden)

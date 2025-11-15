@@ -1016,7 +1016,7 @@ struct AddCategorySheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Category Details")) {
+                Section {
                     TextField("Category Name", text: $categoryName)
 
                     LabeledContent("Budgeted Amount") {
@@ -1024,9 +1024,14 @@ struct AddCategorySheet: View {
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
                     }
+                } header: {
+                    Text("CATEGORY DETAILS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section(header: Text("Due Date (Optional)")) {
+                Section {
                     Toggle("Set Due Date", isOn: $hasDueDate)
 
                     if hasDueDate {
@@ -1047,10 +1052,15 @@ struct AddCategorySheet: View {
                                 .foregroundStyle(colors.textSecondary)
                         }
                     }
+                } header: {
+                    Text("DUE DATE (OPTIONAL)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
                 if hasDueDate {
-                    Section(header: Text("Notification Settings"), footer: Text("Choose when to be notified about this budget due date")) {
+                    Section {
                         Toggle("Notify 7 days before", isOn: $notify7DaysBefore)
                         Toggle("Notify 2 days before", isOn: $notify2DaysBefore)
                         Toggle("Notify on due date", isOn: $notifyOnDueDate)
@@ -1060,6 +1070,13 @@ struct AddCategorySheet: View {
                         if notifyCustomDays {
                             Stepper("Notify \(customDaysCount) day\(customDaysCount == 1 ? "" : "s") before", value: $customDaysCount, in: 1...30)
                         }
+                    } header: {
+                        Text("NOTIFICATION SETTINGS")
+                            .font(.system(size: 11, weight: .semibold))
+                            .tracking(0.8)
+                            .foregroundStyle(colors.textSecondary)
+                    } footer: {
+                        Text("Choose when to be notified about this budget due date")
                     }
                 }
 
@@ -1202,7 +1219,7 @@ struct EditCategorySheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("Category Details")) {
+                Section {
                     LabeledContent("Name") {
                         TextField("Category Name", text: $categoryName)
                             .multilineTextAlignment(.trailing)
@@ -1225,9 +1242,14 @@ struct EditCategorySheet: View {
                             .multilineTextAlignment(.trailing)
                             .keyboardType(.decimalPad)
                     }
+                } header: {
+                    Text("CATEGORY DETAILS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section(header: Text("Due Date (Optional)")) {
+                Section {
                     Toggle("Set Due Date", isOn: $hasDueDate)
 
                     if hasDueDate {
@@ -1248,10 +1270,15 @@ struct EditCategorySheet: View {
                                 .foregroundStyle(colors.textSecondary)
                         }
                     }
+                } header: {
+                    Text("DUE DATE (OPTIONAL)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
                 if hasDueDate {
-                    Section(header: Text("Notification Settings"), footer: Text("Choose when to be notified about this budget due date")) {
+                    Section {
                         Toggle("Notify 7 days before", isOn: $notify7DaysBefore)
                         Toggle("Notify 2 days before", isOn: $notify2DaysBefore)
                         Toggle("Notify on due date", isOn: $notifyOnDueDate)
@@ -1261,6 +1288,13 @@ struct EditCategorySheet: View {
                         if notifyCustomDays {
                             Stepper("Notify \(customDaysCount) day\(customDaysCount == 1 ? "" : "s") before", value: $customDaysCount, in: 1...30)
                         }
+                    } header: {
+                        Text("NOTIFICATION SETTINGS")
+                            .font(.system(size: 11, weight: .semibold))
+                            .tracking(0.8)
+                            .foregroundStyle(colors.textSecondary)
+                    } footer: {
+                        Text("Choose when to be notified about this budget due date")
                     }
                 }
             }
