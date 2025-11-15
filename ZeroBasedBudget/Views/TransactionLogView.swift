@@ -126,9 +126,10 @@ struct TransactionLogView: View {
                                 }
                         }
                     } header: {
-                        Text(BudgetCalculations.formatTransactionSectionDate(date, using: dateFormat))
-                            .font(.headline)
-							.foregroundStyle(colors.textTertiary)
+                        Text(BudgetCalculations.formatTransactionSectionDate(date, using: dateFormat).uppercased())
+                            .font(.system(size: 13, weight: .semibold))
+                            .tracking(0.8)
+							.foregroundStyle(colors.textSecondary)
                     }
                 }
             }
@@ -210,25 +211,28 @@ struct TransactionRow: View {
     var numberFormat: String = "1,234.56"
 
     var body: some View {
-        VStack(spacing: 4) {
-            // Main row: Description and Amount with icon
-            HStack(alignment: .center, spacing: 8) {
-                // Transaction type icon
-                Image(systemName: transaction.type == .income ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                    .font(.title3)
-                    .iconTransactionType(isIncome: transaction.type == .income)
+        VStack(spacing: 6) {
+            // Main row: Description and Amount with refined icon badge
+            HStack(alignment: .center, spacing: 12) {
+                // Refined icon badge with circular background
+                RefinedIconBadge(
+                    systemName: transaction.type == .income ? "arrow.up" : "arrow.down",
+                    color: transaction.type == .income ? colors.success : colors.error,
+                    size: 36
+                )
 
                 // Description
                 Text(transaction.transactionDescription)
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundColor(colors.textPrimary)
                     .lineLimit(1)
 
                 Spacer(minLength: 8)
 
-                // Amount
+                // Amount with light weight for refinement
                 Text(CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat))
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(size: 17, weight: .light))  // Light weight for amounts
+                    .monospacedDigit()
                     .foregroundStyle(transaction.type == .income ? colors.success : colors.error)
             }
 
@@ -246,18 +250,20 @@ struct TransactionRow: View {
 
                 Spacer()
 
-                // Net Worth (compact)
+                // Net Worth (compact) with light weight
                 HStack(spacing: 4) {
                     Text("Net:")
                         .font(.caption2)
                         .foregroundStyle(colors.textTertiary)
                     Text(CurrencyFormatHelpers.formatCurrency(runningBalance, currencyCode: currencyCode, numberFormat: numberFormat))
-                        .font(.caption2.weight(.medium))
+                        .font(.caption.weight(.light))  // Light weight for net worth
+                        .monospacedDigit()
                         .foregroundStyle(runningBalance >= 0 ? colors.success : colors.error)
                 }
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
     }
