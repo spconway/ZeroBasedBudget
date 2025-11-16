@@ -165,12 +165,25 @@ struct BudgetPlanningView: View {
     }
 
     // Ready to Assign calculation using YNAB methodology
-    // Formula: Current Account Balances - Total Budgeted (this month only)
-    // Current balances already reflect all transactions (income and expenses)
+    // Formula: (Current Account Balances + Total Expenses) - Total Budgeted
+    // Equivalent to: (Starting Balance + Income) - Total Budgeted
+    //
+    // Why we add expenses back:
+    // - Account balances are ALREADY reduced by expenses
+    // - We need to calculate money available to budget BEFORE expenses
+    // - This prevents double-counting expenses (once in reduced balance, once in budgeted)
     private var readyToAssign: Decimal {
         let currentBalances = allAccounts.reduce(0) { $0 + $1.balance }
+        let totalExpenses = BudgetCalculations.calculateTotalExpenses(
+            in: selectedMonth,
+            from: allTransactions
+        )
 
-        return currentBalances - totalAssigned
+        // Money available to budget = current balance + expenses (what we started with)
+        // This represents: Starting Balance + Income
+        let moneyAvailableToBudget = currentBalances + totalExpenses
+
+        return moneyAvailableToBudget - totalAssigned
     }
 
     // Color coding for Ready to Assign
