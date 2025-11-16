@@ -30,6 +30,7 @@ struct RefinedCard<Content: View>: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(borderColor, lineWidth: 1)
+					.padding(.vertical, padding/2)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
     }
