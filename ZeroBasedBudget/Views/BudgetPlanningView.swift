@@ -15,6 +15,7 @@ struct BudgetPlanningView: View {
     @Query private var allCategories: [BudgetCategory]
     @Query private var allTransactions: [Transaction]
     @Query private var allMonthlyBudgets: [MonthlyBudget]
+    @Query private var allCategoryMonthlyBudgets: [CategoryMonthlyBudget]
     @Query private var allAccounts: [Account]  // NEW: Query accounts for YNAB-style budgeting
     @Query private var settings: [AppSettings]
 
@@ -108,6 +109,31 @@ struct BudgetPlanningView: View {
         return newBudget
     }
 
+    // MARK: - Category Monthly Budget Helpers
+
+    /// Get the monthly budget for a category in the selected month
+    /// Creates one if it doesn't exist (with proper carry-forward)
+    private func getMonthlyBudget(for category: BudgetCategory) -> CategoryMonthlyBudget {
+        return CategoryMigrationHelper.getOrCreateMonthlyBudget(
+            for: category,
+            month: selectedMonth,
+            allTransactions: allTransactions,
+            in: modelContext
+        )
+    }
+
+    /// Get the available balance for a category in the selected month
+    /// Formula: budgetedAmount + availableFromPrevious - actualSpent
+    private func getAvailableBalance(for category: BudgetCategory) -> Decimal {
+        let monthlyBudget = getMonthlyBudget(for: category)
+        let actualSpent = BudgetCalculations.calculateActualSpending(
+            for: category,
+            in: selectedMonth,
+            from: allTransactions
+        )
+        return monthlyBudget.totalAvailable(actualSpent: actualSpent)
+    }
+
     /// Calculate Ready to Assign for a specific month
     /// Calculate Ready to Assign using YNAB methodology
     /// Formula: Current Account Balances - Total Budgeted
@@ -139,13 +165,17 @@ struct BudgetPlanningView: View {
         BudgetCalculations.calculateTotalIncome(in: selectedMonth, from: allTransactions)
     }
 
-    // Total amount assigned to all budget categories
+    // Total amount assigned to all budget categories THIS MONTH
+    // Uses CategoryMonthlyBudget to get per-month budgeted amounts
     private var totalAssigned: Decimal {
-        allCategories.reduce(0) { $0 + $1.budgetedAmount }
+        allCategories.reduce(0) { total, category in
+            let monthlyBudget = getMonthlyBudget(for: category)
+            return total + monthlyBudget.budgetedAmount
+        }
     }
 
     // Ready to Assign calculation using YNAB methodology
-    // Formula: Current Account Balances - Total Budgeted
+    // Formula: Current Account Balances - Total Budgeted (this month only)
     // Current balances already reflect all transactions (income and expenses)
     private var readyToAssign: Decimal {
         let currentBalances = allAccounts.reduce(0) { $0 + $1.balance }
@@ -175,18 +205,24 @@ struct BudgetPlanningView: View {
         }
     }
 
-    // MARK: - Category Totals
+    // MARK: - Category Totals (using monthly budgets)
 
     private var totalFixedExpenses: Decimal {
-        fixedExpenseCategories.reduce(0) { $0 + $1.budgetedAmount }
+        fixedExpenseCategories.reduce(0) { total, category in
+            total + getMonthlyBudget(for: category).budgetedAmount
+        }
     }
 
     private var totalVariableExpenses: Decimal {
-        variableExpenseCategories.reduce(0) { $0 + $1.budgetedAmount }
+        variableExpenseCategories.reduce(0) { total, category in
+            total + getMonthlyBudget(for: category).budgetedAmount
+        }
     }
 
     private var totalQuarterlyExpenses: Decimal {
-        quarterlyExpenseCategories.reduce(0) { $0 + $1.budgetedAmount }
+        quarterlyExpenseCategories.reduce(0) { total, category in
+            total + getMonthlyBudget(for: category).budgetedAmount
+        }
     }
 
     private var totalExpenses: Decimal {
@@ -873,6 +909,8 @@ struct CategoryRow: View {
     @Environment(\.theme) private var theme
     @Environment(\.themeColors) private var colors
     let category: BudgetCategory
+    let budgetedThisMonth: Decimal  // Amount budgeted THIS month only
+    let availableBalance: Decimal  // Total available (budgeted + carried - spent)
     let readyToAssign: Decimal
     let actualSpent: Decimal  // NEW: Enhancement 7.2 - Track actual spending
     let onEdit: () -> Void
@@ -914,19 +952,20 @@ struct CategoryRow: View {
 						}
 						
 						Spacer()
-						
-						Text(CurrencyFormatHelpers.formatCurrency(category.budgetedAmount, currencyCode: currencyCode, numberFormat: numberFormat))
+
+						Text(CurrencyFormatHelpers.formatCurrency(availableBalance, currencyCode: currencyCode, numberFormat: numberFormat))
 							.font(.system(size: 17, weight: .light))  // Light weight for amounts
 							.monospacedDigit()
-							.foregroundStyle(colors.textSecondary)
-						
+							.foregroundStyle(availableBalance >= 0 ? colors.textSecondary : colors.error)
+
 						Image(systemName: "chevron.right")
 							.font(.caption)
 							.iconNeutral()
 					}
-					
-					// NEW: Enhancement 7.2 - Progress bar showing spending
-					CategoryProgressBar(spent: actualSpent, budgeted: category.budgetedAmount)
+
+					// NEW: Enhancement 7.2 - Progress bar showing spending vs available
+					// Total available includes budgeted this month + carried from previous - spent
+					CategoryProgressBar(spent: actualSpent, budgeted: availableBalance + actualSpent)
 						.frame(height: 6)
 				}
             }

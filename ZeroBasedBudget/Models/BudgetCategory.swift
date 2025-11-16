@@ -12,7 +12,7 @@ import SwiftData
 final class BudgetCategory {
     @Attribute(.unique)
     var name: String
-    var budgetedAmount: Decimal
+    var budgetedAmount: Decimal  // DEPRECATED: Use CategoryMonthlyBudget instead. Kept for migration.
     var categoryType: String  // "Fixed", "Variable", "Quarterly", "Income"
     var colorHex: String
     var dueDate: Date?  // DEPRECATED: Kept for backward compatibility. Use dueDayOfMonth instead.
@@ -29,6 +29,9 @@ final class BudgetCategory {
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.category)
     var transactions: [Transaction] = []
+
+    @Relationship(deleteRule: .cascade, inverse: \CategoryMonthlyBudget.category)
+    var monthlyBudgets: [CategoryMonthlyBudget] = []
 
     init(name: String, budgetedAmount: Decimal, categoryType: String, colorHex: String, dueDate: Date? = nil) {
         self.name = name
