@@ -465,6 +465,7 @@ struct DonutChartData: Identifiable {
 // MARK: - Detailed List Section
 
 struct DetailedListSection: View {
+	@Environment(\.themeColors) private var colors
     let categoryComparisons: [CategoryComparison]
     var currencyCode: String = "USD"
     var numberFormat: String = "1,234.56"
