@@ -41,7 +41,7 @@ struct BudgetPlanningView: View {
 
     // Undo action data structure
     struct UndoAction {
-        let categoryChanges: [(category: BudgetCategory, previousAmount: Decimal)]
+        let monthlyBudgetChanges: [(monthlyBudget: CategoryMonthlyBudget, previousAmount: Decimal)]
         let actionDescription: String
     }
 
@@ -132,17 +132,6 @@ struct BudgetPlanningView: View {
             from: allTransactions
         )
         return monthlyBudget.totalAvailable(actualSpent: actualSpent)
-    }
-
-    /// Calculate Ready to Assign for a specific month
-    /// Calculate Ready to Assign using YNAB methodology
-    /// Formula: Current Account Balances - Total Budgeted
-    /// Current balances already reflect all transactions (income and expenses)
-    private func calculateReadyToAssign(for month: Date) -> Decimal {
-        let currentBalances = allAccounts.reduce(0) { $0 + $1.balance }
-        let totalBudgeted = allCategories.reduce(0) { $0 + $1.budgetedAmount }
-
-        return currentBalances - totalBudgeted
     }
 
     /// Get previous month's Ready to Assign for comparison
@@ -261,14 +250,18 @@ struct BudgetPlanningView: View {
                     .italic()
             } else {
                 ForEach(fixedExpenseCategories) { category in
+                    let monthlyBudget = getMonthlyBudget(for: category)
+                    let actualSpent = BudgetCalculations.calculateActualSpending(
+                        for: category,
+                        in: selectedMonth,
+                        from: allTransactions
+                    )
                     CategoryRow(
                         category: category,
+                        budgetedThisMonth: monthlyBudget.budgetedAmount,
+                        availableBalance: monthlyBudget.totalAvailable(actualSpent: actualSpent),
                         readyToAssign: readyToAssign,
-                        actualSpent: BudgetCalculations.calculateActualSpending(
-                            for: category,
-                            in: selectedMonth,
-                            from: allTransactions
-                        ),
+                        actualSpent: actualSpent,
                         onEdit: {
                             editingCategory = category
                         },
@@ -308,14 +301,18 @@ struct BudgetPlanningView: View {
                     .italic()
             } else {
                 ForEach(variableExpenseCategories) { category in
+                    let monthlyBudget = getMonthlyBudget(for: category)
+                    let actualSpent = BudgetCalculations.calculateActualSpending(
+                        for: category,
+                        in: selectedMonth,
+                        from: allTransactions
+                    )
                     CategoryRow(
                         category: category,
+                        budgetedThisMonth: monthlyBudget.budgetedAmount,
+                        availableBalance: monthlyBudget.totalAvailable(actualSpent: actualSpent),
                         readyToAssign: readyToAssign,
-                        actualSpent: BudgetCalculations.calculateActualSpending(
-                            for: category,
-                            in: selectedMonth,
-                            from: allTransactions
-                        ),
+                        actualSpent: actualSpent,
                         onEdit: {
                             editingCategory = category
                         },
@@ -355,14 +352,18 @@ struct BudgetPlanningView: View {
                     .italic()
             } else {
                 ForEach(quarterlyExpenseCategories) { category in
+                    let monthlyBudget = getMonthlyBudget(for: category)
+                    let actualSpent = BudgetCalculations.calculateActualSpending(
+                        for: category,
+                        in: selectedMonth,
+                        from: allTransactions
+                    )
                     CategoryRow(
                         category: category,
+                        budgetedThisMonth: monthlyBudget.budgetedAmount,
+                        availableBalance: monthlyBudget.totalAvailable(actualSpent: actualSpent),
                         readyToAssign: readyToAssign,
-                        actualSpent: BudgetCalculations.calculateActualSpending(
-                            for: category,
-                            in: selectedMonth,
-                            from: allTransactions
-                        ),
+                        actualSpent: actualSpent,
                         onEdit: {
                             editingCategory = category
                         },
@@ -545,7 +546,8 @@ struct BudgetPlanningView: View {
                 })
             }
             .sheet(item: $editingCategory) { category in
-                EditCategorySheet(category: category, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { updatedName, updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                let monthlyBudget = getMonthlyBudget(for: category)
+                EditCategorySheet(category: category, initialAmount: monthlyBudget.budgetedAmount, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { updatedName, updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
                     updateCategory(
                         category,
                         name: updatedName,
@@ -646,18 +648,21 @@ struct BudgetPlanningView: View {
     private func quickAssignToCategory(_ category: BudgetCategory) {
         guard readyToAssign > 0 else { return }
 
+        // Get the monthly budget for current month
+        let monthlyBudget = getMonthlyBudget(for: category)
+
         // Save undo information
-        let previousAmount = category.budgetedAmount
+        let previousAmount = monthlyBudget.budgetedAmount
         let assignedAmount = readyToAssign
 
-        // Add remaining Ready to Assign to this category
-        category.budgetedAmount += readyToAssign
+        // Add remaining Ready to Assign to this category's monthly budget
+        monthlyBudget.budgetedAmount += readyToAssign
         try? modelContext.save()
 
         // Set up undo
         let formattedAmount = assignedAmount.formatted(.currency(code: currencyCode))
         undoAction = UndoAction(
-            categoryChanges: [(category, previousAmount)],
+            monthlyBudgetChanges: [(monthlyBudget, previousAmount)],
             actionDescription: "Assigned \(formattedAmount) to \(category.name)"
         )
         showUndoBanner()
@@ -666,15 +671,19 @@ struct BudgetPlanningView: View {
     private func assignAllRemaining() {
         guard readyToAssign > 0, !allCategories.isEmpty else { return }
 
-        // Save undo information
-        let previousAmounts = allCategories.map { ($0, $0.budgetedAmount) }
+        // Get monthly budgets for all categories
+        let monthlyBudgetsWithPrevious = allCategories.map { category -> (CategoryMonthlyBudget, Decimal) in
+            let monthlyBudget = getMonthlyBudget(for: category)
+            return (monthlyBudget, monthlyBudget.budgetedAmount)
+        }
+
         let assignedTotal = readyToAssign
 
         // Distribute remaining money evenly across all categories
         let amountPerCategory = readyToAssign / Decimal(allCategories.count)
 
-        for category in allCategories {
-            category.budgetedAmount += amountPerCategory
+        for (monthlyBudget, _) in monthlyBudgetsWithPrevious {
+            monthlyBudget.budgetedAmount += amountPerCategory
         }
 
         try? modelContext.save()
@@ -682,7 +691,7 @@ struct BudgetPlanningView: View {
         // Set up undo
         let formattedAmount = assignedTotal.formatted(.currency(code: currencyCode))
         undoAction = UndoAction(
-            categoryChanges: previousAmounts,
+            monthlyBudgetChanges: monthlyBudgetsWithPrevious,
             actionDescription: "Assigned \(formattedAmount) evenly"
         )
         showUndoBanner()
@@ -706,9 +715,9 @@ struct BudgetPlanningView: View {
     private func performUndo() {
         guard let action = undoAction else { return }
 
-        // Revert all category changes
-        for (category, previousAmount) in action.categoryChanges {
-            category.budgetedAmount = previousAmount
+        // Revert all monthly budget changes
+        for (monthlyBudget, previousAmount) in action.monthlyBudgetChanges {
+            monthlyBudget.budgetedAmount = previousAmount
         }
 
         try? modelContext.save()
@@ -728,7 +737,7 @@ struct BudgetPlanningView: View {
     private func saveNewCategory(name: String, amount: Decimal, type: String, dueDayOfMonth: Int?, isLastDayOfMonth: Bool, notify7DaysBefore: Bool, notify2DaysBefore: Bool, notifyOnDueDate: Bool, notifyCustomDays: Bool, customDaysCount: Int) {
         let category = BudgetCategory(
             name: name,
-            budgetedAmount: amount,
+            budgetedAmount: 0,  // Set to 0, use monthly budgets instead
             categoryType: type,
             colorHex: generateRandomColor()
         )
@@ -743,6 +752,16 @@ struct BudgetPlanningView: View {
         category.customDaysCount = customDaysCount
 
         modelContext.insert(category)
+
+        // Create monthly budget for current month with the budgeted amount
+        let monthlyBudget = CategoryMonthlyBudget(
+            category: category,
+            month: selectedMonth,
+            budgetedAmount: amount,
+            availableFromPrevious: 0  // New category has no carry-forward
+        )
+        modelContext.insert(monthlyBudget)
+
         try? modelContext.save()
         showingAddCategory = false
 
@@ -752,7 +771,7 @@ struct BudgetPlanningView: View {
                 await NotificationManager.shared.scheduleNotifications(
                     for: category.notificationID,
                     categoryName: category.name,
-                    budgetedAmount: category.budgetedAmount,
+                    budgetedAmount: amount,  // Use the monthly budgeted amount
                     dueDate: effectiveDate,
                     notify7DaysBefore: category.notify7DaysBefore,
                     notify2DaysBefore: category.notify2DaysBefore,
@@ -778,7 +797,7 @@ struct BudgetPlanningView: View {
         customDaysCount: Int
     ) {
         category.name = name
-        category.budgetedAmount = amount
+        // Don't update category.budgetedAmount - use monthly budget instead
         category.dueDayOfMonth = dueDayOfMonth
         category.isLastDayOfMonth = isLastDayOfMonth
         category.notify7DaysBefore = notify7DaysBefore
@@ -786,6 +805,11 @@ struct BudgetPlanningView: View {
         category.notifyOnDueDate = notifyOnDueDate
         category.notifyCustomDays = notifyCustomDays
         category.customDaysCount = customDaysCount
+
+        // Update monthly budget for current month
+        let monthlyBudget = getMonthlyBudget(for: category)
+        monthlyBudget.budgetedAmount = amount
+
         try? modelContext.save()
         editingCategory = nil
 
@@ -796,7 +820,7 @@ struct BudgetPlanningView: View {
                 await NotificationManager.shared.scheduleNotifications(
                     for: category.notificationID,
                     categoryName: category.name,
-                    budgetedAmount: category.budgetedAmount,
+                    budgetedAmount: amount,  // Use the updated monthly amount
                     dueDate: effectiveDate,
                     notify7DaysBefore: notify7DaysBefore,
                     notify2DaysBefore: notify2DaysBefore,
@@ -874,6 +898,15 @@ struct BudgetPlanningView: View {
 
         // NOTE: Enhancement 3.1 - Account balances persist globally, no per-month loading needed
         _ = getOrCreateMonthlyBudget(for: newMonth)
+
+        // Ensure all categories have CategoryMonthlyBudget records for the new month
+        // This handles carry-forward logic and creates budgets for any new categories
+        CategoryMigrationHelper.migrateAllCategories(
+            allCategories,
+            forMonth: newMonth,
+            allTransactions: allTransactions,
+            in: modelContext
+        )
     }
 
     /// Carry forward unassigned money to the next month
@@ -1165,6 +1198,7 @@ struct EditCategorySheet: View {
     @Query private var allCategories: [BudgetCategory]
 
     let category: BudgetCategory
+    let initialAmount: Decimal  // Monthly budgeted amount for current month
     let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
     var currencyCode: String = "USD"
     var dateFormat: String = "MM/DD/YYYY"
@@ -1182,13 +1216,14 @@ struct EditCategorySheet: View {
     @State private var showingNameError: Bool = false
     @State private var nameErrorMessage: String = ""
 
-    init(category: BudgetCategory, currencyCode: String = "USD", dateFormat: String = "MM/DD/YYYY", onSave: @escaping (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
+    init(category: BudgetCategory, initialAmount: Decimal, currencyCode: String = "USD", dateFormat: String = "MM/DD/YYYY", onSave: @escaping (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
         self.category = category
+        self.initialAmount = initialAmount
         self.currencyCode = currencyCode
         self.dateFormat = dateFormat
         self.onSave = onSave
         _categoryName = State(initialValue: category.name)
-        _budgetedAmount = State(initialValue: category.budgetedAmount)
+        _budgetedAmount = State(initialValue: initialAmount)
 
         // Extract day from dueDayOfMonth or legacy dueDate
         let hasDate = category.dueDayOfMonth != nil || category.dueDate != nil
