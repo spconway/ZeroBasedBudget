@@ -896,37 +896,39 @@ struct CategoryRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Button(action: onEdit) {
-                HStack {
-                    Circle()
-                        .fill(Color(hex: category.colorHex))
-                        .frame(width: 12, height: 12)
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(category.name)
-                            .foregroundStyle(colors.textPrimary)
-
-                        if let dueDateText = dueDateText {
-                            Text(dueDateText)
-                                .font(.caption)
-                                .foregroundStyle(colors.textSecondary)
-                        }
-
-                        // NEW: Enhancement 7.2 - Progress bar showing spending
-                        CategoryProgressBar(spent: actualSpent, budgeted: category.budgetedAmount)
-                            .frame(height: 6)
-                    }
-
-                    Spacer()
-
-                    Text(CurrencyFormatHelpers.formatCurrency(category.budgetedAmount, currencyCode: currencyCode, numberFormat: numberFormat))
-                        .font(.system(size: 17, weight: .light))  // Light weight for amounts
-                        .monospacedDigit()
-                        .foregroundStyle(colors.textSecondary)
-
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .iconNeutral()
-                }
+				VStack {
+					HStack {
+						Circle()
+							.fill(Color(hex: category.colorHex))
+							.frame(width: 12, height: 12)
+						
+						VStack(alignment: .leading, spacing: 4) {
+							Text(category.name)
+								.foregroundStyle(colors.textPrimary)
+							
+							if let dueDateText = dueDateText {
+								Text(dueDateText)
+									.font(.caption)
+									.foregroundStyle(colors.textSecondary)
+							}
+						}
+						
+						Spacer()
+						
+						Text(CurrencyFormatHelpers.formatCurrency(category.budgetedAmount, currencyCode: currencyCode, numberFormat: numberFormat))
+							.font(.system(size: 17, weight: .light))  // Light weight for amounts
+							.monospacedDigit()
+							.foregroundStyle(colors.textSecondary)
+						
+						Image(systemName: "chevron.right")
+							.font(.caption)
+							.iconNeutral()
+					}
+					
+					// NEW: Enhancement 7.2 - Progress bar showing spending
+					CategoryProgressBar(spent: actualSpent, budgeted: category.budgetedAmount)
+						.frame(height: 6)
+				}
             }
 
             // Quick Assign button (only show when there's money to assign)
