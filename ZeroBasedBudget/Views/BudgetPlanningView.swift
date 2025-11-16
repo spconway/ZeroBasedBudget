@@ -155,12 +155,13 @@ struct BudgetPlanningView: View {
     }
 
     // Total amount assigned to all budget categories THIS MONTH
-    // Uses CategoryMonthlyBudget to get per-month budgeted amounts
+    // Uses CategoryMonthlyBudget query to get per-month budgeted amounts
+    // NOTE: Uses query directly to avoid creating duplicate monthly budgets
     private var totalAssigned: Decimal {
-        allCategories.reduce(0) { total, category in
-            let monthlyBudget = getMonthlyBudget(for: category)
-            return total + monthlyBudget.budgetedAmount
-        }
+        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
+        return allCategoryMonthlyBudgets
+            .filter { $0.isForMonth(normalizedMonth) }
+            .reduce(0) { $0 + $1.budgetedAmount }
     }
 
     // Ready to Assign calculation using YNAB methodology
@@ -197,21 +198,27 @@ struct BudgetPlanningView: View {
     // MARK: - Category Totals (using monthly budgets)
 
     private var totalFixedExpenses: Decimal {
-        fixedExpenseCategories.reduce(0) { total, category in
-            total + getMonthlyBudget(for: category).budgetedAmount
-        }
+        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
+        let fixedCategoryNames = Set(fixedExpenseCategories.map { $0.name })
+        return allCategoryMonthlyBudgets
+            .filter { $0.isForMonth(normalizedMonth) && fixedCategoryNames.contains($0.category.name) }
+            .reduce(0) { $0 + $1.budgetedAmount }
     }
 
     private var totalVariableExpenses: Decimal {
-        variableExpenseCategories.reduce(0) { total, category in
-            total + getMonthlyBudget(for: category).budgetedAmount
-        }
+        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
+        let variableCategoryNames = Set(variableExpenseCategories.map { $0.name })
+        return allCategoryMonthlyBudgets
+            .filter { $0.isForMonth(normalizedMonth) && variableCategoryNames.contains($0.category.name) }
+            .reduce(0) { $0 + $1.budgetedAmount }
     }
 
     private var totalQuarterlyExpenses: Decimal {
-        quarterlyExpenseCategories.reduce(0) { total, category in
-            total + getMonthlyBudget(for: category).budgetedAmount
-        }
+        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
+        let quarterlyCategoryNames = Set(quarterlyExpenseCategories.map { $0.name })
+        return allCategoryMonthlyBudgets
+            .filter { $0.isForMonth(normalizedMonth) && quarterlyCategoryNames.contains($0.category.name) }
+            .reduce(0) { $0 + $1.budgetedAmount }
     }
 
     private var totalExpenses: Decimal {
