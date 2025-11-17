@@ -38,6 +38,11 @@ struct BudgetPlanningView: View {
     @State private var showingReadyToAssignInfo = false
     @State private var showingAddCategoryGroup = false  // For creating new category groups
 
+    // State for delete confirmation
+    @State private var groupToDelete: CategoryGroup?
+    @State private var showingDeleteAlert = false
+    @State private var deleteErrorMessage: String?
+
     // State for undo functionality (Enhancement 3.2)
     @State private var undoAction: UndoAction?
     @State private var showingUndoBanner = false
@@ -236,6 +241,26 @@ struct BudgetPlanningView: View {
         .listRowBackground(colors.surface)
     }
 
+    /// Section for creating new category groups
+    private var createCategoryGroupSection: some View {
+        Section {
+            Button(action: { showingAddCategoryGroup = true }) {
+                HStack {
+                    Image(systemName: "folder.badge.plus")
+                        .font(.system(size: 20))
+                        .iconAccent()
+                    Text("Create Category Group")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(colors.textPrimary)
+                    Spacer()
+                }
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(.plain)
+        }
+        .listRowBackground(colors.surface)
+    }
+
     /// Dynamic section builder for category groups
     @ViewBuilder
     private func categoryGroupSection(for group: CategoryGroup) -> some View {
@@ -246,6 +271,16 @@ struct BudgetPlanningView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .tracking(0.8)
             Spacer()
+
+            // Delete group button
+            Button(action: { attemptDeleteGroup(group) }) {
+                Image(systemName: "trash")
+                    .font(.system(size: 13))
+                    .foregroundStyle(colors.error)
+            }
+            .buttonStyle(.plain)
+
+            // Add category button
             Button(action: { addCategoryToGroup(group) }) {
                 Image(systemName: "plus.circle.fill")
                     .iconAccent()
@@ -390,6 +425,8 @@ struct BudgetPlanningView: View {
             Form {
                 readyToAssignSection
 
+                createCategoryGroupSection
+
                 // Dynamic category group sections
                 ForEach(categoryGroups) { group in
                     categoryGroupSection(for: group)
@@ -426,16 +463,6 @@ struct BudgetPlanningView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: nextMonth) {
                         Image(systemName: "chevron.right")
-                            .font(.headline)
-                            .iconAccent()
-                            .frame(minWidth: 44, minHeight: 44)
-                    }
-                }
-
-                // Add category group button (trailing, secondary position)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddCategoryGroup = true }) {
-                        Image(systemName: "folder.badge.plus")
                             .font(.headline)
                             .iconAccent()
                             .frame(minWidth: 44, minHeight: 44)
@@ -516,6 +543,29 @@ struct BudgetPlanningView: View {
                     • Leave Behind: Keep it in this month (you can assign it later)
                     • Cancel: Stay in this month
                     """)
+                }
+            }
+            .alert(deleteErrorMessage != nil ? "Cannot Delete" : "Delete Category Group", isPresented: $showingDeleteAlert) {
+                if deleteErrorMessage != nil {
+                    // Error message - just show OK button
+                    Button("OK", role: .cancel) {
+                        deleteErrorMessage = nil
+                        groupToDelete = nil
+                    }
+                } else if let group = groupToDelete {
+                    // Confirmation dialog
+                    Button("Delete", role: .destructive) {
+                        deleteGroup(group)
+                    }
+                    Button("Cancel", role: .cancel) {
+                        groupToDelete = nil
+                    }
+                }
+            } message: {
+                if let errorMsg = deleteErrorMessage {
+                    Text(errorMsg)
+                } else if let group = groupToDelete {
+                    Text("Are you sure you want to delete '\(group.name)'? Categories will be moved to 'Variable Expenses'.")
                 }
             }
             .overlay(alignment: .bottom) {
@@ -781,6 +831,44 @@ struct BudgetPlanningView: View {
             modelContext.delete(category)
         }
         try? modelContext.save()
+    }
+
+    /// Attempt to delete a category group (validates no categories have expenses)
+    private func attemptDeleteGroup(_ group: CategoryGroup) {
+        // Check if any categories in this group have expenses
+        let groupCategories = categories(for: group)
+
+        var hasExpenses = false
+        for category in groupCategories {
+            if !category.transactions.isEmpty {
+                hasExpenses = true
+                break
+            }
+        }
+
+        if hasExpenses {
+            deleteErrorMessage = "Cannot delete '\(group.name)'. One or more categories have transactions. Delete all transactions first."
+            showingDeleteAlert = true
+        } else if groupCategories.isEmpty {
+            // Empty group - safe to delete immediately
+            deleteGroup(group)
+        } else {
+            // Has categories but no expenses - show confirmation
+            groupToDelete = group
+            deleteErrorMessage = nil
+            showingDeleteAlert = true
+        }
+    }
+
+    /// Delete a category group (moves categories to Variable Expenses fallback)
+    private func deleteGroup(_ group: CategoryGroup) {
+        do {
+            try CategoryGroupMigration.deleteGroup(group, in: modelContext)
+            groupToDelete = nil
+        } catch {
+            deleteErrorMessage = "Failed to delete group: \(error.localizedDescription)"
+            showingDeleteAlert = true
+        }
     }
 
     private func generateRandomColor() -> String {
