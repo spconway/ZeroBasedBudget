@@ -296,11 +296,19 @@ struct AddTransactionSheet: View {
 
     @State private var date = Date()
     @State private var description = ""
-    @State private var amount = Decimal.zero
+    @State private var amountText: String = ""
     @State private var selectedCategory: BudgetCategory?
     @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType = .expense
     @State private var notes = ""
+    @FocusState private var amountFieldFocused: Bool
+
+    // Convert amountText to Decimal for validation and saving
+    private var amount: Decimal {
+        Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: "$", with: "")
+            .trimmingCharacters(in: .whitespaces)) ?? 0
+    }
 
     private var isValid: Bool {
         !description.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -329,11 +337,27 @@ struct AddTransactionSheet: View {
                 }
 
                 Section {
-                    LabeledContent("Amount") {
-                        TextField("Amount", value: $amount, format: .currency(code: currencyCode))
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                    }
+                    TextField("Amount", text: $amountText)
+                        .keyboardType(.decimalPad)
+                        .focused($amountFieldFocused)
+                        .onChange(of: amountFieldFocused) { _, isFocused in
+                            if isFocused {
+                                // On focus: strip formatting for clean editing
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)), value > 0 {
+                                    amountText = String(describing: value)
+                                }
+                            } else if !amountText.isEmpty {
+                                // On blur: show formatted currency
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)) {
+                                    amountText = CurrencyFormatHelpers.formatCurrency(value,
+                                        currencyCode: currencyCode, numberFormat: numberFormat)
+                                }
+                            }
+                        }
 
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
@@ -542,10 +566,20 @@ struct EditTransactionSheet: View {
                         .keyboardType(.decimalPad)
                         .focused($amountFieldFocused)
                         .onChange(of: amountFieldFocused) { _, isFocused in
-                            if !isFocused && !amountText.isEmpty {
-                                // Format on focus loss
-                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: "$", with: "").trimmingCharacters(in: .whitespaces)) {
-                                    amountText = CurrencyFormatHelpers.formatCurrency(value, currencyCode: currencyCode, numberFormat: numberFormat)
+                            if isFocused {
+                                // On focus: strip formatting for clean editing
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)), value > 0 {
+                                    amountText = String(describing: value)
+                                }
+                            } else if !amountText.isEmpty {
+                                // On blur: show formatted currency
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)) {
+                                    amountText = CurrencyFormatHelpers.formatCurrency(value,
+                                        currencyCode: currencyCode, numberFormat: numberFormat)
                                 }
                             }
                         }
