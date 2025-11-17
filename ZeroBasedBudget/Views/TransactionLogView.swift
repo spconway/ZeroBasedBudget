@@ -482,11 +482,12 @@ struct EditTransactionSheet: View {
 
     @State private var date: Date
     @State private var description: String
-    @State private var amount: Decimal
+    @State private var amountText: String  // String for editing
     @State private var selectedCategory: BudgetCategory?
     @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType
     @State private var notes: String
+    @FocusState private var amountFieldFocused: Bool  // Track focus state
 
     init(transaction: Transaction, categories: [BudgetCategory], currencyCode: String = "USD", numberFormat: String = "1,234.56") {
         self.transaction = transaction
@@ -497,11 +498,17 @@ struct EditTransactionSheet: View {
         // Initialize state from transaction
         _date = State(initialValue: transaction.date)
         _description = State(initialValue: transaction.transactionDescription)
-        _amount = State(initialValue: transaction.amount)
+        // Store as plain number string for editing
+        _amountText = State(initialValue: String(describing: transaction.amount))
         _selectedCategory = State(initialValue: transaction.category)
         _selectedAccount = State(initialValue: transaction.account)
         _transactionType = State(initialValue: transaction.type)
         _notes = State(initialValue: transaction.notes ?? "")
+    }
+
+    // Convert amountText to Decimal for validation and saving
+    private var amount: Decimal {
+        Decimal(string: amountText.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: "$", with: "").trimmingCharacters(in: .whitespaces)) ?? 0
     }
 
     private var isValid: Bool {
@@ -531,11 +538,17 @@ struct EditTransactionSheet: View {
                 }
 
                 Section {
-                    LabeledContent("Amount") {
-                        TextField("Amount", value: $amount, format: .currency(code: currencyCode))
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                    }
+                    TextField("Amount", text: $amountText)
+                        .keyboardType(.decimalPad)
+                        .focused($amountFieldFocused)
+                        .onChange(of: amountFieldFocused) { _, isFocused in
+                            if !isFocused && !amountText.isEmpty {
+                                // Format on focus loss
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: "$", with: "").trimmingCharacters(in: .whitespaces)) {
+                                    amountText = CurrencyFormatHelpers.formatCurrency(value, currencyCode: currencyCode, numberFormat: numberFormat)
+                                }
+                            }
+                        }
 
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
@@ -635,6 +648,12 @@ struct EditTransactionSheet: View {
                         updateTransaction()
                     }
                     .disabled(!isValid)
+                }
+            }
+            .onAppear {
+                // Format the initial amount value on appear
+                if let value = Decimal(string: amountText) {
+                    amountText = CurrencyFormatHelpers.formatCurrency(value, currencyCode: currencyCode, numberFormat: numberFormat)
                 }
             }
         }
