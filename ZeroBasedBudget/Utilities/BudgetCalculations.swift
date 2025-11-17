@@ -115,6 +115,8 @@ enum BudgetCalculations {
     // MARK: - Category Comparisons
 
     /// Generates category comparisons for all categories in a specific month
+    /// NOTE: This version uses category.budgetedAmount (template/default amount)
+    /// For YNAB-compliant monthly budgets, use the overload that accepts monthlyBudgets parameter
     static func generateCategoryComparisons(
         categories: [BudgetCategory],
         month: Date,
@@ -131,6 +133,37 @@ enum BudgetCalculations {
                 categoryName: category.name,
                 categoryColor: category.colorHex,
                 budgeted: category.budgetedAmount,
+                actual: actual
+            )
+        }
+    }
+
+    /// Generates category comparisons using actual monthly budgets (YNAB-compliant)
+    /// Looks up CategoryMonthlyBudget records for the specified month
+    static func generateCategoryComparisons(
+        categories: [BudgetCategory],
+        month: Date,
+        transactions: [Transaction],
+        monthlyBudgets: [CategoryMonthlyBudget]
+    ) -> [CategoryComparison] {
+        let normalizedMonth = startOfMonth(for: month)
+
+        return categories.map { category in
+            let actual = calculateActualSpending(
+                for: category,
+                in: month,
+                from: transactions
+            )
+
+            // Look up the monthly budget for this category in this month
+            let monthlyBudget = monthlyBudgets.first {
+                $0.category == category && $0.isForMonth(normalizedMonth)
+            }
+
+            return CategoryComparison(
+                categoryName: category.name,
+                categoryColor: category.colorHex,
+                budgeted: monthlyBudget?.budgetedAmount ?? 0,  // Use actual monthly budget
                 actual: actual
             )
         }
