@@ -143,14 +143,6 @@ struct BudgetPlanningView: View {
         return monthlyBudget.totalAvailable(actualSpent: actualSpent)
     }
 
-    /// Get previous month's Ready to Assign for comparison
-    /// NOTE: Enhancement 3.1 - DEPRECATED with account-based budgeting
-    /// Account balances are global, not per-month, so historical comparisons don't apply
-    private var previousMonthComparison: (month: String, amount: Decimal)? {
-        // Disabled in Enhancement 3.1 - not compatible with account-based budgeting
-        return nil
-    }
-
     // MARK: - YNAB-Style Computed Properties
 
     // NEW: Total balance across all accounts (source of truth for YNAB budgeting)
@@ -334,38 +326,6 @@ struct BudgetPlanningView: View {
                     .fontWeight(.bold)
                     .foregroundStyle(readyToAssignColor)
             }
-
-            // Previous month comparison (Enhancement 3.3)
-            if let comparison = previousMonthComparison {
-                HStack {
-                    Text("Previous Month (\(comparison.month))")
-                        .font(.caption)
-                        .foregroundStyle(colors.textSecondary)
-                    Spacer()
-                    HStack(spacing: 4) {
-                        Text(CurrencyFormatHelpers.formatCurrency(comparison.amount, currencyCode: currencyCode, numberFormat: numberFormat))
-                            .font(.caption)
-                            .foregroundStyle(colors.textSecondary)
-
-                        // Show arrow indicator for change
-                        if comparison.amount < readyToAssign {
-                            Image(systemName: "arrow.up")
-                                .font(.caption2)
-                                .iconSuccess()
-                        } else if comparison.amount > readyToAssign {
-                            Image(systemName: "arrow.down")
-                                .font(.caption2)
-                                .iconError()
-                        } else {
-                            Image(systemName: "arrow.right")
-                                .font(.caption2)
-                                .iconNeutral()
-                        }
-                    }
-                }
-            }
-
-            Divider()
 
             // Goal Status - Visual celebration when Ready to Assign = $0
             if readyToAssign == 0 {
