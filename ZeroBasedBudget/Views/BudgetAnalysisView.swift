@@ -21,6 +21,7 @@ struct BudgetAnalysisView: View {
     @Query private var allTransactions: [Transaction]
     @Query private var categories: [BudgetCategory]
     @Query private var settings: [AppSettings]
+    @Query private var allMonthlyBudgets: [CategoryMonthlyBudget]
 
     @State private var selectedMonth = Date()
     @State private var selectedChartType: ChartType = .bar
@@ -40,7 +41,8 @@ struct BudgetAnalysisView: View {
         BudgetCalculations.generateCategoryComparisons(
             categories: categories.filter { $0.categoryType != "Income" },
             month: selectedMonth,
-            transactions: allTransactions
+            transactions: allTransactions,
+            monthlyBudgets: allMonthlyBudgets
         )
         .sorted(by: { $0.categoryName < $1.categoryName })
     }

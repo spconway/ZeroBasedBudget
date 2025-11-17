@@ -118,19 +118,31 @@ enum BudgetCalculations {
     static func generateCategoryComparisons(
         categories: [BudgetCategory],
         month: Date,
-        transactions: [Transaction]
+        transactions: [Transaction],
+        monthlyBudgets: [CategoryMonthlyBudget]
     ) -> [CategoryComparison] {
-        categories.map { category in
+        // Normalize month to start of month for comparison
+        let normalizedMonth = startOfMonth(for: month)
+
+        return categories.map { category in
             let actual = calculateActualSpending(
                 for: category,
                 in: month,
                 from: transactions
             )
 
+            // Find the monthly budget for this category and month
+            let monthlyBudget = monthlyBudgets.first { budget in
+                budget.category == category && budget.isForMonth(normalizedMonth)
+            }
+
+            // Use the monthly budget amount if available, otherwise use deprecated field
+            let budgeted = monthlyBudget?.budgetedAmount ?? category.budgetedAmount
+
             return CategoryComparison(
                 categoryName: category.name,
                 categoryColor: category.colorHex,
-                budgeted: category.budgetedAmount,
+                budgeted: budgeted,
                 actual: actual
             )
         }
@@ -141,13 +153,15 @@ enum BudgetCalculations {
         categories: [BudgetCategory],
         categoryType: String,
         month: Date,
-        transactions: [Transaction]
+        transactions: [Transaction],
+        monthlyBudgets: [CategoryMonthlyBudget]
     ) -> [CategoryComparison] {
         let filteredCategories = categories.filter { $0.categoryType == categoryType }
         return generateCategoryComparisons(
             categories: filteredCategories,
             month: month,
-            transactions: transactions
+            transactions: transactions,
+            monthlyBudgets: monthlyBudgets
         )
     }
 

@@ -361,11 +361,18 @@ final class BudgetCalculationsTests: ZeroBasedBudgetTests {
         ]
         transactions.forEach { $0.date = june2024 }
 
+        // Create monthly budgets for each category
+        let monthlyBudgets = [
+            TestDataFactory.createCategoryMonthlyBudget(category: groceries, month: june2024, budgetedAmount: 400),
+            TestDataFactory.createCategoryMonthlyBudget(category: gas, month: june2024, budgetedAmount: 150)
+        ]
+
         // Act
         let comparisons = BudgetCalculations.generateCategoryComparisons(
             categories: categories,
             month: june2024,
-            transactions: transactions
+            transactions: transactions,
+            monthlyBudgets: monthlyBudgets
         )
 
         // Assert
@@ -384,12 +391,19 @@ final class BudgetCalculationsTests: ZeroBasedBudgetTests {
         let june2024 = Date.from(year: 2024, month: 6, day: 1)
         let transactions: [Transaction] = []
 
+        // Create monthly budgets for each category
+        let monthlyBudgets = [
+            TestDataFactory.createCategoryMonthlyBudget(category: fixed, month: june2024, budgetedAmount: 1500),
+            TestDataFactory.createCategoryMonthlyBudget(category: variable, month: june2024, budgetedAmount: 400)
+        ]
+
         // Act
         let fixedComparisons = BudgetCalculations.generateCategoryComparisons(
             categories: categories,
             categoryType: "Fixed",
             month: june2024,
-            transactions: transactions
+            transactions: transactions,
+            monthlyBudgets: monthlyBudgets
         )
 
         // Assert

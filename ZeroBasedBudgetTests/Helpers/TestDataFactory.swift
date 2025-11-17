@@ -222,6 +222,30 @@ enum TestDataFactory {
         )
     }
 
+    // MARK: - Category Monthly Budget Factory Methods
+
+    /// Create test category monthly budget with default or custom values
+    ///
+    /// - Parameters:
+    ///   - category: Budget category
+    ///   - month: Budget month (default: current month start)
+    ///   - budgetedAmount: Amount budgeted for this month (default: 0)
+    ///   - availableFromPrevious: Amount carried forward from previous month (default: 0)
+    /// - Returns: New CategoryMonthlyBudget instance
+    static func createCategoryMonthlyBudget(
+        category: BudgetCategory,
+        month: Date = Date(),
+        budgetedAmount: Decimal = 0,
+        availableFromPrevious: Decimal = 0
+    ) -> CategoryMonthlyBudget {
+        return CategoryMonthlyBudget(
+            category: category,
+            month: month,
+            budgetedAmount: budgetedAmount,
+            availableFromPrevious: availableFromPrevious
+        )
+    }
+
     // MARK: - App Settings Factory Methods
 
     /// Create test app settings with default values
