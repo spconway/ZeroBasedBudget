@@ -126,9 +126,10 @@ struct TransactionLogView: View {
                                 }
                         }
                     } header: {
-                        Text(BudgetCalculations.formatTransactionSectionDate(date, using: dateFormat))
-                            .font(.headline)
-							.foregroundStyle(colors.textTertiary)
+                        Text(BudgetCalculations.formatTransactionSectionDate(date, using: dateFormat).uppercased())
+                            .font(.system(size: 13, weight: .semibold))
+                            .tracking(0.8)
+							.foregroundStyle(colors.textSecondary)
                     }
                 }
             }
@@ -210,25 +211,28 @@ struct TransactionRow: View {
     var numberFormat: String = "1,234.56"
 
     var body: some View {
-        VStack(spacing: 4) {
-            // Main row: Description and Amount with icon
-            HStack(alignment: .center, spacing: 8) {
-                // Transaction type icon
-                Image(systemName: transaction.type == .income ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                    .font(.title3)
-                    .iconTransactionType(isIncome: transaction.type == .income)
+        VStack(spacing: 6) {
+            // Main row: Description and Amount with refined icon badge
+            HStack(alignment: .center, spacing: 12) {
+                // Refined icon badge with circular background
+                RefinedIconBadge(
+                    systemName: transaction.type == .income ? "arrow.up" : "arrow.down",
+                    color: transaction.type == .income ? colors.success : colors.error,
+                    size: 36
+                )
 
                 // Description
                 Text(transaction.transactionDescription)
-                    .font(.subheadline.weight(.medium))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundColor(colors.textPrimary)
                     .lineLimit(1)
 
                 Spacer(minLength: 8)
 
-                // Amount
+                // Amount with light weight for refinement
                 Text(CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat))
-                    .font(.subheadline.weight(.semibold))
+                    .font(.system(size: 17, weight: .light))  // Light weight for amounts
+                    .monospacedDigit()
                     .foregroundStyle(transaction.type == .income ? colors.success : colors.error)
             }
 
@@ -246,18 +250,20 @@ struct TransactionRow: View {
 
                 Spacer()
 
-                // Net Worth (compact)
+                // Net Worth (compact) with light weight
                 HStack(spacing: 4) {
                     Text("Net:")
                         .font(.caption2)
                         .foregroundStyle(colors.textTertiary)
                     Text(CurrencyFormatHelpers.formatCurrency(runningBalance, currencyCode: currencyCode, numberFormat: numberFormat))
-                        .font(.caption2.weight(.medium))
+                        .font(.caption.weight(.light))  // Light weight for net worth
+                        .monospacedDigit()
                         .foregroundStyle(runningBalance >= 0 ? colors.success : colors.error)
                 }
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
     }
@@ -290,11 +296,19 @@ struct AddTransactionSheet: View {
 
     @State private var date = Date()
     @State private var description = ""
-    @State private var amount = Decimal.zero
+    @State private var amountText: String = ""
     @State private var selectedCategory: BudgetCategory?
     @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType = .expense
     @State private var notes = ""
+    @FocusState private var amountFieldFocused: Bool
+
+    // Convert amountText to Decimal for validation and saving
+    private var amount: Decimal {
+        Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+            .replacingOccurrences(of: "$", with: "")
+            .trimmingCharacters(in: .whitespaces)) ?? 0
+    }
 
     private var isValid: Bool {
         !description.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -305,7 +319,7 @@ struct AddTransactionSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Transaction Details") {
+                Section {
                     DatePicker("Date", selection: $date, displayedComponents: .date)
 
                     TextField("Description", text: $description)
@@ -315,20 +329,49 @@ struct AddTransactionSheet: View {
                         Text("Expense").tag(TransactionType.expense)
                     }
                     .pickerStyle(.segmented)
+                } header: {
+                    Text("TRANSACTION DETAILS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Amount") {
-                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
+                Section {
+                    TextField("Amount", text: $amountText)
                         .keyboardType(.decimalPad)
+                        .focused($amountFieldFocused)
+                        .onChange(of: amountFieldFocused) { _, isFocused in
+                            if isFocused {
+                                // On focus: strip formatting for clean editing
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)), value > 0 {
+                                    amountText = String(describing: value)
+                                }
+                            } else if !amountText.isEmpty {
+                                // On blur: show formatted currency
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)) {
+                                    amountText = CurrencyFormatHelpers.formatCurrency(value,
+                                        currencyCode: currencyCode, numberFormat: numberFormat)
+                                }
+                            }
+                        }
 
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
                             .foregroundStyle(colors.error)
                     }
+                } header: {
+                    Text("AMOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Category") {
+                Section {
                     Picker("Category", selection: $selectedCategory) {
                         Text("Select Category").tag(nil as BudgetCategory?)
                         ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
@@ -348,9 +391,14 @@ struct AddTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.warning)
                     }
+                } header: {
+                    Text("CATEGORY")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Account") {
+                Section {
                     Picker("Account", selection: $selectedAccount) {
                         Text("Select Account").tag(nil as Account?)
                         ForEach(accounts.sorted(by: { $0.name < $1.name })) { account in
@@ -374,11 +422,21 @@ struct AddTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.textSecondary)
                     }
+                } header: {
+                    Text("ACCOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Notes (Optional)") {
+                Section {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
+                } header: {
+                    Text("NOTES (OPTIONAL)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -387,7 +445,7 @@ struct AddTransactionSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar(content: {
+            .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -400,7 +458,7 @@ struct AddTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            })
+            }
         }
     }
 
@@ -448,11 +506,12 @@ struct EditTransactionSheet: View {
 
     @State private var date: Date
     @State private var description: String
-    @State private var amount: Decimal
+    @State private var amountText: String  // String for editing
     @State private var selectedCategory: BudgetCategory?
     @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType
     @State private var notes: String
+    @FocusState private var amountFieldFocused: Bool  // Track focus state
 
     init(transaction: Transaction, categories: [BudgetCategory], currencyCode: String = "USD", numberFormat: String = "1,234.56") {
         self.transaction = transaction
@@ -463,11 +522,17 @@ struct EditTransactionSheet: View {
         // Initialize state from transaction
         _date = State(initialValue: transaction.date)
         _description = State(initialValue: transaction.transactionDescription)
-        _amount = State(initialValue: transaction.amount)
+        // Store as plain number string for editing
+        _amountText = State(initialValue: String(describing: transaction.amount))
         _selectedCategory = State(initialValue: transaction.category)
         _selectedAccount = State(initialValue: transaction.account)
         _transactionType = State(initialValue: transaction.type)
         _notes = State(initialValue: transaction.notes ?? "")
+    }
+
+    // Convert amountText to Decimal for validation and saving
+    private var amount: Decimal {
+        Decimal(string: amountText.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: "$", with: "").trimmingCharacters(in: .whitespaces)) ?? 0
     }
 
     private var isValid: Bool {
@@ -479,7 +544,7 @@ struct EditTransactionSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Transaction Details") {
+                Section {
                     DatePicker("Date", selection: $date, displayedComponents: .date)
 
                     TextField("Description", text: $description)
@@ -489,20 +554,49 @@ struct EditTransactionSheet: View {
                         Text("Expense").tag(TransactionType.expense)
                     }
                     .pickerStyle(.segmented)
+                } header: {
+                    Text("TRANSACTION DETAILS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Amount") {
-                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
+                Section {
+                    TextField("Amount", text: $amountText)
                         .keyboardType(.decimalPad)
+                        .focused($amountFieldFocused)
+                        .onChange(of: amountFieldFocused) { _, isFocused in
+                            if isFocused {
+                                // On focus: strip formatting for clean editing
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)), value > 0 {
+                                    amountText = String(describing: value)
+                                }
+                            } else if !amountText.isEmpty {
+                                // On blur: show formatted currency
+                                if let value = Decimal(string: amountText.replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "$", with: "")
+                                    .trimmingCharacters(in: .whitespaces)) {
+                                    amountText = CurrencyFormatHelpers.formatCurrency(value,
+                                        currencyCode: currencyCode, numberFormat: numberFormat)
+                                }
+                            }
+                        }
 
                     if amount <= 0 {
                         Text("Amount must be greater than zero")
                             .font(.caption)
                             .foregroundStyle(colors.error)
                     }
+                } header: {
+                    Text("AMOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Category") {
+                Section {
                     Picker("Category", selection: $selectedCategory) {
                         Text("Select Category").tag(nil as BudgetCategory?)
                         ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
@@ -522,9 +616,14 @@ struct EditTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.warning)
                     }
+                } header: {
+                    Text("CATEGORY")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Account") {
+                Section {
                     Picker("Account", selection: $selectedAccount) {
                         Text("Select Account").tag(nil as Account?)
                         ForEach(accounts.sorted(by: { $0.name < $1.name })) { account in
@@ -548,11 +647,21 @@ struct EditTransactionSheet: View {
                             .font(.caption)
                             .foregroundStyle(colors.textSecondary)
                     }
+                } header: {
+                    Text("ACCOUNT")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
-                Section("Notes (Optional)") {
+                Section {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
+                } header: {
+                    Text("NOTES (OPTIONAL)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -561,7 +670,7 @@ struct EditTransactionSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar(content: {
+            .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
@@ -574,7 +683,13 @@ struct EditTransactionSheet: View {
                     }
                     .disabled(!isValid)
                 }
-            })
+            }
+            .onAppear {
+                // Format the initial amount value on appear
+                if let value = Decimal(string: amountText) {
+                    amountText = CurrencyFormatHelpers.formatCurrency(value, currencyCode: currencyCode, numberFormat: numberFormat)
+                }
+            }
         }
     }
 

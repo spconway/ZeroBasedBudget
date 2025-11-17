@@ -37,14 +37,20 @@ struct EditAccountSheet: View {
                     TextField("Account Name", text: $account.name)
                         .textInputAutocapitalization(.words)
                 } header: {
-                    Text("Account Details")
+                    Text("ACCOUNT DETAILS")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
                 Section {
                     TextField("Balance", value: $account.balance, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                 } header: {
-                    Text("Current Balance")
+                    Text("CURRENT BALANCE")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 } footer: {
                     Text("Enter your current account balance. Negative balances are allowed (e.g., credit card debt).")
                 }
@@ -57,7 +63,10 @@ struct EditAccountSheet: View {
                         }
                     }
                 } header: {
-                    Text("Type (Optional)")
+                    Text("TYPE (OPTIONAL)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .tracking(0.8)
+                        .foregroundStyle(colors.textSecondary)
                 }
 
                 Section {

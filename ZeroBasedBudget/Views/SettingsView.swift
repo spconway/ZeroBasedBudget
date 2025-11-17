@@ -149,7 +149,10 @@ struct SettingsView: View {
             }
             .pickerStyle(.segmented)
         } header: {
-            Text("Appearance")
+            Text("APPEARANCE")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("Choose your preferred color scheme. System will match your device settings.")
         }
@@ -164,7 +167,10 @@ struct SettingsView: View {
                     .foregroundStyle(colors.textSecondary)
             }
         } header: {
-            Text("Visual Theme")
+            Text("VISUAL THEME")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("Choose your preferred visual theme. Theme changes apply instantly throughout the app.")
         }
@@ -211,7 +217,10 @@ struct SettingsView: View {
                 }
             }
         } header: {
-            Text("Currency & Formatting")
+            Text("CURRENCY & FORMATTING")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("Changes apply immediately to all monetary values and dates in the app.")
         }
@@ -251,7 +260,10 @@ struct SettingsView: View {
                 }
             ))
         } header: {
-            Text("Budget Behavior")
+            Text("BUDGET BEHAVIOR")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("Month start date is useful if you get paid mid-month. Default notifications apply to new categories.")
         }
@@ -273,7 +285,10 @@ struct SettingsView: View {
                     .foregroundStyle(colors.warning)
             }
         } header: {
-            Text("Notifications")
+            Text("NOTIFICATIONS")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("Master switch for all budget notifications. Individual categories can still have their own notification settings.")
         }
@@ -318,7 +333,10 @@ struct SettingsView: View {
                     .foregroundStyle(colors.textSecondary)
             }
         } header: {
-            Text("Data Management")
+            Text("DATA MANAGEMENT")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("All data is stored locally on your device. No cloud sync. Export for backup.")
         }
@@ -330,7 +348,8 @@ struct SettingsView: View {
             HStack {
                 Text("Version")
                 Spacer()
-                Text("1.4.0")
+                Text("1.12.0")
+                    .font(.system(size: 17, weight: .light))
                     .foregroundStyle(colors.textSecondary)
             }
 
@@ -338,7 +357,8 @@ struct SettingsView: View {
             HStack {
                 Text("Build")
                 Spacer()
-                Text("Enhancement 3.2")
+                Text("Notification Badge Clearing")
+                    .font(.system(size: 15, weight: .regular))
                     .foregroundStyle(colors.textSecondary)
             }
 
@@ -364,47 +384,64 @@ struct SettingsView: View {
                 Label("Feedback & Source Code", systemImage: "link")
             }
         } header: {
-            Text("About")
+            Text("ABOUT")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
         } footer: {
-            Text("Zero-Based Budget v1.4.0 • Built with SwiftUI & SwiftData • No cloud sync, complete privacy")
+            Text("Zero-Based Budget v1.12.0 • Built with SwiftUI & SwiftData • No cloud sync, complete privacy")
         }
     }
 
     private var ynabMethodologySheet: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("YNAB Methodology")
-                        .font(.title.bold())
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("YNAB METHODOLOGY")
+                        .font(.system(size: 24, weight: .semibold))
+                        .tracking(1.0)
+                        .foregroundStyle(colors.textPrimary)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Rule 1: Give Every Dollar a Job")
-                            .font(.headline)
+                        Text("RULE 1: GIVE EVERY DOLLAR A JOB")
+                            .font(.system(size: 13, weight: .semibold))
+                            .tracking(0.6)
+                            .foregroundStyle(colors.textSecondary)
                         Text("Budget only money you have RIGHT NOW, not money you expect to receive. Assign ALL of that money to categories until Ready to Assign = $0.")
+                            .font(.system(size: 15, weight: .regular))
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Rule 2: Embrace Your True Expenses")
-                            .font(.headline)
+                        Text("RULE 2: EMBRACE YOUR TRUE EXPENSES")
+                            .font(.system(size: 13, weight: .semibold))
+                            .tracking(0.6)
+                            .foregroundStyle(colors.textSecondary)
                         Text("Break up larger, less-frequent expenses into manageable monthly amounts. Save for annual insurance, quarterly taxes, or any irregular expense.")
+                            .font(.system(size: 15, weight: .regular))
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Rule 3: Roll With the Punches")
-                            .font(.headline)
+                        Text("RULE 3: ROLL WITH THE PUNCHES")
+                            .font(.system(size: 13, weight: .semibold))
+                            .tracking(0.6)
+                            .foregroundStyle(colors.textSecondary)
                         Text("When life happens and you overspend, move money from another category. Your budget is flexible—adjust it as needed.")
+                            .font(.system(size: 15, weight: .regular))
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Rule 4: Age Your Money")
-                            .font(.headline)
+                        Text("RULE 4: AGE YOUR MONEY")
+                            .font(.system(size: 13, weight: .semibold))
+                            .tracking(0.6)
+                            .foregroundStyle(colors.textSecondary)
                         Text("As you get ahead, you'll spend money you earned weeks or even months ago. This creates a buffer and reduces financial stress.")
+                            .font(.system(size: 15, weight: .regular))
                     }
 
                     Text("This app follows YNAB principles by tracking real account balances and helping you assign every dollar a specific job.")
-                        .font(.callout)
+                        .font(.system(size: 14, weight: .regular))
                         .foregroundStyle(colors.textSecondary)
-                        .padding(.top)
+                        .padding(.top, 8)
                 }
                 .padding()
             }

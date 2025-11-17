@@ -40,18 +40,20 @@ struct AccountsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Top banner with total
+                // Top banner with total - Refined styling
                 VStack(spacing: 8) {
-                    Text("Total Across All Accounts")
-                        .font(.subheadline)
+                    Text("TOTAL ACROSS ALL ACCOUNTS")
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(colors.textSecondary)
+                        .tracking(0.5)
 
                     Text(CurrencyFormatHelpers.formatCurrency(totalAccountBalances, currencyCode: currencyCode, numberFormat: numberFormat))
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
+                        .font(.system(size: 42, weight: .light, design: .rounded)) // Light weight for elegance
                         .foregroundStyle(colors.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
+                .padding(.vertical, 24)
+                .padding(.horizontal, 16)
                 .background(colors.background)
 
                 // Accounts list
@@ -84,20 +86,29 @@ struct AccountsView: View {
                     .frame(maxHeight: .infinity)
                     .padding()
                 } else {
-                    // Accounts list
-                    List {
-                        ForEach(allAccounts) { account in
-                            AccountRow(account: account, currencyCode: currencyCode, numberFormat: numberFormat)
-                                .listRowBackground(colors.surface)
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    editingAccount = account
-                                }
+                    // Accounts list - Refined styling with card layout
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            ForEach(allAccounts) { account in
+                                AccountRow(account: account, currencyCode: currencyCode, numberFormat: numberFormat)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        editingAccount = account
+                                    }
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            if let index = allAccounts.firstIndex(where: { $0.id == account.id }) {
+                                                deleteAccounts(at: IndexSet(integer: index))
+                                            }
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                            }
                         }
-                        .onDelete(perform: deleteAccounts)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
                     .background(colors.background)
                 }
             }

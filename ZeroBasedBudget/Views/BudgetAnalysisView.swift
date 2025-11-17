@@ -131,8 +131,9 @@ struct MonthPickerSection: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("Analysis Period")
-                .font(.caption)
+            Text("ANALYSIS PERIOD")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
                 .foregroundStyle(colors.textSecondary)
 
             HStack {
@@ -151,7 +152,8 @@ struct MonthPickerSection: View {
                 Spacer()
 
                 Text(monthYearString)
-                    .font(.title2.bold())
+                    .font(.system(size: 28, weight: .medium))  // Medium weight for hierarchy
+                    .foregroundStyle(colors.textPrimary)
 
                 Spacer()
 
@@ -187,8 +189,10 @@ struct SummarySection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Summary")
-                .font(.headline)
+            Text("SUMMARY")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 16) {
@@ -218,8 +222,12 @@ struct SummarySection: View {
                 numberFormat: numberFormat
             )
         }
-        .padding()
+        .padding(16)
         .background(colors.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(colors.borderSubtle, lineWidth: 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
@@ -235,19 +243,25 @@ struct SummaryCard: View {
     var numberFormat: String = "1,234.56"
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text(title)
-                .font(.caption)
+        VStack(spacing: 6) {
+            Text(title.uppercased())
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.6)
                 .foregroundStyle(colors.textSecondary)
 
             Text(CurrencyFormatHelpers.formatCurrency(amount, currencyCode: currencyCode, numberFormat: numberFormat))
-                .font(isFullWidth ? .title2.bold() : .headline.bold())
+                .font(.system(size: isFullWidth ? 28 : 20, weight: .light))  // Light weight for elegance
+                .monospacedDigit()
                 .foregroundStyle(color)
         }
         .frame(maxWidth: isFullWidth ? .infinity : nil)
-        .padding()
+        .padding(16)
         .background(colors.background)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(colors.borderSubtle, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -260,8 +274,10 @@ struct BarChartSection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Budget vs Actual")
-                .font(.headline)
+            Text("BUDGET VS ACTUAL")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Chart {
@@ -353,8 +369,10 @@ struct DonutChartSection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Spending Distribution")
-                .font(.headline)
+            Text("SPENDING DISTRIBUTION")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if chartData.isEmpty {
@@ -447,14 +465,17 @@ struct DonutChartData: Identifiable {
 // MARK: - Detailed List Section
 
 struct DetailedListSection: View {
+	@Environment(\.themeColors) private var colors
     let categoryComparisons: [CategoryComparison]
     var currencyCode: String = "USD"
     var numberFormat: String = "1,234.56"
 
     var body: some View {
         VStack(spacing: 12) {
-            Text("Detailed Breakdown")
-                .font(.headline)
+            Text("DETAILED BREAKDOWN")
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 12) {

@@ -1,0 +1,171 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="390" height="844" fill="#E0E5EC"/>
+
+  <!-- Title -->
+  <text x="20" y="60" font-family="SF Pro Display, -apple-system" font-size="32" font-weight="700" fill="#2C3E50">Neumorphic Soft</text>
+  <text x="20" y="85" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7A95">Soft shadows, embossed elements, tactile feel</text>
+
+  <!-- Input Fields Section -->
+  <text x="20" y="130" font-family="SF Pro Text, -apple-system" font-size="13" font-weight="600" fill="#8C9CAD">INPUT FIELDS</text>
+
+  <!-- Amount Input (Inset) -->
+  <g filter="url(#neuInset)">
+    <rect x="20" y="145" width="350" height="70" rx="16" fill="#E0E5EC"/>
+  </g>
+  <text x="36" y="167" font-family="SF Pro Text, -apple-system" font-size="11" font-weight="600" fill="#8C9CAD">AMOUNT</text>
+  <text x="36" y="199" font-family="SF Pro Display, -apple-system" font-size="32" font-weight="600" fill="#2C3E50">$1,250.00</text>
+
+  <!-- Description Input (Inset) -->
+  <g filter="url(#neuInset)">
+    <rect x="20" y="230" width="350" height="58" rx="16" fill="#E0E5EC"/>
+  </g>
+  <text x="36" y="252" font-family="SF Pro Text, -apple-system" font-size="11" font-weight="600" fill="#8C9CAD">DESCRIPTION</text>
+  <text x="36" y="274" font-family="SF Pro Text, -apple-system" font-size="16" fill="#2C3E50">Grocery shopping</text>
+
+  <!-- List Display Section -->
+  <text x="20" y="330" font-family="SF Pro Text, -apple-system" font-size="13" font-weight="600" fill="#8C9CAD">LIST ITEMS</text>
+
+  <!-- Transaction Item 1 (Expense) - Raised -->
+  <g filter="url(#neuRaised)">
+    <rect x="20" y="345" width="350" height="76" rx="20" fill="#E0E5EC"/>
+  </g>
+  <g filter="url(#neuButton)">
+    <circle cx="50" cy="383" r="20" fill="#E0E5EC"/>
+  </g>
+  <path d="M50 377 L50 389 M56 383 L50 389 L44 383" stroke="#E57373" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="82" y="378" font-family="SF Pro Text, -apple-system" font-size="17" font-weight="600" fill="#2C3E50">Whole Foods</text>
+  <text x="82" y="397" font-family="SF Pro Text, -apple-system" font-size="13" fill="#8C9CAD">Groceries • Nov 14</text>
+  <text x="340" y="388" font-family="SF Pro Display, -apple-system" font-size="20" font-weight="700" fill="#E57373" text-anchor="end">-$127.43</text>
+
+  <!-- Transaction Item 2 (Income) - Raised -->
+  <g filter="url(#neuRaised)">
+    <rect x="20" y="433" width="350" height="76" rx="20" fill="#E0E5EC"/>
+  </g>
+  <g filter="url(#neuButton)">
+    <circle cx="50" cy="471" r="20" fill="#E0E5EC"/>
+  </g>
+  <path d="M50 477 L50 465 M44 471 L50 465 L56 471" stroke="#81C784" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="82" y="466" font-family="SF Pro Text, -apple-system" font-size="17" font-weight="600" fill="#2C3E50">Paycheck</text>
+  <text x="82" y="485" font-family="SF Pro Text, -apple-system" font-size="13" fill="#8C9CAD">Income • Nov 13</text>
+  <text x="340" y="476" font-family="SF Pro Display, -apple-system" font-size="20" font-weight="700" fill="#81C784" text-anchor="end">+$3,200.00</text>
+
+  <!-- Category Budget Item - Raised -->
+  <g filter="url(#neuRaised)">
+    <rect x="20" y="521" width="350" height="86" rx="20" fill="#E0E5EC"/>
+  </g>
+  <text x="36" y="548" font-family="SF Pro Text, -apple-system" font-size="18" font-weight="700" fill="#2C3E50">Groceries</text>
+  <text x="36" y="568" font-family="SF Pro Text, -apple-system" font-size="13" fill="#8C9CAD">$450 of $600</text>
+  <text x="340" y="548" font-family="SF Pro Display, -apple-system" font-size="18" font-weight="700" fill="#FFB74D" text-anchor="end">$150</text>
+  <text x="340" y="565" font-family="SF Pro Text, -apple-system" font-size="10" font-weight="600" fill="#8C9CAD" text-anchor="end">REMAINING</text>
+  <!-- Progress bar (inset) -->
+  <g filter="url(#neuInsetSmall)">
+    <rect x="36" y="578" width="318" height="8" rx="4" fill="#E0E5EC"/>
+  </g>
+  <g filter="url(#neuProgressBar)">
+    <rect x="36" y="578" width="239" height="8" rx="4" fill="#FFB74D"/>
+  </g>
+
+  <!-- Key Features -->
+  <g filter="url(#neuRaised)">
+    <rect x="20" y="640" width="350" height="165" rx="20" fill="#E0E5EC"/>
+  </g>
+  <text x="36" y="670" font-family="SF Pro Text, -apple-system" font-size="15" font-weight="700" fill="#2C3E50">Key Features</text>
+  <text x="36" y="695" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7A95">• Soft shadows (light top-left, dark bottom-right)</text>
+  <text x="36" y="717" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7A95">• Inset inputs for pressed effect</text>
+  <text x="36" y="739" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7A95">• Raised list items for tactile feel</text>
+  <text x="36" y="761" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7A95">• Large corner radius (16-20px)</text>
+  <text x="36" y="783" font-family="SF Pro Text, -apple-system" font-size="14" fill="#5F7A95">• Monochromatic base with color accents</text>
+
+  <!-- Neumorphic Shadows -->
+  <defs>
+    <!-- Inset shadow for inputs -->
+    <filter id="neuInset" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="-3" dy="-3" result="offsetblur1"/>
+      <feFlood flood-color="#FFFFFF" flood-opacity="0.7"/>
+      <feComposite in2="offsetblur1" operator="in" result="shadow1"/>
+
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="3" dy="3" result="offsetblur2"/>
+      <feFlood flood-color="#A3B1C6" flood-opacity="0.5"/>
+      <feComposite in2="offsetblur2" operator="in" result="shadow2"/>
+
+      <feMerge>
+        <feMergeNode in="shadow2"/>
+        <feMergeNode in="shadow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Raised shadow for list items -->
+    <filter id="neuRaised" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="-6" dy="-6" result="offsetblur1"/>
+      <feFlood flood-color="#FFFFFF" flood-opacity="0.9"/>
+      <feComposite in2="offsetblur1" operator="in" result="shadow1"/>
+
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="6" dy="6" result="offsetblur2"/>
+      <feFlood flood-color="#A3B1C6" flood-opacity="0.4"/>
+      <feComposite in2="offsetblur2" operator="in" result="shadow2"/>
+
+      <feMerge>
+        <feMergeNode in="shadow2"/>
+        <feMergeNode in="shadow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Button/Icon shadow -->
+    <filter id="neuButton" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="-2" dy="-2" result="offsetblur1"/>
+      <feFlood flood-color="#FFFFFF" flood-opacity="0.8"/>
+      <feComposite in2="offsetblur1" operator="in" result="shadow1"/>
+
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="2" result="offsetblur2"/>
+      <feFlood flood-color="#A3B1C6" flood-opacity="0.4"/>
+      <feComposite in2="offsetblur2" operator="in" result="shadow2"/>
+
+      <feMerge>
+        <feMergeNode in="shadow2"/>
+        <feMergeNode in="shadow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Small inset for progress track -->
+    <filter id="neuInsetSmall" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="-1" dy="-1" result="offsetblur1"/>
+      <feFlood flood-color="#FFFFFF" flood-opacity="0.5"/>
+      <feComposite in2="offsetblur1" operator="in" result="shadow1"/>
+
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur2"/>
+      <feFlood flood-color="#A3B1C6" flood-opacity="0.3"/>
+      <feComposite in2="offsetblur2" operator="in" result="shadow2"/>
+
+      <feMerge>
+        <feMergeNode in="shadow2"/>
+        <feMergeNode in="shadow1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Progress bar raised effect -->
+    <filter id="neuProgressBar" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="1" result="offsetblur"/>
+      <feFlood flood-color="#A3B1C6" flood-opacity="0.2"/>
+      <feComposite in2="offsetblur" operator="in" result="shadow"/>
+
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
