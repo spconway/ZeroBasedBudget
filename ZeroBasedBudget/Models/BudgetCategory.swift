@@ -33,12 +33,16 @@ final class BudgetCategory {
     @Relationship(deleteRule: .cascade, inverse: \CategoryMonthlyBudget.category)
     var monthlyBudgets: [CategoryMonthlyBudget] = []
 
-    init(name: String, budgetedAmount: Decimal, categoryType: String, colorHex: String, dueDate: Date? = nil) {
+    /// The category group this budget category belongs to (optional for backward compatibility)
+    var categoryGroup: CategoryGroup?
+
+    init(name: String, budgetedAmount: Decimal, categoryType: String, colorHex: String, dueDate: Date? = nil, categoryGroup: CategoryGroup? = nil) {
         self.name = name
         self.budgetedAmount = budgetedAmount
         self.categoryType = categoryType
         self.colorHex = colorHex
         self.dueDate = dueDate
+        self.categoryGroup = categoryGroup
         self.dueDayOfMonth = nil  // Will be set by UI for new categories
         self.notificationID = UUID()
         self.isLastDayOfMonth = false

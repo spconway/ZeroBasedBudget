@@ -22,7 +22,8 @@ struct ZeroBasedBudgetApp: App {
                 MonthlyBudget.self,
                 Account.self,
                 AppSettings.self,
-                CategoryMonthlyBudget.self
+                CategoryMonthlyBudget.self,
+                CategoryGroup.self
             ])
 
             // Get application support directory
@@ -134,6 +135,7 @@ struct RootView: View {
                 Color.clear
                     .onAppear {
                         initializeTheme()
+                        migrateCategoriesToGroups()
                     }
             }
         }
@@ -142,5 +144,10 @@ struct RootView: View {
     /// Initialize theme manager from AppSettings
     private func initializeTheme() {
         themeManager = ThemeManager(appSettings: appSettings, modelContext: modelContext)
+    }
+
+    /// Migrate existing categories to category groups (one-time migration)
+    private func migrateCategoriesToGroups() {
+        CategoryGroupMigration.ensureDefaultGroupsExist(in: modelContext)
     }
 }

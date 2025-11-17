@@ -17,6 +17,7 @@ struct BudgetPlanningView: View {
     @Query private var allMonthlyBudgets: [MonthlyBudget]
     @Query private var allCategoryMonthlyBudgets: [CategoryMonthlyBudget]
     @Query private var allAccounts: [Account]  // NEW: Query accounts for YNAB-style budgeting
+    @Query(sort: \CategoryGroup.sortOrder) private var categoryGroups: [CategoryGroup]
     @Query private var settings: [AppSettings]
 
     // State for selected month/year
@@ -31,9 +32,11 @@ struct BudgetPlanningView: View {
 
     // State for showing add category sheet
     @State private var showingAddCategory = false
-    @State private var newCategoryType: String = "Fixed"
+    @State private var newCategoryType: String = "Fixed"  // For AddCategorySheet compatibility
+    @State private var newCategoryGroup: CategoryGroup?  // Track which group to add category to
     @State private var editingCategory: BudgetCategory?
     @State private var showingReadyToAssignInfo = false
+    @State private var showingAddCategoryGroup = false  // For creating new category groups
 
     // State for undo functionality (Enhancement 3.2)
     @State private var undoAction: UndoAction?
@@ -60,17 +63,20 @@ struct BudgetPlanningView: View {
         settings.first?.numberFormat ?? "1,234.56"
     }
 
-    // Computed property to filter categories by type
-    private var fixedExpenseCategories: [BudgetCategory] {
-        allCategories.filter { $0.categoryType == "Fixed" }
+    // MARK: - Category Group Helpers
+
+    /// Get categories for a specific group (excluding Income categories)
+    private func categories(for group: CategoryGroup) -> [BudgetCategory] {
+        group.categories.filter { $0.categoryType != "Income" }.sorted { $0.name < $1.name }
     }
 
-    private var variableExpenseCategories: [BudgetCategory] {
-        allCategories.filter { $0.categoryType == "Variable" }
-    }
-
-    private var quarterlyExpenseCategories: [BudgetCategory] {
-        allCategories.filter { $0.categoryType == "Quarterly" }
+    /// Calculate total budgeted for a category group in the selected month
+    private func totalBudgeted(for group: CategoryGroup) -> Decimal {
+        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
+        let groupCategoryNames = Set(group.categories.map { $0.name })
+        return allCategoryMonthlyBudgets
+            .filter { $0.isForMonth(normalizedMonth) && groupCategoryNames.contains($0.category.name) }
+            .reduce(0) { $0 + $1.budgetedAmount }
     }
 
     // Computed property for month/year display
@@ -210,32 +216,9 @@ struct BudgetPlanningView: View {
 
     // MARK: - Category Totals (using monthly budgets)
 
-    private var totalFixedExpenses: Decimal {
-        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
-        let fixedCategoryNames = Set(fixedExpenseCategories.map { $0.name })
-        return allCategoryMonthlyBudgets
-            .filter { $0.isForMonth(normalizedMonth) && fixedCategoryNames.contains($0.category.name) }
-            .reduce(0) { $0 + $1.budgetedAmount }
-    }
-
-    private var totalVariableExpenses: Decimal {
-        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
-        let variableCategoryNames = Set(variableExpenseCategories.map { $0.name })
-        return allCategoryMonthlyBudgets
-            .filter { $0.isForMonth(normalizedMonth) && variableCategoryNames.contains($0.category.name) }
-            .reduce(0) { $0 + $1.budgetedAmount }
-    }
-
-    private var totalQuarterlyExpenses: Decimal {
-        let normalizedMonth = normalizeToFirstOfMonth(selectedMonth)
-        let quarterlyCategoryNames = Set(quarterlyExpenseCategories.map { $0.name })
-        return allCategoryMonthlyBudgets
-            .filter { $0.isForMonth(normalizedMonth) && quarterlyCategoryNames.contains($0.category.name) }
-            .reduce(0) { $0 + $1.budgetedAmount }
-    }
-
+    /// Total budgeted across all category groups in selected month
     private var totalExpenses: Decimal {
-        totalFixedExpenses + totalVariableExpenses + totalQuarterlyExpenses
+        categoryGroups.reduce(Decimal.zero) { $0 + totalBudgeted(for: $1) }
     }
 
     // MARK: - View Sections
@@ -253,23 +236,27 @@ struct BudgetPlanningView: View {
         .listRowBackground(colors.surface)
     }
 
-    private var fixedExpensesSection: some View {
+    /// Dynamic section builder for category groups
+    @ViewBuilder
+    private func categoryGroupSection(for group: CategoryGroup) -> some View {
+        let groupCategories = categories(for: group)
+
         Section(header: HStack {
-            Text("FIXED EXPENSES")
+            Text(group.name.uppercased())
                 .font(.system(size: 13, weight: .semibold))
                 .tracking(0.8)
             Spacer()
-            Button(action: { addCategory(type: "Fixed") }) {
+            Button(action: { addCategoryToGroup(group) }) {
                 Image(systemName: "plus.circle.fill")
                     .iconAccent()
             }
         }) {
-            if fixedExpenseCategories.isEmpty {
-                Text("No fixed expenses yet. Tap + to add.")
+            if groupCategories.isEmpty {
+                Text("No categories yet. Tap + to add.")
                     .foregroundStyle(colors.textSecondary)
                     .italic()
             } else {
-                ForEach(fixedExpenseCategories) { category in
+                ForEach(groupCategories) { category in
                     let monthlyBudget = getMonthlyBudget(for: category)
                     let actualSpent = BudgetCalculations.calculateActualSpending(
                         for: category,
@@ -293,113 +280,11 @@ struct BudgetPlanningView: View {
                     )
                 }
                 .onDelete { indexSet in
-                    deleteCategories(at: indexSet, from: fixedExpenseCategories)
+                    deleteCategories(at: indexSet, from: groupCategories)
                 }
 
-                LabeledContent("Total Fixed") {
-                    Text(CurrencyFormatHelpers.formatCurrency(totalFixedExpenses, currencyCode: currencyCode, numberFormat: numberFormat))
-                        .fontWeight(.semibold)
-                }
-            }
-        }
-    }
-
-    private var variableExpensesSection: some View {
-        Section(header: HStack {
-            Text("VARIABLE EXPENSES")
-                .font(.system(size: 13, weight: .semibold))
-                .tracking(0.8)
-            Spacer()
-            Button(action: { addCategory(type: "Variable") }) {
-                Image(systemName: "plus.circle.fill")
-                    .iconAccent()
-            }
-        }) {
-            if variableExpenseCategories.isEmpty {
-                Text("No variable expenses yet. Tap + to add.")
-                    .foregroundStyle(colors.textSecondary)
-                    .italic()
-            } else {
-                ForEach(variableExpenseCategories) { category in
-                    let monthlyBudget = getMonthlyBudget(for: category)
-                    let actualSpent = BudgetCalculations.calculateActualSpending(
-                        for: category,
-                        in: selectedMonth,
-                        from: allTransactions
-                    )
-                    CategoryRow(
-                        category: category,
-                        budgetedThisMonth: monthlyBudget.budgetedAmount,
-                        availableBalance: monthlyBudget.totalAvailable(actualSpent: actualSpent),
-                        readyToAssign: readyToAssign,
-                        actualSpent: actualSpent,
-                        onEdit: {
-                            editingCategory = category
-                        },
-                        onQuickAssign: {
-                            quickAssignToCategory(category)
-                        },
-                        currencyCode: currencyCode,
-                        numberFormat: numberFormat
-                    )
-                }
-                .onDelete { indexSet in
-                    deleteCategories(at: indexSet, from: variableExpenseCategories)
-                }
-
-                LabeledContent("Total Variable") {
-                    Text(CurrencyFormatHelpers.formatCurrency(totalVariableExpenses, currencyCode: currencyCode, numberFormat: numberFormat))
-                        .fontWeight(.semibold)
-                }
-            }
-        }
-    }
-
-    private var quarterlyExpensesSection: some View {
-        Section(header: HStack {
-            Text("QUARTERLY EXPENSES (MONTHLY)")
-                .font(.system(size: 13, weight: .semibold))
-                .tracking(0.8)
-            Spacer()
-            Button(action: { addCategory(type: "Quarterly") }) {
-                Image(systemName: "plus.circle.fill")
-                    .iconAccent()
-            }
-        }) {
-            if quarterlyExpenseCategories.isEmpty {
-                Text("No quarterly expenses yet. Tap + to add.")
-                    .foregroundStyle(colors.textSecondary)
-                    .italic()
-            } else {
-                ForEach(quarterlyExpenseCategories) { category in
-                    let monthlyBudget = getMonthlyBudget(for: category)
-                    let actualSpent = BudgetCalculations.calculateActualSpending(
-                        for: category,
-                        in: selectedMonth,
-                        from: allTransactions
-                    )
-                    CategoryRow(
-                        category: category,
-                        budgetedThisMonth: monthlyBudget.budgetedAmount,
-                        availableBalance: monthlyBudget.totalAvailable(actualSpent: actualSpent),
-                        readyToAssign: readyToAssign,
-                        actualSpent: actualSpent,
-                        onEdit: {
-                            editingCategory = category
-                        },
-                        onQuickAssign: {
-                            quickAssignToCategory(category)
-                        },
-                        currencyCode: currencyCode,
-                        numberFormat: numberFormat
-                    )
-                }
-                .onDelete { indexSet in
-                    deleteCategories(at: indexSet, from: quarterlyExpenseCategories)
-                }
-
-                LabeledContent("Total Quarterly") {
-                    Text(CurrencyFormatHelpers.formatCurrency(totalQuarterlyExpenses, currencyCode: currencyCode, numberFormat: numberFormat))
+                LabeledContent("Total \(group.name)") {
+                    Text(CurrencyFormatHelpers.formatCurrency(totalBudgeted(for: group), currencyCode: currencyCode, numberFormat: numberFormat))
                         .fontWeight(.semibold)
                 }
             }
@@ -504,9 +389,12 @@ struct BudgetPlanningView: View {
         NavigationStack {
             Form {
                 readyToAssignSection
-                fixedExpensesSection
-                variableExpensesSection
-                quarterlyExpensesSection
+
+                // Dynamic category group sections
+                ForEach(categoryGroups) { group in
+                    categoryGroupSection(for: group)
+                }
+
                 budgetSummarySection
             }
             .listStyle(.plain)
@@ -538,6 +426,16 @@ struct BudgetPlanningView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: nextMonth) {
                         Image(systemName: "chevron.right")
+                            .font(.headline)
+                            .iconAccent()
+                            .frame(minWidth: 44, minHeight: 44)
+                    }
+                }
+
+                // Add category group button (trailing, secondary position)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { showingAddCategoryGroup = true }) {
+                        Image(systemName: "folder.badge.plus")
                             .font(.headline)
                             .iconAccent()
                             .frame(minWidth: 44, minHeight: 44)
@@ -581,6 +479,9 @@ struct BudgetPlanningView: View {
                         customDaysCount: customDays
                     )
                 })
+            }
+            .sheet(isPresented: $showingAddCategoryGroup) {
+                AddCategoryGroupSheet()
             }
             .alert("Ready to Assign - YNAB Methodology", isPresented: $showingReadyToAssignInfo) {
                 Button("Got It", role: .cancel) { }
@@ -754,12 +655,21 @@ struct BudgetPlanningView: View {
         showingAddCategory = true
     }
 
+    /// Add category to a specific group
+    private func addCategoryToGroup(_ group: CategoryGroup) {
+        newCategoryGroup = group
+        // Use the group's first category's type for compatibility, or default to "Fixed"
+        newCategoryType = group.categories.first?.categoryType ?? "Fixed"
+        showingAddCategory = true
+    }
+
     private func saveNewCategory(name: String, amount: Decimal, type: String, dueDayOfMonth: Int?, isLastDayOfMonth: Bool, notify7DaysBefore: Bool, notify2DaysBefore: Bool, notifyOnDueDate: Bool, notifyCustomDays: Bool, customDaysCount: Int) {
         let category = BudgetCategory(
             name: name,
             budgetedAmount: 0,  // Set to 0, use monthly budgets instead
             categoryType: type,
-            colorHex: generateRandomColor()
+            colorHex: generateRandomColor(),
+            categoryGroup: newCategoryGroup  // Assign to selected group
         )
 
         // Set day-of-month and notification preferences from user input
@@ -772,6 +682,9 @@ struct BudgetPlanningView: View {
         category.customDaysCount = customDaysCount
 
         modelContext.insert(category)
+
+        // Clear the group selection after saving
+        newCategoryGroup = nil
 
         // Create monthly budget for current month with the budgeted amount
         let monthlyBudget = CategoryMonthlyBudget(
