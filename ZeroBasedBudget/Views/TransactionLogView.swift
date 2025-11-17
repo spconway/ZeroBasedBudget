@@ -296,11 +296,16 @@ struct AddTransactionSheet: View {
 
     @State private var date = Date()
     @State private var description = ""
-    @State private var amount = Decimal.zero
+    @State private var amountText = ""  // String for text input
     @State private var selectedCategory: BudgetCategory?
     @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType = .expense
     @State private var notes = ""
+
+    // Convert amountText to Decimal for validation and saving
+    private var amount: Decimal {
+        Decimal(string: amountText.replacingOccurrences(of: ",", with: "")) ?? 0
+    }
 
     private var isValid: Bool {
         !description.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -329,7 +334,7 @@ struct AddTransactionSheet: View {
                 }
 
                 Section {
-                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
+                    TextField("Amount", text: $amountText)
                         .keyboardType(.decimalPad)
 
                     if amount <= 0 {
@@ -479,7 +484,7 @@ struct EditTransactionSheet: View {
 
     @State private var date: Date
     @State private var description: String
-    @State private var amount: Decimal
+    @State private var amountText: String  // String for text input
     @State private var selectedCategory: BudgetCategory?
     @State private var selectedAccount: Account?
     @State private var transactionType: TransactionType
@@ -494,11 +499,17 @@ struct EditTransactionSheet: View {
         // Initialize state from transaction
         _date = State(initialValue: transaction.date)
         _description = State(initialValue: transaction.transactionDescription)
-        _amount = State(initialValue: transaction.amount)
+        // Convert Decimal to String for editing
+        _amountText = State(initialValue: String(describing: transaction.amount))
         _selectedCategory = State(initialValue: transaction.category)
         _selectedAccount = State(initialValue: transaction.account)
         _transactionType = State(initialValue: transaction.type)
         _notes = State(initialValue: transaction.notes ?? "")
+    }
+
+    // Convert amountText to Decimal for validation and saving
+    private var amount: Decimal {
+        Decimal(string: amountText.replacingOccurrences(of: ",", with: "")) ?? 0
     }
 
     private var isValid: Bool {
@@ -528,7 +539,7 @@ struct EditTransactionSheet: View {
                 }
 
                 Section {
-                    TextField("Amount", value: $amount, format: .currency(code: currencyCode))
+                    TextField("Amount", text: $amountText)
                         .keyboardType(.decimalPad)
 
                     if amount <= 0 {
