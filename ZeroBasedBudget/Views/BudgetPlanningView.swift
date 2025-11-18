@@ -697,7 +697,9 @@ struct BudgetPlanningView: View {
                     notifyOnDueDate: category.notifyOnDueDate,
                     notifyCustomDays: category.notifyCustomDays,
                     customDaysCount: category.customDaysCount,
-                    currencyCode: currencyCode
+                    currencyCode: currencyCode,
+                    notificationTimeHour: settings.first?.notificationTimeHour ?? 9,
+                    notificationTimeMinute: settings.first?.notificationTimeMinute ?? 0
                 )
             }
         }
@@ -746,7 +748,9 @@ struct BudgetPlanningView: View {
                     notifyOnDueDate: notifyOnDueDate,
                     notifyCustomDays: notifyCustomDays,
                     customDaysCount: customDaysCount,
-                    currencyCode: currencyCode
+                    currencyCode: currencyCode,
+                    notificationTimeHour: settings.first?.notificationTimeHour ?? 9,
+                    notificationTimeMinute: settings.first?.notificationTimeMinute ?? 0
                 )
             } else {
                 // Cancel notifications if due date was removed

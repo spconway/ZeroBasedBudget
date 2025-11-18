@@ -49,6 +49,8 @@ class NotificationManager {
     ///   - notifyCustomDays: Schedule notification custom days before
     ///   - customDaysCount: Number of days before for custom notification
     ///   - currencyCode: Currency code for formatting amount (e.g., "USD", "EUR")
+    ///   - notificationTimeHour: Hour for notification delivery (0-23), defaults to 9 AM
+    ///   - notificationTimeMinute: Minute for notification delivery (0-59), defaults to 0
     func scheduleNotifications(
         for categoryID: UUID,
         categoryName: String,
@@ -59,7 +61,9 @@ class NotificationManager {
         notifyOnDueDate: Bool,
         notifyCustomDays: Bool,
         customDaysCount: Int,
-        currencyCode: String = "USD"
+        currencyCode: String = "USD",
+        notificationTimeHour: Int = 9,
+        notificationTimeMinute: Int = 0
     ) async {
         // Cancel any existing notifications for this category
         await cancelNotification(for: categoryID)
@@ -76,7 +80,9 @@ class NotificationManager {
                 notificationDate: notificationDate,
                 dueDate: dueDate,
                 type: .sevenDaysBefore,
-                currencyCode: currencyCode
+                currencyCode: currencyCode,
+                notificationTimeHour: notificationTimeHour,
+                notificationTimeMinute: notificationTimeMinute
             )
             notificationCount += 1
         }
@@ -90,7 +96,9 @@ class NotificationManager {
                 notificationDate: notificationDate,
                 dueDate: dueDate,
                 type: .twoDaysBefore,
-                currencyCode: currencyCode
+                currencyCode: currencyCode,
+                notificationTimeHour: notificationTimeHour,
+                notificationTimeMinute: notificationTimeMinute
             )
             notificationCount += 1
         }
@@ -104,7 +112,9 @@ class NotificationManager {
                 notificationDate: dueDate,
                 dueDate: dueDate,
                 type: .onDueDate,
-                currencyCode: currencyCode
+                currencyCode: currencyCode,
+                notificationTimeHour: notificationTimeHour,
+                notificationTimeMinute: notificationTimeMinute
             )
             notificationCount += 1
         }
@@ -118,7 +128,9 @@ class NotificationManager {
                 notificationDate: notificationDate,
                 dueDate: dueDate,
                 type: .customDays(customDaysCount),
-                currencyCode: currencyCode
+                currencyCode: currencyCode,
+                notificationTimeHour: notificationTimeHour,
+                notificationTimeMinute: notificationTimeMinute
             )
             notificationCount += 1
         }
@@ -134,7 +146,9 @@ class NotificationManager {
         notificationDate: Date,
         dueDate: Date,
         type: NotificationType,
-        currencyCode: String
+        currencyCode: String,
+        notificationTimeHour: Int,
+        notificationTimeMinute: Int
     ) async {
         // Create notification identifier
         let identifier = notificationIdentifier(for: categoryID, type: type)
@@ -164,11 +178,11 @@ class NotificationManager {
         // Add category ID to userInfo for deep linking
         content.userInfo = ["categoryID": categoryID.uuidString]
 
-        // Create trigger - Set notification for 9:00 AM
+        // Create trigger - Set notification for user-configured time
         let calendar = Calendar.current
         var dateComponents = calendar.dateComponents([.year, .month, .day], from: notificationDate)
-        dateComponents.hour = 9
-        dateComponents.minute = 0
+        dateComponents.hour = notificationTimeHour
+        dateComponents.minute = notificationTimeMinute
 
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
 
