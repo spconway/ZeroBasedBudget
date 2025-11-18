@@ -431,7 +431,7 @@ struct BudgetPlanningView: View {
                 _ = getOrCreateMonthlyBudget(for: selectedMonth)
             }
             .sheet(isPresented: $showingAddCategory) {
-                AddCategorySheet(categoryType: newCategoryType, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                AddCategorySheet(categoryType: newCategoryType, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { name, amount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays, timeHour, timeMinute in
                     saveNewCategory(
                         name: name,
                         amount: amount,
@@ -442,13 +442,15 @@ struct BudgetPlanningView: View {
                         notify2DaysBefore: notify2Days,
                         notifyOnDueDate: notifyOnDate,
                         notifyCustomDays: notifyCustom,
-                        customDaysCount: customDays
+                        customDaysCount: customDays,
+                        notificationTimeHour: timeHour,
+                        notificationTimeMinute: timeMinute
                     )
                 })
             }
             .sheet(item: $editingCategory) { category in
                 let monthlyBudget = getMonthlyBudget(for: category)
-                EditCategorySheet(category: category, initialAmount: monthlyBudget.budgetedAmount, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { updatedName, updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays in
+                EditCategorySheet(category: category, initialAmount: monthlyBudget.budgetedAmount, currencyCode: currencyCode, dateFormat: dateFormat, onSave: { updatedName, updatedAmount, dueDayOfMonth, isLastDayOfMonth, notify7Days, notify2Days, notifyOnDate, notifyCustom, customDays, timeHour, timeMinute in
                     updateCategory(
                         category,
                         name: updatedName,
@@ -459,7 +461,9 @@ struct BudgetPlanningView: View {
                         notify2DaysBefore: notify2Days,
                         notifyOnDueDate: notifyOnDate,
                         notifyCustomDays: notifyCustom,
-                        customDaysCount: customDays
+                        customDaysCount: customDays,
+                        notificationTimeHour: timeHour,
+                        notificationTimeMinute: timeMinute
                     )
                 })
             }
@@ -649,7 +653,7 @@ struct BudgetPlanningView: View {
         showingAddCategory = true
     }
 
-    private func saveNewCategory(name: String, amount: Decimal, type: String, dueDayOfMonth: Int?, isLastDayOfMonth: Bool, notify7DaysBefore: Bool, notify2DaysBefore: Bool, notifyOnDueDate: Bool, notifyCustomDays: Bool, customDaysCount: Int) {
+    private func saveNewCategory(name: String, amount: Decimal, type: String, dueDayOfMonth: Int?, isLastDayOfMonth: Bool, notify7DaysBefore: Bool, notify2DaysBefore: Bool, notifyOnDueDate: Bool, notifyCustomDays: Bool, customDaysCount: Int, notificationTimeHour: Int?, notificationTimeMinute: Int?) {
         let category = BudgetCategory(
             name: name,
             budgetedAmount: 0,  // Set to 0, use monthly budgets instead
@@ -666,6 +670,8 @@ struct BudgetPlanningView: View {
         category.notifyOnDueDate = notifyOnDueDate
         category.notifyCustomDays = notifyCustomDays
         category.customDaysCount = customDaysCount
+        category.notificationTimeHour = notificationTimeHour
+        category.notificationTimeMinute = notificationTimeMinute
 
         modelContext.insert(category)
 
@@ -698,8 +704,8 @@ struct BudgetPlanningView: View {
                     notifyCustomDays: category.notifyCustomDays,
                     customDaysCount: category.customDaysCount,
                     currencyCode: currencyCode,
-                    notificationTimeHour: settings.first?.notificationTimeHour ?? 9,
-                    notificationTimeMinute: settings.first?.notificationTimeMinute ?? 0
+                    notificationTimeHour: category.notificationTimeHour ?? settings.first?.notificationTimeHour ?? 9,
+                    notificationTimeMinute: category.notificationTimeMinute ?? settings.first?.notificationTimeMinute ?? 0
                 )
             }
         }
@@ -715,7 +721,9 @@ struct BudgetPlanningView: View {
         notify2DaysBefore: Bool,
         notifyOnDueDate: Bool,
         notifyCustomDays: Bool,
-        customDaysCount: Int
+        customDaysCount: Int,
+        notificationTimeHour: Int?,
+        notificationTimeMinute: Int?
     ) {
         category.name = name
         // Don't update category.budgetedAmount - use monthly budget instead
@@ -726,6 +734,8 @@ struct BudgetPlanningView: View {
         category.notifyOnDueDate = notifyOnDueDate
         category.notifyCustomDays = notifyCustomDays
         category.customDaysCount = customDaysCount
+        category.notificationTimeHour = notificationTimeHour
+        category.notificationTimeMinute = notificationTimeMinute
 
         // Update monthly budget for current month
         let monthlyBudget = getMonthlyBudget(for: category)
@@ -749,8 +759,8 @@ struct BudgetPlanningView: View {
                     notifyCustomDays: notifyCustomDays,
                     customDaysCount: customDaysCount,
                     currencyCode: currencyCode,
-                    notificationTimeHour: settings.first?.notificationTimeHour ?? 9,
-                    notificationTimeMinute: settings.first?.notificationTimeMinute ?? 0
+                    notificationTimeHour: category.notificationTimeHour ?? settings.first?.notificationTimeHour ?? 9,
+                    notificationTimeMinute: category.notificationTimeMinute ?? settings.first?.notificationTimeMinute ?? 0
                 )
             } else {
                 // Cancel notifications if due date was removed
@@ -951,7 +961,7 @@ struct AddCategorySheet: View {
     let categoryType: String
 	var currencyCode: String = "USD"
     var dateFormat: String = "MM/DD/YYYY"
-    let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
+    let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int, Int?, Int?) -> Void
 
     @State private var categoryName: String = ""
     @State private var budgetedAmount: Decimal = 0
@@ -963,6 +973,9 @@ struct AddCategorySheet: View {
     @State private var notifyOnDueDate: Bool = true  // Default to ON
     @State private var notifyCustomDays: Bool = false
     @State private var customDaysCount: Int = 1
+    @State private var hasCustomNotificationTime: Bool = false
+    @State private var notificationTimeHour: Int = 9
+    @State private var notificationTimeMinute: Int = 0
 
     // Helper to calculate display date for preview
     private var displayDate: Date {
@@ -1075,6 +1088,43 @@ struct AddCategorySheet: View {
                     } footer: {
                         Text("Choose when to be notified about this budget due date")
                     }
+
+                    Section {
+                        Toggle("Custom notification time", isOn: $hasCustomNotificationTime)
+
+                        if hasCustomNotificationTime {
+                            DatePicker(
+                                "Notification Time",
+                                selection: Binding(
+                                    get: {
+                                        Calendar.current.date(from: DateComponents(
+                                            hour: notificationTimeHour,
+                                            minute: notificationTimeMinute
+                                        )) ?? Date()
+                                    },
+                                    set: { newDate in
+                                        let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                                        notificationTimeHour = components.hour ?? 9
+                                        notificationTimeMinute = components.minute ?? 0
+                                    }
+                                ),
+                                displayedComponents: .hourAndMinute
+                            )
+
+                            Text("This category will be notified at this specific time")
+                                .font(.caption)
+                                .foregroundStyle(colors.textSecondary)
+                        }
+                    } header: {
+                        Text("CUSTOM NOTIFICATION TIME")
+                            .font(.system(size: 11, weight: .semibold))
+                            .tracking(0.8)
+                            .foregroundStyle(colors.textSecondary)
+                    } footer: {
+                        if !hasCustomNotificationTime {
+                            Text("Using global notification time from Settings")
+                        }
+                    }
                 }
 
                 Section {
@@ -1102,7 +1152,9 @@ struct AddCategorySheet: View {
                             notify2DaysBefore,
                             notifyOnDueDate,
                             notifyCustomDays,
-                            customDaysCount
+                            customDaysCount,
+                            hasCustomNotificationTime ? notificationTimeHour : nil,
+                            hasCustomNotificationTime ? notificationTimeMinute : nil
                         )
                         dismiss()
                     }
@@ -1122,7 +1174,7 @@ struct EditCategorySheet: View {
 
     let category: BudgetCategory
     let initialAmount: Decimal  // Monthly budgeted amount for current month
-    let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void
+    let onSave: (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int, Int?, Int?) -> Void
     var currencyCode: String = "USD"
     var dateFormat: String = "MM/DD/YYYY"
 
@@ -1136,10 +1188,13 @@ struct EditCategorySheet: View {
     @State private var notifyOnDueDate: Bool
     @State private var notifyCustomDays: Bool
     @State private var customDaysCount: Int
+    @State private var hasCustomNotificationTime: Bool
+    @State private var notificationTimeHour: Int
+    @State private var notificationTimeMinute: Int
     @State private var showingNameError: Bool = false
     @State private var nameErrorMessage: String = ""
 
-    init(category: BudgetCategory, initialAmount: Decimal, currencyCode: String = "USD", dateFormat: String = "MM/DD/YYYY", onSave: @escaping (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int) -> Void) {
+    init(category: BudgetCategory, initialAmount: Decimal, currencyCode: String = "USD", dateFormat: String = "MM/DD/YYYY", onSave: @escaping (String, Decimal, Int?, Bool, Bool, Bool, Bool, Bool, Int, Int?, Int?) -> Void) {
         self.category = category
         self.initialAmount = initialAmount
         self.currencyCode = currencyCode
@@ -1167,6 +1222,17 @@ struct EditCategorySheet: View {
         _notifyOnDueDate = State(initialValue: category.notifyOnDueDate)
         _notifyCustomDays = State(initialValue: category.notifyCustomDays)
         _customDaysCount = State(initialValue: category.customDaysCount)
+
+        // Initialize custom notification time from category
+        if let hour = category.notificationTimeHour, let minute = category.notificationTimeMinute {
+            _hasCustomNotificationTime = State(initialValue: true)
+            _notificationTimeHour = State(initialValue: hour)
+            _notificationTimeMinute = State(initialValue: minute)
+        } else {
+            _hasCustomNotificationTime = State(initialValue: false)
+            _notificationTimeHour = State(initialValue: 9)
+            _notificationTimeMinute = State(initialValue: 0)
+        }
     }
 
     // Helper computed property to show the effective date
@@ -1295,6 +1361,43 @@ struct EditCategorySheet: View {
                     } footer: {
                         Text("Choose when to be notified about this budget due date")
                     }
+
+                    Section {
+                        Toggle("Custom notification time", isOn: $hasCustomNotificationTime)
+
+                        if hasCustomNotificationTime {
+                            DatePicker(
+                                "Notification Time",
+                                selection: Binding(
+                                    get: {
+                                        Calendar.current.date(from: DateComponents(
+                                            hour: notificationTimeHour,
+                                            minute: notificationTimeMinute
+                                        )) ?? Date()
+                                    },
+                                    set: { newDate in
+                                        let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                                        notificationTimeHour = components.hour ?? 9
+                                        notificationTimeMinute = components.minute ?? 0
+                                    }
+                                ),
+                                displayedComponents: .hourAndMinute
+                            )
+
+                            Text("This category will be notified at this specific time")
+                                .font(.caption)
+                                .foregroundStyle(colors.textSecondary)
+                        }
+                    } header: {
+                        Text("CUSTOM NOTIFICATION TIME")
+                            .font(.system(size: 11, weight: .semibold))
+                            .tracking(0.8)
+                            .foregroundStyle(colors.textSecondary)
+                    } footer: {
+                        if !hasCustomNotificationTime {
+                            Text("Using global notification time from Settings")
+                        }
+                    }
                 }
             }
             .navigationTitle("Edit Category")
@@ -1318,7 +1421,9 @@ struct EditCategorySheet: View {
                                 notify2DaysBefore,
                                 notifyOnDueDate,
                                 notifyCustomDays,
-                                customDaysCount
+                                customDaysCount,
+                                hasCustomNotificationTime ? notificationTimeHour : nil,
+                                hasCustomNotificationTime ? notificationTimeMinute : nil
                             )
                         }
                     }
