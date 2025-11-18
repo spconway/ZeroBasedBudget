@@ -27,6 +27,10 @@ final class BudgetCategory {
     var notifyCustomDays: Bool
     var customDaysCount: Int  // Number of days before due date for custom notification
 
+    // Notification delivery time override (nil = use global setting from AppSettings)
+    var notificationTimeHour: Int?  // Hour (0-23), nil = use global setting
+    var notificationTimeMinute: Int?  // Minute (0-59), nil = use global setting
+
     @Relationship(deleteRule: .cascade, inverse: \Transaction.category)
     var transactions: [Transaction] = []
 
@@ -53,6 +57,10 @@ final class BudgetCategory {
         self.notifyOnDueDate = true
         self.notifyCustomDays = false
         self.customDaysCount = 1
+
+        // Default: use global notification time setting (nil = use global)
+        self.notificationTimeHour = nil
+        self.notificationTimeMinute = nil
     }
 
     // MARK: - Computed Properties

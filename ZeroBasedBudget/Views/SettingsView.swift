@@ -279,7 +279,30 @@ struct SettingsView: View {
                 }
             ))
 
-            if !appSettings.notificationsEnabled {
+            if appSettings.notificationsEnabled {
+                DatePicker(
+                    "Notification Time",
+                    selection: Binding(
+                        get: {
+                            Calendar.current.date(from: DateComponents(
+                                hour: appSettings.notificationTimeHour,
+                                minute: appSettings.notificationTimeMinute
+                            )) ?? Date()
+                        },
+                        set: { newDate in
+                            let components = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                            appSettings.notificationTimeHour = components.hour ?? 9
+                            appSettings.notificationTimeMinute = components.minute ?? 0
+                            appSettings.lastModifiedDate = Date()
+                        }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+
+                Text("All budget notifications will be delivered at this time")
+                    .font(.caption)
+                    .foregroundStyle(colors.textSecondary)
+            } else {
                 Text("Notifications are disabled. Category due date reminders will not appear.")
                     .font(.caption)
                     .foregroundStyle(colors.warning)

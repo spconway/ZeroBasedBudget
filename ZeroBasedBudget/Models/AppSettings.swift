@@ -43,6 +43,12 @@ final class AppSettings {
     /// Options: "7-day", "2-day", "on-date", "custom"
     var defaultNotificationSchedule: String
 
+    /// Notification delivery time - hour (0-23)
+    var notificationTimeHour: Int
+
+    /// Notification delivery time - minute (0-59)
+    var notificationTimeMinute: Int
+
     /// Number format preference (decimal/thousand separators)
     /// Options: "1,234.56", "1.234,56", "1 234,56"
     var numberFormat: String
@@ -58,6 +64,8 @@ final class AppSettings {
         monthStartDate: Int = 1,
         notificationsEnabled: Bool = true,
         defaultNotificationSchedule: String = "on-date",
+        notificationTimeHour: Int = 9,
+        notificationTimeMinute: Int = 0,
         numberFormat: String = "1,234.56",
         allowNegativeCategoryAmounts: Bool = true
     ) {
@@ -71,6 +79,8 @@ final class AppSettings {
         self.monthStartDate = monthStartDate
         self.notificationsEnabled = notificationsEnabled
         self.defaultNotificationSchedule = defaultNotificationSchedule
+        self.notificationTimeHour = notificationTimeHour
+        self.notificationTimeMinute = notificationTimeMinute
         self.numberFormat = numberFormat
         self.allowNegativeCategoryAmounts = allowNegativeCategoryAmounts
     }
