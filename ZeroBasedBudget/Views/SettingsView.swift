@@ -298,7 +298,6 @@ struct SettingsView: View {
                     ),
                     displayedComponents: .hourAndMinute
                 )
-                .themed(.primary)
 
                 Text("All budget notifications will be delivered at this time")
                     .font(.caption)
