@@ -255,12 +255,16 @@ struct TransactionRow: View {
 
             // Second row: Category badge and Net Worth
             HStack(spacing: 8) {
-                // Category badge
+                // Category badge (income shows "Ready to Assign" per YNAB)
                 HStack(spacing: 4) {
                     Circle()
-                        .fill(Color(hex: transaction.category?.colorHex ?? "999999"))
+                        .fill(transaction.type == .income
+                            ? colors.success
+                            : Color(hex: transaction.category?.colorHex ?? "999999"))
                         .frame(width: 8, height: 8)
-                    Text(transaction.category?.name ?? "Uncategorized")
+                    Text(transaction.type == .income
+                        ? "Ready to Assign"
+                        : (transaction.category?.name ?? "Uncategorized"))
                         .font(.caption)
                         .foregroundStyle(colors.textSecondary)
                 }
@@ -289,7 +293,10 @@ struct TransactionRow: View {
     private var accessibilityLabel: String {
         let typeLabel = transaction.type == .income ? "Income" : "Expense"
         let amountText = CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat)
-        let categoryText = transaction.category?.name ?? "Uncategorized"
+        // Income goes to "Ready to Assign" per YNAB, expenses have categories
+        let categoryText = transaction.type == .income
+            ? "Ready to Assign"
+            : (transaction.category?.name ?? "Uncategorized")
         let dateText = DateFormatHelpers.accessibilityDateLabel(for: transaction.date)
         let accountText = transaction.account?.name ?? "No account"
         let netWorthText = CurrencyFormatHelpers.formatCurrency(runningBalance, currencyCode: currencyCode, numberFormat: numberFormat)
@@ -327,10 +334,11 @@ struct AddTransactionSheet: View {
             .trimmingCharacters(in: .whitespaces)) ?? 0
     }
 
+    // YNAB: Income doesn't require category (flows to Ready to Assign)
     private var isValid: Bool {
         !description.trimmingCharacters(in: .whitespaces).isEmpty &&
         amount > 0 &&
-        selectedCategory != nil
+        (transactionType == .income || selectedCategory != nil)
     }
 
     var body: some View {
@@ -346,6 +354,11 @@ struct AddTransactionSheet: View {
                         Text("Expense").tag(TransactionType.expense)
                     }
                     .pickerStyle(.segmented)
+                    .onChange(of: transactionType) { _, newType in
+                        if newType == .income {
+                            selectedCategory = nil
+                        }
+                    }
                 } header: {
                     Text("TRANSACTION DETAILS")
                         .font(.system(size: 11, weight: .semibold))
@@ -388,31 +401,34 @@ struct AddTransactionSheet: View {
                         .foregroundStyle(colors.textSecondary)
                 }
 
-                Section {
-                    Picker("Category", selection: $selectedCategory) {
-                        Text("Select Category").tag(nil as BudgetCategory?)
-                        ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
-                            HStack {
-                                Circle()
-                                    .fill(Color(hex: category.colorHex))
-                                    .frame(width: 12, height: 12)
-                                Text(category.name)
+                // YNAB: Only expenses require category selection
+                if transactionType == .expense {
+                    Section {
+                        Picker("Category", selection: $selectedCategory) {
+                            Text("Select Category").tag(nil as BudgetCategory?)
+                            ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
+                                HStack {
+                                    Circle()
+                                        .fill(Color(hex: category.colorHex))
+                                        .frame(width: 12, height: 12)
+                                    Text(category.name)
+                                }
+                                .tag(category as BudgetCategory?)
                             }
-                            .tag(category as BudgetCategory?)
                         }
-                    }
-                    .pickerStyle(.menu)
+                        .pickerStyle(.menu)
 
-                    if selectedCategory == nil {
-                        Text("Please select a category")
-                            .font(.caption)
-                            .foregroundStyle(colors.warning)
+                        if selectedCategory == nil {
+                            Text("Please select a category")
+                                .font(.caption)
+                                .foregroundStyle(colors.warning)
+                        }
+                    } header: {
+                        Text("CATEGORY")
+                            .font(.system(size: 11, weight: .semibold))
+                            .tracking(0.8)
+                            .foregroundStyle(colors.textSecondary)
                     }
-                } header: {
-                    Text("CATEGORY")
-                        .font(.system(size: 11, weight: .semibold))
-                        .tracking(0.8)
-                        .foregroundStyle(colors.textSecondary)
                 }
 
                 Section {
@@ -552,10 +568,11 @@ struct EditTransactionSheet: View {
         Decimal(string: amountText.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: "$", with: "").trimmingCharacters(in: .whitespaces)) ?? 0
     }
 
+    // YNAB: Income doesn't require category (flows to Ready to Assign)
     private var isValid: Bool {
         !description.trimmingCharacters(in: .whitespaces).isEmpty &&
         amount > 0 &&
-        selectedCategory != nil
+        (transactionType == .income || selectedCategory != nil)
     }
 
     var body: some View {
@@ -571,6 +588,11 @@ struct EditTransactionSheet: View {
                         Text("Expense").tag(TransactionType.expense)
                     }
                     .pickerStyle(.segmented)
+                    .onChange(of: transactionType) { _, newType in
+                        if newType == .income {
+                            selectedCategory = nil
+                        }
+                    }
                 } header: {
                     Text("TRANSACTION DETAILS")
                         .font(.system(size: 11, weight: .semibold))
@@ -613,31 +635,34 @@ struct EditTransactionSheet: View {
                         .foregroundStyle(colors.textSecondary)
                 }
 
-                Section {
-                    Picker("Category", selection: $selectedCategory) {
-                        Text("Select Category").tag(nil as BudgetCategory?)
-                        ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
-                            HStack {
-                                Circle()
-                                    .fill(Color(hex: category.colorHex))
-                                    .frame(width: 12, height: 12)
-                                Text(category.name)
+                // YNAB: Only expenses require category selection
+                if transactionType == .expense {
+                    Section {
+                        Picker("Category", selection: $selectedCategory) {
+                            Text("Select Category").tag(nil as BudgetCategory?)
+                            ForEach(categories.sorted(by: { $0.name < $1.name })) { category in
+                                HStack {
+                                    Circle()
+                                        .fill(Color(hex: category.colorHex))
+                                        .frame(width: 12, height: 12)
+                                    Text(category.name)
+                                }
+                                .tag(category as BudgetCategory?)
                             }
-                            .tag(category as BudgetCategory?)
                         }
-                    }
-                    .pickerStyle(.menu)
+                        .pickerStyle(.menu)
 
-                    if selectedCategory == nil {
-                        Text("Please select a category")
-                            .font(.caption)
-                            .foregroundStyle(colors.warning)
+                        if selectedCategory == nil {
+                            Text("Please select a category")
+                                .font(.caption)
+                                .foregroundStyle(colors.warning)
+                        }
+                    } header: {
+                        Text("CATEGORY")
+                            .font(.system(size: 11, weight: .semibold))
+                            .tracking(0.8)
+                            .foregroundStyle(colors.textSecondary)
                     }
-                } header: {
-                    Text("CATEGORY")
-                        .font(.system(size: 11, weight: .semibold))
-                        .tracking(0.8)
-                        .foregroundStyle(colors.textSecondary)
                 }
 
                 Section {
