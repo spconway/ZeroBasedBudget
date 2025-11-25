@@ -330,16 +330,28 @@ struct ColumnMappingRow: View {
                 }
             }
 
-            Picker(label, selection: $selection) {
-                Text("(not mapped)").tag("")
-                ForEach(options.filter { !$0.isEmpty }, id: \.self) { option in
-                    Text(option).tag(option)
+            Menu {
+                Button("(not mapped)") {
+                    selection = ""
                 }
+                ForEach(options.filter { !$0.isEmpty }, id: \.self) { option in
+                    Button(option) {
+                        selection = option
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(selection.isEmpty ? "(not mapped)" : selection)
+                        .foregroundStyle(themeColors.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(themeColors.textSecondary)
+                }
+                .padding(10)
+                .background(themeColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
-            .pickerStyle(.menu)
-            .padding(10)
-            .background(themeColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .padding(.horizontal)
     }

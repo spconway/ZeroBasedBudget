@@ -66,25 +66,46 @@ class ImportManager {
 
     /// Parse CSV file into headers and rows
     static func parseCSV(_ fileURL: URL) throws -> (headers: [String], rows: [[String]]) {
+        print("📁 DEBUG parseCSV: Reading file at \(fileURL)")
+        print("📁 DEBUG parseCSV: File exists: \(FileManager.default.fileExists(atPath: fileURL.path))")
+
         guard let content = try? String(contentsOf: fileURL, encoding: .utf8) else {
+            print("📁 DEBUG parseCSV: Failed to read file as UTF-8")
             throw ImportError.fileReadError
         }
 
-        let lines = content.components(separatedBy: .newlines)
+        print("📁 DEBUG parseCSV: Content length: \(content.count) characters")
+        print("📁 DEBUG parseCSV: First 200 chars: \(String(content.prefix(200)))")
+
+        // Strip BOM (Byte Order Mark) if present - common in Windows-exported CSVs
+        // UTF-8 BOM is \u{FEFF}, which can corrupt the first header on real devices
+        let hasBOM = content.hasPrefix("\u{FEFF}")
+        print("📁 DEBUG parseCSV: Has BOM: \(hasBOM)")
+
+        let cleanContent = hasBOM ? String(content.dropFirst()) : content
+
+        let lines = cleanContent.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
         guard !lines.isEmpty else {
+            print("📁 DEBUG parseCSV: No lines found after parsing")
             throw ImportError.invalidCSVFormat
         }
 
+        print("📁 DEBUG parseCSV: Found \(lines.count) lines")
+
         // Parse headers
         let headers = parseCSVLine(lines[0])
+        print("📁 DEBUG parseCSV: Parsed headers: \(headers)")
+        print("📁 DEBUG parseCSV: Header count: \(headers.count)")
 
         // Parse data rows
         let rows = lines.dropFirst().map { parseCSVLine($0) }
+        print("📁 DEBUG parseCSV: Parsed \(rows.count) data rows")
 
         guard !rows.isEmpty else {
+            print("📁 DEBUG parseCSV: No data rows found")
             throw ImportError.noDataRows
         }
 
