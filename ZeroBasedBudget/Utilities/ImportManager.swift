@@ -452,6 +452,14 @@ class ImportManager {
             }
 
             modelContext.insert(transaction)
+
+            // Update account balance based on transaction type
+            if finalType == .income {
+                selectedAccount.balance += finalAmount
+            } else {
+                selectedAccount.balance -= finalAmount
+            }
+
             successCount += 1
         }
 
