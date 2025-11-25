@@ -216,6 +216,32 @@ struct BudgetPlanningView: View {
         categoryGroups.reduce(Decimal.zero) { $0 + totalBudgeted(for: $1) }
     }
 
+    // MARK: - Overspending Detection
+
+    /// Calculate total overspending across all categories
+    /// Returns the sum of negative available balances (as a positive number)
+    private var totalOverspent: Decimal {
+        var overspent: Decimal = 0
+        for category in allCategories {
+            let available = getAvailableBalance(for: category)
+            if available < 0 {
+                overspent += abs(available)
+            }
+        }
+        return overspent
+    }
+
+    /// Get list of overspent categories with their amounts
+    private var overspentCategories: [(category: BudgetCategory, amount: Decimal)] {
+        allCategories.compactMap { category in
+            let available = getAvailableBalance(for: category)
+            if available < 0 {
+                return (category, abs(available))
+            }
+            return nil
+        }
+    }
+
     // MARK: - View Sections
 
     private var readyToAssignSection: some View {
@@ -229,6 +255,49 @@ struct BudgetPlanningView: View {
         }
         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
         .listRowBackground(colors.surface)
+    }
+
+    /// Warning section shown when categories are overspent
+    @ViewBuilder
+    private var overspendWarningSection: some View {
+        if totalOverspent > 0 {
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.title3)
+                            .foregroundStyle(colors.error)
+                        Text("Overspending Alert")
+                            .font(.headline)
+                            .foregroundStyle(colors.error)
+                        Spacer()
+                    }
+
+                    Text("You've spent \(CurrencyFormatHelpers.formatCurrency(totalOverspent, currencyCode: currencyCode, numberFormat: numberFormat)) more than budgeted. Cover this by moving money from Ready to Assign or other categories.")
+                        .font(.subheadline)
+                        .foregroundStyle(colors.textSecondary)
+
+                    // List overspent categories
+                    ForEach(overspentCategories, id: \.category.id) { item in
+                        HStack {
+                            Circle()
+                                .fill(Color(hex: item.category.colorHex))
+                                .frame(width: 8, height: 8)
+                            Text(item.category.name)
+                                .font(.subheadline)
+                                .foregroundStyle(colors.textPrimary)
+                            Spacer()
+                            Text("-\(CurrencyFormatHelpers.formatCurrency(item.amount, currencyCode: currencyCode, numberFormat: numberFormat))")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(colors.error)
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            .listRowBackground(colors.error.opacity(0.1))
+        }
     }
 
     /// Section for creating new category groups
@@ -380,6 +449,8 @@ struct BudgetPlanningView: View {
         NavigationStack {
             Form {
                 readyToAssignSection
+
+                overspendWarningSection
 
                 createCategoryGroupSection
 

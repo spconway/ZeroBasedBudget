@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.12.0 (Notification Badge Clearing)
-**Last Updated**: November 10, 2025 (v1.12.0 - UX Bug Fixes)
+**Version**: 1.12.1 (Overspend Warning Banner)
+**Last Updated**: November 24, 2025 (v1.12.1 - Overspend Visibility Enhancement)
 **Methodology**: YNAB-Style Zero-Based Budgeting
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -110,6 +110,18 @@ ZeroBasedBudget/
 
 ## Recent Version History
 
+**v1.12.1 (Complete):**
+- ✅ Enhancement 16.1: Added overspend warning banner to Budget Planning view
+- ✅ Problem: When categories were overspent (spent > budgeted), users were confused why Ready to Assign didn't decrease
+- ✅ Root Cause: YNAB methodology keeps Ready to Assign stable during spending; overspending creates negative category balances
+- ✅ Fix: Added prominent warning banner showing overspent categories with amounts
+- ✅ Added: `totalOverspent` computed property to calculate total overspending across all categories
+- ✅ Added: `overspentCategories` computed property to list categories with negative available balances
+- ✅ Added: `overspendWarningSection` view with error styling, explanatory text, and category list
+- ✅ Modified: BudgetPlanningView.swift (new computed properties and warning section in body)
+- ✅ UX: Warning appears between Ready to Assign banner and category groups when any category is overspent
+- ✅ YNAB Compliance: Correctly follows YNAB "roll with the punches" methodology where users must manually cover overspending
+
 **v1.12.0 (Complete):**
 - ✅ Bug 15.1: Fixed notification badge not clearing from app icon
 - ✅ Problem: App icon showed persistent notification badge with no way to remove it
@@ -126,12 +138,11 @@ ZeroBasedBudget/
 
 **v1.11.1 (Complete):**
 - ✅ Bug 14.1: Fixed critical "Ready to Assign" calculation bug
-- ✅ Problem: Ready to Assign was using `startingBalance + income - budgeted` instead of `currentBalance - budgeted`
-- ✅ Impact: When creating accounts or adding transactions, Ready to Assign showed incorrect amounts
-- ✅ Root Cause: Formula was double-counting expenses (expenses already reduced current balance)
-- ✅ Fix: Changed to correct YNAB formula: `currentAccountBalances - totalBudgeted`
-- ✅ Modified: BudgetPlanningView.swift (readyToAssign computed property and calculateReadyToAssign function)
-- ✅ YNAB Compliance: Now correctly reflects that "Ready to Assign = Money you have NOW - Money already assigned"
+- ✅ Problem: Ready to Assign was using incorrect formula that double-counted expenses
+- ✅ Fix: Changed to YNAB formula: `(currentAccountBalances + totalExpenses) - totalBudgeted`
+- ✅ Formula Explanation: Adding expenses back reconstructs "inflows" (starting balance + income), then subtracts budgeted
+- ✅ Modified: BudgetPlanningView.swift (readyToAssign computed property)
+- ✅ YNAB Compliance: Ready to Assign = Inflows - Budgeted (stable during spending, only changes when budgeting or receiving income)
 
 **v1.11.0 (Complete):**
 - ✅ Enhancement 13.2: CSV Transaction Import with fuzzy column mapping
@@ -274,35 +285,40 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: v1.12.0 Complete - UX Bug Fixes (Notification Badge Clearing)
-**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Bugs 15.1 and 15.2 addressed
+**Current Focus**: v1.12.1 Complete - Overspend Warning Banner
+**Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Build verified
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-10] ✅ **Bug 15.1 COMPLETE**: Fixed notification badge not clearing from app icon
-2. [2025-11-10] ✅ **Bug 15.2 INVESTIGATED**: Swift Concurrency warning on physical device (warning only, functional)
-3. [2025-11-09] ✅ **Bug 14.1 COMPLETE**: Fixed critical Ready to Assign calculation (now uses currentBalance not startingBalance)
-4. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
-5. [2025-11-09] ✅ **Enhancement 13.1 COMPLETE**: Compact transaction display (~40% height reduction, 8-10 visible vs 5-7)
+1. [2025-11-24] ✅ **Enhancement 16.1 COMPLETE**: Added overspend warning banner to Budget Planning view
+2. [2025-11-10] ✅ **Bug 15.1 COMPLETE**: Fixed notification badge not clearing from app icon
+3. [2025-11-10] ✅ **Bug 15.2 INVESTIGATED**: Swift Concurrency warning on physical device (warning only, functional)
+4. [2025-11-09] ✅ **Bug 14.1 COMPLETE**: Fixed critical Ready to Assign calculation (YNAB formula)
+5. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.12.0 (notification badge clearing + Swift Concurrency investigation)
+1. **Current Version**: v1.12.1 (overspend warning banner)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors
 4. **Recently Completed**:
-   - ✅ Bug 15.1: Fixed notification badge clearing (badge now clears on app launch and foreground)
-   - ✅ Bug 15.2: Investigated Swift Concurrency warning (warning only, likely internal SwiftData behavior)
-   - ✅ All smoke tests pass with new badge clearing functionality
-5. **Active Backlog**:
+   - ✅ Enhancement 16.1: Added overspend warning banner with category breakdown
+   - ✅ Clarified Ready to Assign YNAB formula in documentation
+   - ✅ Ready to Assign behavior is correct: `(currentBalance + expenses) - budgeted` = Inflows - Budgeted
+5. **YNAB Ready to Assign Formula** (important for future reference):
+   - Formula: `(currentAccountBalances + totalExpenses) - totalBudgeted`
+   - Why: Adding expenses reconstructs "inflows" (starting balance + income)
+   - Behavior: Ready to Assign is STABLE during spending (only changes when budgeting or receiving income)
+   - Overspending: Shows as negative category balance, NOT as reduction in Ready to Assign
+   - User must manually cover overspending by budgeting more to the category (YNAB "roll with the punches")
+6. **Active Backlog**:
    - No active enhancement requests or bugs - backlog clear
-6. **Recommended Priority**:
-   - User testing of v1.12.0 with notifications on physical device to verify badge clearing
-   - Monitor Swift Concurrency warning on physical device (if reproducible, investigate further)
+7. **Recommended Priority**:
+   - User testing of v1.12.1 to verify overspend warning UX
    - Consider future enhancements: OFX/QFX file support, automatic category suggestions, bank linking
-7. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
-8. **Platform**: iPhone-only, iOS 26+ (no iPad support)
-9. **Ready For**: Production deployment after user testing of Bug 15.1 fix
+8. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
+9. **Platform**: iPhone-only, iOS 26+ (no iPad support)
+10. **Ready For**: Production deployment
 
 ## Git Commit Strategy
 
