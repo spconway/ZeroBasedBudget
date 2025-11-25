@@ -96,8 +96,20 @@ enum CurrencyFormatHelpers {
     /// - Parameter currencyCode: The ISO currency code
     /// - Returns: Currency symbol (e.g., "$", "€", "£")
     private static func currencySymbol(for currencyCode: String) -> String {
-        let locale = NSLocale(localeIdentifier: currencyCode)
-        return locale.displayName(forKey: .currencySymbol, value: currencyCode) ?? currencyCode
+        // Use a lookup dictionary for supported currencies to ensure correct symbols
+        let symbols: [String: String] = [
+            "USD": "$",
+            "EUR": "€",
+            "GBP": "£",
+            "JPY": "¥",
+            "CAD": "CA$",
+            "AUD": "A$",
+            "CHF": "CHF",
+            "CNY": "¥",
+            "INR": "₹",
+            "MXN": "MX$"
+        ]
+        return symbols[currencyCode] ?? currencyCode
     }
 
     // MARK: - Sample/Preview Helpers

@@ -51,10 +51,27 @@ struct TransactionLogView: View {
     }
 
     // Transactions with running net worth balance
-    // Starts from sum of starting balances, then applies transactions chronologically
+    // Derives starting balance from current balances minus all transaction effects
     private var transactionsWithBalance: [(Transaction, Decimal)] {
-        // Start from total starting balances (before any transactions)
-        var runningBalance: Decimal = accounts.reduce(0) { $0 + $1.startingBalance }
+        // Calculate current total balance across all accounts
+        let currentTotalBalance: Decimal = accounts.reduce(0) { $0 + $1.balance }
+
+        // Calculate the net effect of ALL transactions (not just filtered ones)
+        // Income increases balance, expenses decrease it
+        let totalTransactionEffect: Decimal = allTransactions.reduce(0) { total, transaction in
+            if transaction.type == .income {
+                return total + transaction.amount
+            } else {
+                return total - transaction.amount
+            }
+        }
+
+        // Derive what the starting balance was before any transactions
+        // startingBalance = currentBalance - transactionEffect
+        let derivedStartingBalance = currentTotalBalance - totalTransactionEffect
+
+        // Now apply filtered transactions chronologically to show running balance
+        var runningBalance = derivedStartingBalance
         let sortedTransactions = filteredTransactions.sorted(by: { $0.date < $1.date })
 
         return sortedTransactions.map { transaction in

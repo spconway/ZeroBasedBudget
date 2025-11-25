@@ -17,15 +17,14 @@ enum BudgetCalculations {
     static func startOfMonth(for date: Date) -> Date {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month], from: date)
-        return calendar.date(from: components)!
+        return calendar.date(from: components) ?? date
     }
 
     /// Returns the end date of the month for a given date
     static func endOfMonth(for date: Date) -> Date {
         let calendar = Calendar.current
         let startOfMonth = self.startOfMonth(for: date)
-        let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)!
-        return endOfMonth
+        return calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth) ?? date
     }
 
     /// Returns whether a date falls within a specific month

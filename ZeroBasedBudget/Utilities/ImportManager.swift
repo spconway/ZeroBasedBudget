@@ -280,8 +280,12 @@ class ImportManager {
                 .replacingOccurrences(of: ",", with: ".")
         } else if hasBoth {
             // Determine which is thousands separator
-            let commaIndex = cleaned.lastIndex(of: ",")!
-            let dotIndex = cleaned.lastIndex(of: ".")!
+            guard let commaIndex = cleaned.lastIndex(of: ","),
+                  let dotIndex = cleaned.lastIndex(of: ".") else {
+                // Fallback: attempt direct conversion if indices can't be found
+                let fallbackDecimal = Decimal(string: cleaned)
+                return isNegative ? fallbackDecimal.map { -$0 } : fallbackDecimal
+            }
 
             if dotIndex > commaIndex {
                 // US format: 1,234.56
@@ -432,7 +436,16 @@ class ImportManager {
 
         // Save context if any successful imports
         if successCount > 0 {
-            try? modelContext.save()
+            do {
+                try modelContext.save()
+            } catch {
+                // Save failed - report all inserted transactions as failures
+                return ImportResult(
+                    successCount: 0,
+                    failureCount: successCount + failureCount,
+                    errors: errors + ["Database save failed: \(error.localizedDescription). No transactions were imported."]
+                )
+            }
         }
 
         return ImportResult(
