@@ -56,6 +56,32 @@ final class AppSettings {
     /// Allow negative category amounts (over-budget)
     var allowNegativeCategoryAmounts: Bool
 
+    // MARK: - Transaction Filter Persistence
+
+    /// Remember transaction filter selections between sessions
+    var rememberTransactionFilters: Bool
+
+    /// Saved transaction type filter (TransactionTypeFilter rawValue)
+    var savedTransactionTypeFilter: String
+
+    /// Saved transaction account name (for filter persistence)
+    var savedTransactionAccountName: String?
+
+    /// Saved transaction category name (for filter persistence)
+    var savedTransactionCategoryName: String?
+
+    /// Filter for uncategorized expense transactions
+    var savedTransactionFilterUncategorized: Bool
+
+    /// Saved transaction date range filter (DateRangeFilter rawValue)
+    var savedTransactionDateRangeFilter: String
+
+    /// Saved custom start date for date range filter
+    var savedTransactionCustomStartDate: Date?
+
+    /// Saved custom end date for date range filter
+    var savedTransactionCustomEndDate: Date?
+
     init(
         colorSchemePreference: String = "system",
         selectedTheme: String = "standard",
@@ -67,7 +93,15 @@ final class AppSettings {
         notificationTimeHour: Int = 9,
         notificationTimeMinute: Int = 0,
         numberFormat: String = "1,234.56",
-        allowNegativeCategoryAmounts: Bool = true
+        allowNegativeCategoryAmounts: Bool = true,
+        rememberTransactionFilters: Bool = false,
+        savedTransactionTypeFilter: String = "All",
+        savedTransactionAccountName: String? = nil,
+        savedTransactionCategoryName: String? = nil,
+        savedTransactionFilterUncategorized: Bool = false,
+        savedTransactionDateRangeFilter: String = "All Time",
+        savedTransactionCustomStartDate: Date? = nil,
+        savedTransactionCustomEndDate: Date? = nil
     ) {
         self.id = UUID()
         self.createdDate = Date()
@@ -83,5 +117,13 @@ final class AppSettings {
         self.notificationTimeMinute = notificationTimeMinute
         self.numberFormat = numberFormat
         self.allowNegativeCategoryAmounts = allowNegativeCategoryAmounts
+        self.rememberTransactionFilters = rememberTransactionFilters
+        self.savedTransactionTypeFilter = savedTransactionTypeFilter
+        self.savedTransactionAccountName = savedTransactionAccountName
+        self.savedTransactionCategoryName = savedTransactionCategoryName
+        self.savedTransactionFilterUncategorized = savedTransactionFilterUncategorized
+        self.savedTransactionDateRangeFilter = savedTransactionDateRangeFilter
+        self.savedTransactionCustomStartDate = savedTransactionCustomStartDate
+        self.savedTransactionCustomEndDate = savedTransactionCustomEndDate
     }
 }

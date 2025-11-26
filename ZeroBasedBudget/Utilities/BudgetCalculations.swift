@@ -46,6 +46,34 @@ enum BudgetCalculations {
         return DateFormatHelpers.formatTransactionSectionDate(date, using: formatPreference)
     }
 
+    /// Returns date range boundaries for a given filter option
+    /// - Parameters:
+    ///   - filter: The date range filter option
+    ///   - customStart: Custom start date (only used if filter is .customRange)
+    ///   - customEnd: Custom end date (only used if filter is .customRange)
+    /// - Returns: Tuple of optional start and end dates (nil means no filtering)
+    static func dateRange(for filter: DateRangeFilter, customStart: Date? = nil, customEnd: Date? = nil) -> (start: Date?, end: Date?) {
+        let calendar = Calendar.current
+        let now = Date()
+
+        switch filter {
+        case .allTime:
+            return (nil, nil)  // No date filtering
+        case .thisMonth:
+            let start = startOfMonth(for: now)
+            let end = endOfMonth(for: now)
+            return (start, end)
+        case .last30Days:
+            let start = calendar.date(byAdding: .day, value: -30, to: now)
+            return (start, now)
+        case .last90Days:
+            let start = calendar.date(byAdding: .day, value: -90, to: now)
+            return (start, now)
+        case .customRange:
+            return (customStart, customEnd)
+        }
+    }
+
     // MARK: - Transaction Filtering
 
     /// Filters transactions to only those in the specified month

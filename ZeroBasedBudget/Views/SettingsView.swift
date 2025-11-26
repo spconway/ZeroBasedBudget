@@ -78,6 +78,9 @@ struct SettingsView: View {
                 // MARK: - Notifications Section
                 notificationsSection
 
+                // MARK: - Transaction Filters Section
+                transactionFiltersSection
+
                 // MARK: - Data Management Section
                 dataManagementSection
 
@@ -314,6 +317,25 @@ struct SettingsView: View {
                 .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("Master switch for all budget notifications. Individual categories can still have their own notification settings.")
+        }
+    }
+
+    private var transactionFiltersSection: some View {
+        Section {
+            Toggle("Remember Transaction Filters", isOn: Binding(
+                get: { appSettings.rememberTransactionFilters },
+                set: { newValue in
+                    appSettings.rememberTransactionFilters = newValue
+                    appSettings.lastModifiedDate = Date()
+                }
+            ))
+        } header: {
+            Text("TRANSACTION FILTERS")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
+        } footer: {
+            Text("When enabled, your filter selections will be remembered between app sessions.")
         }
     }
 

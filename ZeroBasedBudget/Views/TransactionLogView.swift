@@ -21,7 +21,9 @@ struct TransactionLogView: View {
     @State private var searchText = ""
     @State private var showingAddSheet = false
     @State private var showingImportSheet = false
+    @State private var showingFilterSheet = false
     @State private var transactionToEdit: Transaction?
+    @State private var filterState = TransactionFilterState()
 
     // Currency code from settings
     private var currencyCode: String {
@@ -38,16 +40,53 @@ struct TransactionLogView: View {
         settings.first?.numberFormat ?? "1,234.56"
     }
 
-    // Filtered transactions based on search
+    // Filtered transactions based on search and filters
     private var filteredTransactions: [Transaction] {
-        if searchText.isEmpty {
-            return allTransactions
-        } else {
-            return allTransactions.filter { transaction in
+        var transactions = allTransactions
+
+        // 1. Search filter (existing)
+        if !searchText.isEmpty {
+            transactions = transactions.filter { transaction in
                 transaction.transactionDescription.localizedCaseInsensitiveContains(searchText) ||
                 transaction.category?.name.localizedCaseInsensitiveContains(searchText) ?? false
             }
         }
+
+        // 2. Type filter
+        if filterState.typeFilter != .all {
+            let targetType: TransactionType = filterState.typeFilter == .income ? .income : .expense
+            transactions = transactions.filter { $0.type == targetType }
+        }
+
+        // 3. Account filter
+        if let accountID = filterState.selectedAccountID {
+            transactions = transactions.filter { $0.account?.persistentModelID == accountID }
+        }
+
+        // 4. Category filter
+        if filterState.filterUncategorized {
+            // Special case: "Uncategorized" = expenses with nil category
+            transactions = transactions.filter {
+                $0.type == .expense && $0.category == nil
+            }
+        } else if let categoryID = filterState.selectedCategoryID {
+            transactions = transactions.filter { $0.category?.persistentModelID == categoryID }
+        }
+
+        // 5. Date range filter
+        let (startDate, endDate) = BudgetCalculations.dateRange(
+            for: filterState.dateRangeFilter,
+            customStart: filterState.customStartDate,
+            customEnd: filterState.customEndDate
+        )
+        if let start = startDate {
+            transactions = transactions.filter { $0.date >= start }
+        }
+        if let end = endDate {
+            transactions = transactions.filter { $0.date <= end }
+        }
+
+        return transactions
     }
 
     // Transactions with running net worth balance
@@ -97,6 +136,30 @@ struct TransactionLogView: View {
         allTransactions.contains { $0.type == .income }
     }
 
+    // Human-readable description of active filters
+    private var filterStatusDescription: String {
+        var components: [String] = []
+
+        if filterState.typeFilter != .all {
+            components.append(filterState.typeFilter.displayName)
+        }
+        if let accountID = filterState.selectedAccountID,
+           let account = accounts.first(where: { $0.persistentModelID == accountID }) {
+            components.append(account.name)
+        }
+        if filterState.filterUncategorized {
+            components.append("Uncategorized")
+        } else if let categoryID = filterState.selectedCategoryID,
+                  let category = categories.first(where: { $0.persistentModelID == categoryID }) {
+            components.append(category.name)
+        }
+        if filterState.dateRangeFilter != .allTime {
+            components.append(filterState.dateRangeFilter.displayName)
+        }
+
+        return components.joined(separator: " • ")
+    }
+
 
     var body: some View {
         NavigationStack {
@@ -123,6 +186,29 @@ struct TransactionLogView: View {
                             }
                         }
                         .buttonStyle(.plain)
+                    }
+                }
+
+                // Active filter status
+                if filterState.hasActiveFilters {
+                    Section {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Active Filters")
+                                    .font(.caption)
+                                    .foregroundStyle(colors.textSecondary)
+                                Text(filterStatusDescription)
+                                    .font(.subheadline)
+                                    .foregroundStyle(colors.textPrimary)
+                            }
+                            Spacer()
+                            Button("Clear") {
+                                filterState.reset()
+                                saveFiltersIfNeeded()
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(colors.accent)
+                        }
                     }
                 }
 
@@ -165,11 +251,34 @@ struct TransactionLogView: View {
             .searchable(text: $searchText, prompt: "Search transactions")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showingImportSheet = true
-                    } label: {
-                        Image(systemName: "square.and.arrow.down")
-                            .iconAccent()
+                    HStack(spacing: 16) {
+                        // Filter button with badge
+                        Button {
+                            showingFilterSheet = true
+                        } label: {
+                            ZStack(alignment: .topTrailing) {
+                                Image(systemName: "line.3.horizontal.decrease.circle")
+                                    .iconAccent()
+
+                                // Badge indicator when filters active
+                                if filterState.hasActiveFilters {
+                                    Circle()
+                                        .fill(colors.error)
+                                        .frame(width: 8, height: 8)
+                                        .offset(x: 4, y: -4)
+                                }
+                            }
+                        }
+                        .accessibilityLabel("Filter transactions")
+                        .accessibilityHint(filterState.hasActiveFilters ? "Filters active" : "")
+
+                        // Import button (existing)
+                        Button {
+                            showingImportSheet = true
+                        } label: {
+                            Image(systemName: "square.and.arrow.down")
+                                .iconAccent()
+                        }
                     }
                 }
 
@@ -191,16 +300,101 @@ struct TransactionLogView: View {
             .sheet(item: $transactionToEdit) { transaction in
                 EditTransactionSheet(transaction: transaction, categories: categories, currencyCode: currencyCode, numberFormat: numberFormat)
             }
+            .sheet(isPresented: $showingFilterSheet) {
+                FilterTransactionsSheet(
+                    filterState: filterState,
+                    categories: categories,
+                    accounts: accounts
+                ) { newFilterState in
+                    filterState = newFilterState
+                    saveFiltersIfNeeded()
+                }
+            }
             .overlay {
-                if allTransactions.isEmpty {
-                    ContentUnavailableView {
-                        Label("No Transactions", systemImage: "list.bullet.rectangle")
-                    } description: {
-                        Text("Add your first transaction using the + button")
+                if filteredTransactions.isEmpty {
+                    if allTransactions.isEmpty {
+                        // Database is empty
+                        ContentUnavailableView {
+                            Label("No Transactions", systemImage: "list.bullet.rectangle")
+                        } description: {
+                            Text("Add your first transaction using the + button")
+                        }
+                    } else {
+                        // Filters are hiding everything
+                        ContentUnavailableView {
+                            Label("No Matching Transactions", systemImage: "line.3.horizontal.decrease.circle")
+                        } description: {
+                            Text("Try adjusting your filters")
+                        } actions: {
+                            Button("Clear Filters") {
+                                filterState.reset()
+                                saveFiltersIfNeeded()
+                            }
+                        }
                     }
                 }
             }
+            .onAppear {
+                loadFiltersIfNeeded()
+            }
         }
+    }
+
+    // MARK: - Filter Persistence
+
+    private func loadFiltersIfNeeded() {
+        guard let appSettings = settings.first,
+              appSettings.rememberTransactionFilters else { return }
+
+        // Restore filter state from AppSettings
+        filterState.typeFilter = TransactionTypeFilter(rawValue: appSettings.savedTransactionTypeFilter) ?? .all
+
+        // Restore account by name
+        if let accountName = appSettings.savedTransactionAccountName,
+           let account = accounts.first(where: { $0.name == accountName }) {
+            filterState.selectedAccountID = account.persistentModelID
+        }
+
+        // Restore category by name
+        if let categoryName = appSettings.savedTransactionCategoryName,
+           let category = categories.first(where: { $0.name == categoryName }) {
+            filterState.selectedCategoryID = category.persistentModelID
+        }
+
+        filterState.filterUncategorized = appSettings.savedTransactionFilterUncategorized
+        filterState.dateRangeFilter = DateRangeFilter(rawValue: appSettings.savedTransactionDateRangeFilter) ?? .allTime
+        filterState.customStartDate = appSettings.savedTransactionCustomStartDate
+        filterState.customEndDate = appSettings.savedTransactionCustomEndDate
+    }
+
+    private func saveFiltersIfNeeded() {
+        guard let appSettings = settings.first,
+              appSettings.rememberTransactionFilters else { return }
+
+        // Save current filter state to AppSettings using account/category names
+        appSettings.savedTransactionTypeFilter = filterState.typeFilter.rawValue
+
+        // Save account name (find account by ID)
+        if let accountID = filterState.selectedAccountID,
+           let account = accounts.first(where: { $0.persistentModelID == accountID }) {
+            appSettings.savedTransactionAccountName = account.name
+        } else {
+            appSettings.savedTransactionAccountName = nil
+        }
+
+        // Save category name (find category by ID)
+        if let categoryID = filterState.selectedCategoryID,
+           let category = categories.first(where: { $0.persistentModelID == categoryID }) {
+            appSettings.savedTransactionCategoryName = category.name
+        } else {
+            appSettings.savedTransactionCategoryName = nil
+        }
+
+        appSettings.savedTransactionFilterUncategorized = filterState.filterUncategorized
+        appSettings.savedTransactionDateRangeFilter = filterState.dateRangeFilter.rawValue
+        appSettings.savedTransactionCustomStartDate = filterState.customStartDate
+        appSettings.savedTransactionCustomEndDate = filterState.customEndDate
+        appSettings.lastModifiedDate = Date()
     }
 
     private func deleteTransaction(_ transaction: Transaction) {

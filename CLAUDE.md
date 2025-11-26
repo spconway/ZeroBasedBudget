@@ -2,8 +2,8 @@
 
 ## Project Status: ✅ Production Ready
 
-**Version**: 1.12.1 (Overspend Warning Banner)
-**Last Updated**: November 24, 2025 (v1.12.1 - Overspend Visibility Enhancement)
+**Version**: 1.13.0 (Transaction Filtering)
+**Last Updated**: November 25, 2025 (v1.13.0 - Comprehensive Transaction Filtering)
 **Methodology**: YNAB-Style Zero-Based Budgeting
 **Technical Specification**: `Docs/TechnicalSpec.md`
 
@@ -79,22 +79,24 @@ ZeroBasedBudget/
 │   ├── Transaction.swift            # Financial transactions (income/expense)
 │   └── MonthlyBudget.swift          # Monthly budget (startingBalance deprecated in v1.4.0)
 ├── Views/
-│   ├── AccountsView.swift           # NEW: Accounts tab with total banner
-│   ├── AccountRow.swift             # NEW: Account list row component
-│   ├── AddAccountSheet.swift        # NEW: Add account sheet
-│   ├── EditAccountSheet.swift       # NEW: Edit account sheet
-│   ├── BudgetPlanningView.swift     # Budget tab with Ready to Assign banner
-│   ├── ReadyToAssignBanner.swift    # NEW: Compact Ready to Assign banner
-│   ├── TransactionLogView.swift     # Transaction log with running balance, tap-to-edit
-│   ├── BudgetAnalysisView.swift     # Budget vs actual with Swift Charts
-│   └── SettingsView.swift           # NEW: Settings tab (placeholder for Enhancement 3.2)
+│   ├── AccountsView.swift            # Accounts tab with total banner
+│   ├── AccountRow.swift              # Account list row component
+│   ├── AddAccountSheet.swift         # Add account sheet
+│   ├── EditAccountSheet.swift        # Edit account sheet
+│   ├── BudgetPlanningView.swift      # Budget tab with Ready to Assign banner
+│   ├── ReadyToAssignBanner.swift     # Compact Ready to Assign banner
+│   ├── TransactionLogView.swift      # Transaction log with filtering, running balance, tap-to-edit
+│   ├── FilterTransactionsSheet.swift # NEW: Transaction filter UI (type, account, category, date range)
+│   ├── BudgetAnalysisView.swift      # Budget vs actual with Swift Charts
+│   └── SettingsView.swift            # Settings tab with filter persistence toggle
 ├── Utilities/
-│   ├── AppColors.swift              # NEW: Semantic color system for dark mode
-│   ├── BudgetCalculations.swift     # Financial aggregation functions
-│   ├── CurrencyFormatHelpers.swift  # NEW: Centralized currency formatting with number format support
-│   ├── DateFormatHelpers.swift      # NEW: Centralized date formatting with format preference support
-│   ├── NotificationManager.swift    # Local push notification scheduling
-│   ├── ValidationHelpers.swift      # Input validation utilities
+│   ├── AppColors.swift               # Semantic color system for dark mode
+│   ├── BudgetCalculations.swift      # Financial aggregation functions + date range filtering
+│   ├── CurrencyFormatHelpers.swift   # Centralized currency formatting with number format support
+│   ├── DateFormatHelpers.swift       # Centralized date formatting with format preference support
+│   ├── NotificationManager.swift     # Local push notification scheduling
+│   ├── ValidationHelpers.swift       # Input validation utilities
+│   ├── TransactionFilterState.swift  # NEW: Filter state model (type, account, category, date enums)
 │   ├── Theme/
 │   │   ├── Theme.swift              # Theme protocol and color system
 │   │   ├── ThemeManager.swift       # Theme state management
@@ -109,6 +111,33 @@ ZeroBasedBudget/
 ```
 
 ## Recent Version History
+
+**v1.13.0 (Complete):**
+- ✅ Enhancement 17.1: Comprehensive transaction filtering system
+- ✅ Added: Filter by transaction type (Income/Expense/All)
+- ✅ Added: Filter by account (specific account or All Accounts)
+- ✅ Added: Filter by category (specific category or All Categories)
+- ✅ Added: Special "Uncategorized" filter for expense transactions without categories
+- ✅ Added: Date range filtering (This Month, Last 30 Days, Last 90 Days, Custom Range, All Time)
+- ✅ Added: Custom date range selector with start/end date pickers
+- ✅ Created: TransactionFilterState.swift (filter state model with type/account/category/date enums)
+- ✅ Created: FilterTransactionsSheet.swift (full-screen filter UI with Form sections)
+- ✅ Added: Filter button with badge indicator in TransactionLogView toolbar
+- ✅ Added: Active filter status section showing human-readable filter description
+- ✅ Added: "Clear" button in filter status section and empty state
+- ✅ Enhanced: Empty state distinguishes between "No Transactions" vs "No Matching Transactions"
+- ✅ Added: Filter persistence toggle in Settings ("Remember Transaction Filters")
+- ✅ Added: Name-based filter persistence (survives account/category renames)
+- ✅ Added: Date range helper function to BudgetCalculations
+- ✅ Extended: AppSettings with 8 filter persistence properties
+- ✅ Modified: TransactionLogView.swift (filter state, button, logic, status section, empty state)
+- ✅ Modified: SettingsView.swift (new "Transaction Filters" section with toggle)
+- ✅ Modified: FilterTransactionsSheet.swift (segmented picker for type, menu pickers for account/category/date)
+- ✅ YNAB Compliance: "Uncategorized" filter only shows expenses (income has no category by design)
+- ✅ UX: Badge indicator on filter button when filters active (8pt red dot)
+- ✅ UX: Filter combinations use AND logic (all filters must match)
+- ✅ UX: Search text works WITH filters (not replaced by filters)
+- ✅ Testing: All 18 smoke tests pass, project builds successfully
 
 **v1.12.1 (Complete):**
 - ✅ Enhancement 16.1: Added overspend warning banner to Budget Planning view
@@ -285,26 +314,33 @@ ZeroBasedBudget/
 
 ## Active Development
 
-**Current Focus**: v1.12.1 Complete - Overspend Warning Banner
+**Current Focus**: v1.13.0 Complete - Transaction Filtering
 **Status**: 158 tests passing (140 comprehensive + 18 smoke tests); Build verified
 
 **Recent Significant Changes** (last 5):
-1. [2025-11-24] ✅ **Enhancement 16.1 COMPLETE**: Added overspend warning banner to Budget Planning view
-2. [2025-11-10] ✅ **Bug 15.1 COMPLETE**: Fixed notification badge not clearing from app icon
-3. [2025-11-10] ✅ **Bug 15.2 INVESTIGATED**: Swift Concurrency warning on physical device (warning only, functional)
-4. [2025-11-09] ✅ **Bug 14.1 COMPLETE**: Fixed critical Ready to Assign calculation (YNAB formula)
-5. [2025-11-09] ✅ **Enhancement 13.2 COMPLETE**: CSV Transaction Import with fuzzy column mapping (ImportManager + 3 sheets)
+1. [2025-11-25] ✅ **Enhancement 17.1 COMPLETE**: Comprehensive transaction filtering system (type, account, category, date range)
+2. [2025-11-24] ✅ **Enhancement 16.1 COMPLETE**: Added overspend warning banner to Budget Planning view
+3. [2025-11-10] ✅ **Bug 15.1 COMPLETE**: Fixed notification badge not clearing from app icon
+4. [2025-11-10] ✅ **Bug 15.2 INVESTIGATED**: Swift Concurrency warning on physical device (warning only, functional)
+5. [2025-11-09] ✅ **Bug 14.1 COMPLETE**: Fixed critical Ready to Assign calculation (YNAB formula)
 
 **Active Decisions/Blockers**: None
 
 **Next Session Start Here**:
-1. **Current Version**: v1.12.1 (overspend warning banner)
+1. **Current Version**: v1.13.0 (transaction filtering)
 2. **Test Suite**: 158 tests passing (140 comprehensive + 18 smoke tests)
 3. **Build Status**: ✅ Project builds successfully with 0 errors
 4. **Recently Completed**:
-   - ✅ Enhancement 16.1: Added overspend warning banner with category breakdown
-   - ✅ Clarified Ready to Assign YNAB formula in documentation
-   - ✅ Ready to Assign behavior is correct: `(currentBalance + expenses) - budgeted` = Inflows - Budgeted
+   - ✅ Enhancement 17.1: Comprehensive transaction filtering system
+   - ✅ Created: TransactionFilterState.swift (filter state model)
+   - ✅ Created: FilterTransactionsSheet.swift (full-screen filter UI)
+   - ✅ Added: Filter button with badge indicator in TransactionLogView
+   - ✅ Added: Filter persistence toggle in Settings
+   - ✅ Filter options: Type (Income/Expense/All), Account, Category, Date Range (This Month, Last 30 Days, Last 90 Days, Custom Range, All Time)
+   - ✅ UX: "Uncategorized" filter for expenses without categories (YNAB compliant)
+   - ✅ UX: Filters combine with AND logic, work WITH search
+   - ✅ UX: Active filter status section with "Clear" button
+   - ✅ UX: Enhanced empty state distinguishes "No Transactions" vs "No Matching Transactions"
 5. **YNAB Ready to Assign Formula** (important for future reference):
    - Formula: `(currentAccountBalances + totalExpenses) - totalBudgeted`
    - Why: Adding expenses reconstructs "inflows" (starting balance + income)
@@ -314,7 +350,7 @@ ZeroBasedBudget/
 6. **Active Backlog**:
    - No active enhancement requests or bugs - backlog clear
 7. **Recommended Priority**:
-   - User testing of v1.12.1 to verify overspend warning UX
+   - User testing of v1.13.0 filtering UX
    - Consider future enhancements: OFX/QFX file support, automatic category suggestions, bank linking
 8. **Test Strategy**: Use smoke tests for UI changes, full suite for model/calculation changes
 9. **Platform**: iPhone-only, iOS 26+ (no iPad support)

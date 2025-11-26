@@ -26,7 +26,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				ZeroBasedBudget.entitlements,
 			);
 			target = BA679A4F2EB68DDF0008FFFD /* ZeroBasedBudget */;
 		};
