@@ -64,8 +64,8 @@ struct ZeroBasedBudgetApp: App {
         WindowGroup {
             RootView()
                 .task {
-                    // Request notification permissions on app launch
-                    await requestNotificationPermissions()
+                    // Check if notifications are enabled and schedule if permissions granted
+                    await checkAndScheduleNotifications()
                     // Clear badge on app launch
                     await clearBadgeOnLaunch()
                 }
@@ -83,14 +83,43 @@ struct ZeroBasedBudgetApp: App {
 
     // MARK: - Notification Permissions
 
-    /// Request notification permissions on app launch
-    private func requestNotificationPermissions() async {
-        let granted = await NotificationManager.shared.requestAuthorization()
-        if granted {
-            print("✅ Notification permissions granted")
-        } else {
-            print("⚠️ Notification permissions denied")
+    /// Check if notifications are enabled in Settings AND permissions granted
+    /// If both true, schedule notifications for all categories with due dates
+    /// This handles the case where user denied initially, then manually granted in iOS Settings
+    private func checkAndScheduleNotifications() async {
+        // Get app settings
+        guard let settings = try? container.mainContext.fetch(FetchDescriptor<AppSettings>()).first,
+              settings.notificationsEnabled else {
+            return
         }
+
+        // Check if notification permissions are granted
+        let status = await NotificationManager.shared.checkAuthorizationStatus()
+        guard status == .authorized else {
+            return
+        }
+
+        // Schedule notifications for all categories with due dates
+        let categories = try? container.mainContext.fetch(FetchDescriptor<BudgetCategory>())
+        for category in categories ?? [] {
+            guard let dueDate = category.effectiveDueDate else { continue }
+
+            await NotificationManager.shared.scheduleNotifications(
+                for: category.notificationID,
+                categoryName: category.name,
+                budgetedAmount: category.budgetedAmount,
+                dueDate: dueDate,
+                notify7DaysBefore: category.notify7DaysBefore,
+                notify2DaysBefore: category.notify2DaysBefore,
+                notifyOnDueDate: category.notifyOnDueDate,
+                notifyCustomDays: category.notifyCustomDays,
+                customDaysCount: category.customDaysCount,
+                currencyCode: settings.currencyCode,
+                notificationTimeHour: category.notificationTimeHour ?? settings.notificationTimeHour,
+                notificationTimeMinute: category.notificationTimeMinute ?? settings.notificationTimeMinute
+            )
+        }
+        print("✅ Scheduled notifications for all categories on app launch")
     }
 
     /// Clear badge when app becomes active

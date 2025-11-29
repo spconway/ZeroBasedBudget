@@ -9,6 +9,7 @@
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
+import UserNotifications
 
 /// Comprehensive settings view for app configuration and preferences
 ///
@@ -24,6 +25,7 @@ struct SettingsView: View {
     @Environment(\.theme) private var theme
     @Environment(\.themeColors) private var colors
     @Environment(\.themeManager) private var themeManager
+    @Environment(\.scenePhase) private var scenePhase
     @Query private var settings: [AppSettings]
     @Query private var accounts: [Account]
     @Query private var categories: [BudgetCategory]
@@ -39,6 +41,11 @@ struct SettingsView: View {
     @State private var importAlertMessage = ""
     @State private var csvExportData: Data?
     @State private var jsonExportData: Data?
+
+    // Notification permission state
+    @State private var notificationPermissionStatus: UNAuthorizationStatus = .notDetermined
+    @State private var showingPermissionDeniedAlert = false
+    @State private var isCheckingPermissions = false
 
     /// Get or create singleton settings
     private var appSettings: AppSettings {
@@ -274,14 +281,62 @@ struct SettingsView: View {
 
     private var notificationsSection: some View {
         Section {
+            // Main enable/disable toggle
             Toggle("Enable Notifications", isOn: Binding(
                 get: { appSettings.notificationsEnabled },
                 set: { newValue in
-                    appSettings.notificationsEnabled = newValue
-                    appSettings.lastModifiedDate = Date()
+                    if newValue {
+                        // User wants to enable - request permissions
+                        Task {
+                            isCheckingPermissions = true
+                            let result = await NotificationManager.shared.requestPermissions()
+                            isCheckingPermissions = false
+
+                            switch result {
+                            case .granted, .alreadyGranted:
+                                appSettings.notificationsEnabled = true
+                                appSettings.lastModifiedDate = Date()
+                                await scheduleAllCategoryNotifications()
+                            case .denied, .previouslyDenied:
+                                appSettings.notificationsEnabled = false
+                                showingPermissionDeniedAlert = true
+                            }
+
+                            await updatePermissionStatus()
+                        }
+                    } else {
+                        // User wants to disable - cancel all notifications
+                        appSettings.notificationsEnabled = false
+                        appSettings.lastModifiedDate = Date()
+                        Task {
+                            await NotificationManager.shared.cancelAllNotifications()
+                        }
+                    }
                 }
             ))
+            .disabled(isCheckingPermissions)
 
+            // Permission status indicator
+            Button(action: {
+                if notificationPermissionStatus == .denied || notificationPermissionStatus == .notDetermined {
+                    NotificationManager.shared.openNotificationSettings()
+                }
+            }) {
+                HStack {
+                    Text("System Permissions")
+                    Spacer()
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(permissionStatusColor)
+                            .frame(width: 8, height: 8)
+                        Text(permissionStatusText)
+                            .foregroundStyle(colors.textSecondary)
+                    }
+                }
+            }
+            .disabled(notificationPermissionStatus == .authorized)
+
+            // Notification time picker (only if enabled)
             if appSettings.notificationsEnabled {
                 DatePicker(
                     "Notification Time",
@@ -317,6 +372,26 @@ struct SettingsView: View {
                 .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("Master switch for all budget notifications. Individual categories can still have their own notification settings.")
+        }
+        .onAppear {
+            Task {
+                await updatePermissionStatus()
+            }
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                Task {
+                    await updatePermissionStatus()
+                }
+            }
+        }
+        .alert("Notification Permissions Required", isPresented: $showingPermissionDeniedAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Open Settings") {
+                NotificationManager.shared.openNotificationSettings()
+            }
+        } message: {
+            Text("This app needs notification permissions to send budget reminders. Please enable notifications in Settings > ZeroBasedBudget > Notifications.")
         }
     }
 
@@ -510,6 +585,53 @@ struct SettingsView: View {
     private func currencySymbol(for code: String) -> String {
         let locale = Locale(identifier: code == "USD" ? "en_US" : code == "EUR" ? "en_EU" : "en_\(code)")
         return locale.currencySymbol ?? "$"
+    }
+
+    // MARK: - Notification Permission Helpers
+
+    private var permissionStatusColor: Color {
+        switch notificationPermissionStatus {
+        case .authorized: return colors.success
+        case .denied, .notDetermined: return colors.error
+        default: return colors.warning
+        }
+    }
+
+    private var permissionStatusText: String {
+        switch notificationPermissionStatus {
+        case .authorized: return "Granted"
+        case .denied: return "Denied (Tap to Open Settings)"
+        case .notDetermined: return "Not Requested"
+        default: return "Unknown"
+        }
+    }
+
+    private func updatePermissionStatus() async {
+        notificationPermissionStatus = await NotificationManager.shared.checkAuthorizationStatus()
+    }
+
+    private func scheduleAllCategoryNotifications() async {
+        let allCategories = categories
+        let currencyCode = appSettings.currencyCode
+
+        for category in allCategories {
+            guard let dueDate = category.effectiveDueDate else { continue }
+
+            await NotificationManager.shared.scheduleNotifications(
+                for: category.notificationID,
+                categoryName: category.name,
+                budgetedAmount: category.budgetedAmount,
+                dueDate: dueDate,
+                notify7DaysBefore: category.notify7DaysBefore,
+                notify2DaysBefore: category.notify2DaysBefore,
+                notifyOnDueDate: category.notifyOnDueDate,
+                notifyCustomDays: category.notifyCustomDays,
+                customDaysCount: category.customDaysCount,
+                currencyCode: currencyCode,
+                notificationTimeHour: category.notificationTimeHour ?? appSettings.notificationTimeHour,
+                notificationTimeMinute: category.notificationTimeMinute ?? appSettings.notificationTimeMinute
+            )
+        }
     }
 
     // MARK: - Data Management Methods

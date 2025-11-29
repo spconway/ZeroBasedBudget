@@ -88,7 +88,7 @@ final class AppSettings {
         currencyCode: String = "USD",
         dateFormat: String = "MM/DD/YYYY",
         monthStartDate: Int = 1,
-        notificationsEnabled: Bool = true,
+        notificationsEnabled: Bool = false,
         defaultNotificationSchedule: String = "on-date",
         notificationTimeHour: Int = 9,
         notificationTimeMinute: Int = 0,

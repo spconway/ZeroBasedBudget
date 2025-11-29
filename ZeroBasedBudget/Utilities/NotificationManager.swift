@@ -7,6 +7,7 @@
 
 import Foundation
 import UserNotifications
+import UIKit
 
 /// Manages local push notifications for budget category due dates
 @MainActor
@@ -17,6 +18,14 @@ class NotificationManager {
     private init() {}
 
     // MARK: - Permission Management
+
+    /// Result of requesting notification permissions
+    enum PermissionResult {
+        case granted              // User granted permissions for the first time
+        case denied               // User denied permissions when prompted
+        case alreadyGranted       // Permissions were already granted
+        case previouslyDenied     // User previously denied permissions
+    }
 
     /// Request notification permissions from the user
     func requestAuthorization() async -> Bool {
@@ -33,6 +42,34 @@ class NotificationManager {
     func checkAuthorizationStatus() async -> UNAuthorizationStatus {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         return settings.authorizationStatus
+    }
+
+    /// Request notification permissions with detailed result
+    /// This method checks current status before requesting to provide better UX feedback
+    func requestPermissions() async -> PermissionResult {
+        let status = await checkAuthorizationStatus()
+
+        switch status {
+        case .authorized:
+            return .alreadyGranted
+        case .denied:
+            return .previouslyDenied
+        case .notDetermined:
+            let granted = await requestAuthorization()
+            return granted ? .granted : .denied
+        default:
+            return .denied
+        }
+    }
+
+    /// Open iOS Settings app to notification settings page
+    /// Allows user to manually grant permissions after initial denial
+    func openNotificationSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            Task { @MainActor in
+                await UIApplication.shared.open(url)
+            }
+        }
     }
 
     // MARK: - Notification Scheduling
