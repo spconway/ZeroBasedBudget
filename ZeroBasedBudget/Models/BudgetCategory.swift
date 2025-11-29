@@ -40,6 +40,10 @@ final class BudgetCategory {
     /// The category group this budget category belongs to (optional for backward compatibility)
     var categoryGroup: CategoryGroup?
 
+    /// Sort order for displaying categories within group (lower values appear first)
+    /// Default 0 allows existing categories to work - migration assigns proper values
+    var sortOrder: Int = 0
+
     init(name: String, budgetedAmount: Decimal, categoryType: String, colorHex: String, dueDate: Date? = nil, categoryGroup: CategoryGroup? = nil) {
         self.name = name
         self.budgetedAmount = budgetedAmount

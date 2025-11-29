@@ -41,6 +41,10 @@ struct BudgetPlanningView: View {
     // State for editing category group
     @State private var editingGroup: CategoryGroup?
 
+    // State for reordering category groups
+    @State private var isReorderingGroups: Bool = false
+    @State private var localGroupOrder: [CategoryGroup] = []
+
     // State for undo functionality (Enhancement 3.2)
     @State private var undoAction: UndoAction?
     @State private var showingUndoBanner = false
@@ -69,8 +73,9 @@ struct BudgetPlanningView: View {
     // MARK: - Category Group Helpers
 
     /// Get categories for a specific group (excluding Income categories)
+    /// Sorted by sortOrder (for future category reordering support)
     private func categories(for group: CategoryGroup) -> [BudgetCategory] {
-        group.categories.filter { $0.categoryType != "Income" }.sorted { $0.name < $1.name }
+        group.categories.filter { $0.categoryType != "Income" }.sorted { $0.sortOrder < $1.sortOrder }
     }
 
     /// Calculate total budgeted for a category group in the selected month
@@ -337,6 +342,17 @@ struct BudgetPlanningView: View {
 
             Spacer()
 
+            // Reorder groups button
+            Button(action: {
+                localGroupOrder = categoryGroups
+                isReorderingGroups = true
+            }) {
+                Image(systemName: "arrow.up.arrow.down")
+                    .font(.system(size: 12))
+                    .foregroundStyle(colors.textSecondary)
+            }
+            .buttonStyle(.plain)
+
             // Add category button
             Button(action: { addCategoryToGroup(group) }) {
                 Image(systemName: "plus.circle.fill")
@@ -543,6 +559,12 @@ struct BudgetPlanningView: View {
             }
             .sheet(item: $editingGroup) { group in
                 EditCategoryGroupSheet(group: group)
+            }
+            .sheet(isPresented: $isReorderingGroups) {
+                ReorderGroupsSheet(
+                    groups: $localGroupOrder,
+                    onDismiss: { saveGroupOrder() }
+                )
             }
             .alert("Ready to Assign - ZeroBudget Methodology", isPresented: $showingReadyToAssignInfo) {
                 Button("Got It", role: .cancel) { }
@@ -857,6 +879,14 @@ struct BudgetPlanningView: View {
     private func generateRandomColor() -> String {
         let colors = ["FF6B6B", "4ECDC4", "45B7D1", "FFA07A", "98D8C8", "F7DC6F", "BB8FCE", "85C1E2"]
         return colors.randomElement() ?? "4ECDC4"
+    }
+
+    /// Save the reordered group order to SwiftData
+    private func saveGroupOrder() {
+        for (index, group) in localGroupOrder.enumerated() {
+            group.sortOrder = index
+        }
+        try? modelContext.save()
     }
 
     private func previousMonth() {
@@ -1546,6 +1576,52 @@ func ordinalDay(_ day: Int) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .ordinal
     return formatter.string(from: NSNumber(value: day)) ?? "\(day)"
+}
+
+// MARK: - ReorderGroupsSheet
+
+/// Sheet for reordering category groups via drag-and-drop
+struct ReorderGroupsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.themeColors) private var colors
+
+    @Binding var groups: [CategoryGroup]
+    let onDismiss: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(groups) { group in
+                    HStack {
+                        Text(group.name)
+                            .font(.headline)
+                            .foregroundStyle(colors.textPrimary)
+                        Spacer()
+                        Text("\(group.categories.filter { $0.categoryType != "Income" }.count) categories")
+                            .font(.subheadline)
+                            .foregroundStyle(colors.textSecondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .onMove(perform: moveGroups)
+            }
+            .environment(\.editMode, .constant(.active))
+            .navigationTitle("Reorder Groups")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        onDismiss()
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func moveGroups(from source: IndexSet, to destination: Int) {
+        groups.move(fromOffsets: source, toOffset: destination)
+    }
 }
 
 #Preview {

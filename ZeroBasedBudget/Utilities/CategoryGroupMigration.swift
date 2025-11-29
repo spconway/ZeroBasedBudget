@@ -114,4 +114,46 @@ enum CategoryGroupMigration {
 
         try context.save()
     }
+
+    // MARK: - Category Sort Order Migration
+
+    /// Migrate existing categories to have proper sortOrder values
+    /// Called once on app launch, checks if migration already done
+    /// Assigns sortOrder based on current alphabetical order within each group
+    static func migrateCategorySortOrder(in context: ModelContext) {
+        let descriptor = FetchDescriptor<CategoryGroup>()
+        guard let groups = try? context.fetch(descriptor) else { return }
+
+        var didMigrate = false
+
+        for group in groups {
+            // Get expense categories (exclude Income)
+            let expenseCategories = group.categories.filter { $0.categoryType != "Income" }
+
+            // Skip empty groups
+            guard !expenseCategories.isEmpty else { continue }
+
+            // Check if already migrated: if ANY category has non-zero sortOrder, skip this group
+            let needsMigration = expenseCategories.allSatisfy { $0.sortOrder == 0 }
+            guard needsMigration else { continue }
+
+            // Assign sortOrder based on current alphabetical order
+            let sortedCategories = expenseCategories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            for (index, category) in sortedCategories.enumerated() {
+                category.sortOrder = index
+            }
+
+            didMigrate = true
+        }
+
+        // Save if any changes were made
+        if didMigrate {
+            do {
+                try context.save()
+                print("✅ Category sortOrder migration complete")
+            } catch {
+                print("❌ Failed to migrate category sortOrder: \(error)")
+            }
+        }
+    }
 }

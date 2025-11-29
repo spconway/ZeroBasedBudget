@@ -178,5 +178,7 @@ struct RootView: View {
     /// Migrate existing categories to category groups (one-time migration)
     private func migrateCategoriesToGroups() {
         CategoryGroupMigration.ensureDefaultGroupsExist(in: modelContext)
+        // Migrate category sortOrder for existing users (backwards compatibility)
+        CategoryGroupMigration.migrateCategorySortOrder(in: modelContext)
     }
 }

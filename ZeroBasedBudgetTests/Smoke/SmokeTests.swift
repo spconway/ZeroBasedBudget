@@ -243,6 +243,52 @@ final class SmokeTests: ZeroBasedBudgetTests {
         assertDecimalEqual(fetched.first!.amount, 123.45)
     }
 
+    // MARK: - Category Group Reordering Smoke Tests (3 tests)
+
+    /// Smoke test: CategoryGroup sortOrder can be updated
+    func testSmoke_categoryGroup_sortOrderCanBeUpdated() throws {
+        let group1 = CategoryGroup(name: "Fixed", sortOrder: 0)
+        let group2 = CategoryGroup(name: "Variable", sortOrder: 1)
+        modelContext.insert(group1)
+        modelContext.insert(group2)
+        try saveContext()
+
+        // Swap sort order
+        group1.sortOrder = 1
+        group2.sortOrder = 0
+        try saveContext()
+
+        // Fetch sorted by sortOrder
+        var descriptor = FetchDescriptor<CategoryGroup>(sortBy: [SortDescriptor(\.sortOrder)])
+        let fetched = try modelContext.fetch(descriptor)
+
+        XCTAssertEqual(fetched[0].name, "Variable")
+        XCTAssertEqual(fetched[1].name, "Fixed")
+    }
+
+    /// Smoke test: BudgetCategory sortOrder field exists and defaults to 0
+    func testSmoke_budgetCategory_sortOrderExists() throws {
+        let category = TestDataFactory.createCategory()
+        modelContext.insert(category)
+        try saveContext()
+
+        let fetched = try modelContext.fetchAll(BudgetCategory.self)
+        XCTAssertEqual(fetched.first?.sortOrder, 0)
+    }
+
+    /// Smoke test: BudgetCategory sortOrder can be updated
+    func testSmoke_budgetCategory_sortOrderCanBeUpdated() throws {
+        let category = TestDataFactory.createCategory()
+        modelContext.insert(category)
+        try saveContext()
+
+        category.sortOrder = 5
+        try saveContext()
+
+        let fetched = try modelContext.fetchAll(BudgetCategory.self)
+        XCTAssertEqual(fetched.first?.sortOrder, 5)
+    }
+
     // MARK: - Integration Smoke Test (1 test)
 
     /// Smoke test: Complete ZeroBudget workflow works
