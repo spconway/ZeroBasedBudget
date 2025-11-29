@@ -44,6 +44,10 @@ final class BudgetCategory {
     /// Default 0 allows existing categories to work - migration assigns proper values
     var sortOrder: Int = 0
 
+    /// Date the category was created (optional for backwards compatibility with existing records)
+    /// Used for "Default" sort order - categories sorted by creation date
+    var createdDate: Date?
+
     init(name: String, budgetedAmount: Decimal, categoryType: String, colorHex: String, dueDate: Date? = nil, categoryGroup: CategoryGroup? = nil) {
         self.name = name
         self.budgetedAmount = budgetedAmount
@@ -65,6 +69,9 @@ final class BudgetCategory {
         // Default: use global notification time setting (nil = use global)
         self.notificationTimeHour = nil
         self.notificationTimeMinute = nil
+
+        // Track creation date for default sort order
+        self.createdDate = Date()
     }
 
     // MARK: - Computed Properties

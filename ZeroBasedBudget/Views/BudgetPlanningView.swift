@@ -45,6 +45,9 @@ struct BudgetPlanningView: View {
     @State private var isReorderingGroups: Bool = false
     @State private var localGroupOrder: [CategoryGroup] = []
 
+    // State for category sorting within groups (session-only when persistence disabled)
+    @State private var sessionSortPreferences: [PersistentIdentifier: String] = [:]
+
     // State for undo functionality (Enhancement 3.2)
     @State private var undoAction: UndoAction?
     @State private var showingUndoBanner = false
@@ -70,12 +73,76 @@ struct BudgetPlanningView: View {
         settings.first?.numberFormat ?? "1,234.56"
     }
 
+    // Category sort persistence setting (nil defaults to false for backwards compatibility)
+    private var rememberCategorySortPreferences: Bool {
+        settings.first?.rememberCategorySortPreferences ?? false
+    }
+
     // MARK: - Category Group Helpers
 
+    /// Get the sort option for a category group
+    /// Uses persistent value if enabled, otherwise session-only value (defaults to "default")
+    private func sortOption(for group: CategoryGroup) -> String {
+        if rememberCategorySortPreferences {
+            // Use stored value, defaulting to "default" for backwards compatibility
+            // Also handle legacy "manual" value from before rename
+            let stored = group.categorySortOption ?? "default"
+            return stored == "manual" ? "default" : stored
+        } else {
+            return sessionSortPreferences[group.id] ?? "default"
+        }
+    }
+
+    /// Set the sort option for a category group
+    /// Persists to model if setting enabled, otherwise only stores in session
+    private func setSortOption(for group: CategoryGroup, to option: String) {
+        if rememberCategorySortPreferences {
+            group.categorySortOption = option
+            try? modelContext.save()
+        } else {
+            sessionSortPreferences[group.id] = option
+        }
+    }
+
     /// Get categories for a specific group (excluding Income categories)
-    /// Sorted by sortOrder (for future category reordering support)
+    /// Sorted based on the group's sort preference (default, name, or dueDate)
     private func categories(for group: CategoryGroup) -> [BudgetCategory] {
-        group.categories.filter { $0.categoryType != "Income" }.sorted { $0.sortOrder < $1.sortOrder }
+        let filtered = group.categories.filter { $0.categoryType != "Income" }
+        let option = sortOption(for: group)
+
+        switch option {
+        case "name":
+            return filtered.sorted {
+                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+        case "dueDate":
+            // Categories with due dates sorted ascending, those without at the bottom
+            let withDueDate = filtered.filter { $0.effectiveDueDate != nil }
+                .sorted { $0.effectiveDueDate! < $1.effectiveDueDate! }
+            let withoutDueDate = filtered.filter { $0.effectiveDueDate == nil }
+                .sorted { defaultSortOrder($0, $1) }
+            return withDueDate + withoutDueDate
+        default: // "default"
+            // Sort by creation date (order added), with name as fallback for legacy records without createdDate
+            return filtered.sorted { defaultSortOrder($0, $1) }
+        }
+    }
+
+    /// Default sort order: by creation date (oldest first), with name as fallback for legacy records
+    private func defaultSortOrder(_ a: BudgetCategory, _ b: BudgetCategory) -> Bool {
+        // If both have createdDate, sort by creation date (oldest first)
+        if let aDate = a.createdDate, let bDate = b.createdDate {
+            return aDate < bDate
+        }
+        // If only one has createdDate, the one without (legacy) comes first
+        if a.createdDate != nil && b.createdDate == nil {
+            return false
+        }
+        if a.createdDate == nil && b.createdDate != nil {
+            return true
+        }
+        // Neither has createdDate (legacy records) - sort by name for stability
+        return a.name.localizedCaseInsensitiveCompare(b.name) == .orderedAscending
     }
 
     /// Calculate total budgeted for a category group in the selected month
@@ -352,6 +419,30 @@ struct BudgetPlanningView: View {
                     .foregroundStyle(colors.textSecondary)
             }
             .buttonStyle(.plain)
+
+            // Sort categories menu
+            Menu {
+                let currentSort = sortOption(for: group)
+                Button {
+                    setSortOption(for: group, to: "default")
+                } label: {
+                    Label("Default", systemImage: currentSort == "default" ? "checkmark" : "ellipsis")
+                }
+                Button {
+                    setSortOption(for: group, to: "name")
+                } label: {
+                    Label("Name", systemImage: currentSort == "name" ? "checkmark" : "ellipsis")
+                }
+                Button {
+                    setSortOption(for: group, to: "dueDate")
+                } label: {
+                    Label("Due Date", systemImage: currentSort == "dueDate" ? "checkmark" : "ellipsis")
+                }
+            } label: {
+                Image(systemName: "line.3.horizontal.decrease.circle")
+                    .font(.system(size: 12))
+                    .foregroundStyle(sortOption(for: group) != "default" ? colors.accent : colors.textSecondary)
+            }
 
             // Add category button
             Button(action: { addCategoryToGroup(group) }) {

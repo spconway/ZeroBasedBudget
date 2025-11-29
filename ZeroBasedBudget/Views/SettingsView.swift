@@ -88,6 +88,9 @@ struct SettingsView: View {
                 // MARK: - Transaction Filters Section
                 transactionFiltersSection
 
+                // MARK: - Category Sorting Section
+                categorySortingSection
+
                 // MARK: - Data Management Section
                 dataManagementSection
 
@@ -411,6 +414,25 @@ struct SettingsView: View {
                 .foregroundStyle(colors.textSecondary)
         } footer: {
             Text("When enabled, your filter selections will be remembered between app sessions.")
+        }
+    }
+
+    private var categorySortingSection: some View {
+        Section {
+            Toggle("Remember Category Sort Preferences", isOn: Binding(
+                get: { appSettings.rememberCategorySortPreferences ?? false },
+                set: { newValue in
+                    appSettings.rememberCategorySortPreferences = newValue
+                    appSettings.lastModifiedDate = Date()
+                }
+            ))
+        } header: {
+            Text("CATEGORY SORTING")
+                .font(.system(size: 11, weight: .semibold))
+                .tracking(0.8)
+                .foregroundStyle(colors.textSecondary)
+        } footer: {
+            Text("When enabled, your category sort preferences for each group will be remembered between app sessions.")
         }
     }
 

@@ -19,6 +19,10 @@ final class CategoryGroup {
     /// Color hex for visual identification (optional)
     var colorHex: String?
 
+    /// Sort option for categories within this group: "manual", "name", "dueDate"
+    /// Optional for backwards compatibility with existing records (defaults to "manual" when nil)
+    var categorySortOption: String?
+
     @Relationship(deleteRule: .nullify, inverse: \BudgetCategory.categoryGroup)
     var categories: [BudgetCategory] = []
 

@@ -82,6 +82,12 @@ final class AppSettings {
     /// Saved custom end date for date range filter
     var savedTransactionCustomEndDate: Date?
 
+    // MARK: - Category Sort Persistence
+
+    /// Remember category sort preferences between sessions
+    /// Optional for backwards compatibility with existing records (defaults to false when nil)
+    var rememberCategorySortPreferences: Bool?
+
     init(
         colorSchemePreference: String = "system",
         selectedTheme: String = "standard",
@@ -101,7 +107,8 @@ final class AppSettings {
         savedTransactionFilterUncategorized: Bool = false,
         savedTransactionDateRangeFilter: String = "All Time",
         savedTransactionCustomStartDate: Date? = nil,
-        savedTransactionCustomEndDate: Date? = nil
+        savedTransactionCustomEndDate: Date? = nil,
+        rememberCategorySortPreferences: Bool = false
     ) {
         self.id = UUID()
         self.createdDate = Date()
@@ -125,5 +132,6 @@ final class AppSettings {
         self.savedTransactionDateRangeFilter = savedTransactionDateRangeFilter
         self.savedTransactionCustomStartDate = savedTransactionCustomStartDate
         self.savedTransactionCustomEndDate = savedTransactionCustomEndDate
+        self.rememberCategorySortPreferences = rememberCategorySortPreferences
     }
 }
