@@ -3,3 +3,5 @@ ClaudeCodeSessionTemplate.md
 
 # Xcode user-specific data
 xcuserdata/
+build/
+DerivedData/
