@@ -1,27 +1,27 @@
 //
-//  YNABMethodologyTests.swift
+//  ZeroBudgetMethodologyTests.swift
 //  ZeroBasedBudgetTests
 //
 //  Created by Claude Code on 2025-11-05.
 //
-//  CRITICAL: Unit tests validating YNAB (You Need A Budget) methodology compliance
-//  Tests core YNAB principles: Ready to Assign calculations, income handling, expense tracking,
+//  CRITICAL: Unit tests validating ZeroBudget (You Need A Budget) methodology compliance
+//  Tests core ZeroBudget principles: Ready to Assign calculations, income handling, expense tracking,
 //  and the fundamental rule of budgeting only money you have TODAY.
 //
 //  These tests are the most important in the suite - they ensure the app follows
-//  YNAB methodology correctly and prevents methodology violations.
+//  ZeroBudget methodology correctly and prevents methodology violations.
 //
 
 import XCTest
 import SwiftData
 @testable import ZeroBasedBudget
 
-final class YNABMethodologyTests: ZeroBasedBudgetTests {
+final class ZeroBudgetMethodologyTests: ZeroBasedBudgetTests {
 
     // MARK: - Ready to Assign Calculation Tests
 
     /// Test: Ready to Assign = Sum(startingBalance) + Sum(income) - Sum(budgeted)
-    /// YNAB Principle: Budget only money you have TODAY (starting balance + received income)
+    /// ZeroBudget Principle: Budget only money you have TODAY (starting balance + received income)
     func test_readyToAssign_calculation_usesStartingBalancePlusIncome() throws {
         // Arrange: Create accounts with starting balances
         let checking = TestDataFactory.createCheckingAccount(balance: 2000)
@@ -41,12 +41,12 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
 
         try saveContext()
 
-        // Act: Calculate Ready to Assign using YNAB formula
+        // Act: Calculate Ready to Assign using ZeroBudget formula
         let accounts = [checking, savings]
         let transactions = [income]
         let categories = [rent, groceries]
 
-        let actualReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let actualReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: accounts,
             transactions: transactions,
             categories: categories
@@ -62,7 +62,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Expenses do NOT reduce Ready to Assign (only budgeting does)
-    /// YNAB Principle: Spending reduces account balance, NOT Ready to Assign
+    /// ZeroBudget Principle: Spending reduces account balance, NOT Ready to Assign
     func test_readyToAssign_afterExpense_remainsUnchanged() throws {
         // Arrange: Setup initial state
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
@@ -71,7 +71,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         modelContext.insert(category)
 
         // Calculate initial Ready to Assign
-        let initialReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let initialReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [category]
@@ -83,7 +83,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         try saveContext()
 
         // Calculate Ready to Assign after expense
-        let afterExpenseReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let afterExpenseReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [expense],
             categories: [category]
@@ -98,16 +98,16 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
 
         // Verify the helper validates correctly
         XCTAssertTrue(
-            YNABTestHelpers.validateExpenseDoesNotReduceReadyToAssign(
+            ZeroBudgetTestHelpers.validateExpenseDoesNotReduceReadyToAssign(
                 before: initialReadyToAssign,
                 after: afterExpenseReadyToAssign
             ),
-            "YNAB validation helper should confirm expense doesn't reduce Ready to Assign"
+            "ZeroBudget validation helper should confirm expense doesn't reduce Ready to Assign"
         )
     }
 
     /// Test: Income increases Ready to Assign
-    /// YNAB Principle: New income increases money available to budget
+    /// ZeroBudget Principle: New income increases money available to budget
     func test_readyToAssign_afterIncome_increases() throws {
         // Arrange: Initial state
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
@@ -116,7 +116,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         modelContext.insert(category)
 
         // Calculate initial Ready to Assign
-        let initialReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let initialReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [category]
@@ -129,7 +129,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         try saveContext()
 
         // Calculate Ready to Assign after income
-        let afterIncomeReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let afterIncomeReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [income],
             categories: [category]
@@ -144,24 +144,24 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
 
         // Verify the helper validates correctly
         XCTAssertTrue(
-            YNABTestHelpers.validateIncomeIncreasesReadyToAssign(
+            ZeroBudgetTestHelpers.validateIncomeIncreasesReadyToAssign(
                 before: initialReadyToAssign,
                 after: afterIncomeReadyToAssign,
                 incomeAmount: incomeAmount
             ),
-            "YNAB validation helper should confirm income increases Ready to Assign"
+            "ZeroBudget validation helper should confirm income increases Ready to Assign"
         )
     }
 
     /// Test: Budgeting (assigning money to categories) reduces Ready to Assign
-    /// YNAB Principle: Assigning money gives it a job, reducing available funds
+    /// ZeroBudget Principle: Assigning money gives it a job, reducing available funds
     func test_readyToAssign_afterBudgeting_decreases() throws {
         // Arrange: Account with starting balance, no categories yet
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
         modelContext.insert(account)
 
         // Initial Ready to Assign = 1000 (no budgeted amounts)
-        let initialReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let initialReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: []
@@ -175,7 +175,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         try saveContext()
 
         // Calculate Ready to Assign after budgeting
-        let afterBudgetingReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let afterBudgetingReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [rent, groceries]
@@ -194,7 +194,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
     // MARK: - Account Balance Tests
 
     /// Test: Expenses reduce account balance (separate from Ready to Assign)
-    /// YNAB Principle: Expenses affect account balance, NOT Ready to Assign
+    /// ZeroBudget Principle: Expenses affect account balance, NOT Ready to Assign
     func test_accountBalance_afterExpense_decreasesCorrectly() throws {
         // Arrange
         let initialBalance: Decimal = 1000
@@ -226,7 +226,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Income increases account balance
-    /// YNAB Principle: Income adds to account balance AND Ready to Assign
+    /// ZeroBudget Principle: Income adds to account balance AND Ready to Assign
     func test_accountBalance_afterIncome_increasesCorrectly() throws {
         // Arrange
         let initialBalance: Decimal = 1000
@@ -252,9 +252,9 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
 
     // MARK: - Zero Budget Category Tests
 
-    /// Test: Categories can have $0 budgeted (YNAB principle: tracked but unfunded)
-    /// YNAB Principle: Track categories even if not budgeting money to them
-    func test_zeroBudgetedCategory_allowed_followsYNAB() throws {
+    /// Test: Categories can have $0 budgeted (ZeroBudget principle: tracked but unfunded)
+    /// ZeroBudget Principle: Track categories even if not budgeting money to them
+    func test_zeroBudgetedCategory_allowed_followsZeroBudget() throws {
         // Arrange & Act
         let category = TestDataFactory.createCategory(budgetedAmount: 0)
         modelContext.insert(category)
@@ -268,7 +268,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
         modelContext.insert(account)
 
-        let readyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let readyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [category]
@@ -280,14 +280,14 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
     // MARK: - Income Through Transactions Tests
 
     /// Test: Income is logged via transactions, NOT pre-budgeted
-    /// YNAB Principle: Budget money you HAVE, not money you EXPECT
-    func test_incomeThroughTransactions_notPreBudgeted_followsYNAB() throws {
+    /// ZeroBudget Principle: Budget money you HAVE, not money you EXPECT
+    func test_incomeThroughTransactions_notPreBudgeted_followsZeroBudget() throws {
         // Arrange: Account with starting balance only
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
         modelContext.insert(account)
 
         // Ready to Assign should be starting balance only
-        let beforeIncomeReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let beforeIncomeReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: []
@@ -300,7 +300,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         try saveContext()
 
         // Assert: Ready to Assign NOW includes income
-        let afterIncomeReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let afterIncomeReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [income],
             categories: []
@@ -313,8 +313,8 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Budget only available money, not future income
-    /// YNAB Principle: You can only assign money that exists TODAY
-    func test_budgetOnlyAvailableMoney_notFutureIncome_followsYNAB() throws {
+    /// ZeroBudget Principle: You can only assign money that exists TODAY
+    func test_budgetOnlyAvailableMoney_notFutureIncome_followsZeroBudget() throws {
         // Arrange: Setup with limited funds
         let account = TestDataFactory.createCheckingAccount(balance: 500)
         modelContext.insert(account)
@@ -326,7 +326,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         modelContext.insert(category2)
 
         // Act: Calculate Ready to Assign
-        let readyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let readyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [category1, category2]
@@ -344,13 +344,13 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         )
 
         // This negative value alerts user they've budgeted money they don't have
-        XCTAssertLessThan(readyToAssign, 0, "YNAB compliance: User should see they over-budgeted")
+        XCTAssertLessThan(readyToAssign, 0, "ZeroBudget compliance: User should see they over-budgeted")
     }
 
     // MARK: - Transaction-Account Link Tests
 
     /// Test: Transaction-account relationship maintains balance integrity
-    /// YNAB Principle: Transactions must properly update account balances
+    /// ZeroBudget Principle: Transactions must properly update account balances
     func test_transactionAccountLink_updatesBalance_maintainsIntegrity() throws {
         // Arrange
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
@@ -367,7 +367,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Multiple accounts total balance sums correctly
-    /// YNAB Principle: Sum of all account balances = total money available
+    /// ZeroBudget Principle: Sum of all account balances = total money available
     func test_multipleAccounts_totalBalance_sumsCorrectly() throws {
         // Arrange
         let checking = TestDataFactory.createCheckingAccount(balance: 2000)
@@ -390,7 +390,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         )
 
         // This total is the basis for Ready to Assign
-        let readyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let readyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: accounts,
             transactions: [],
             categories: []
@@ -399,7 +399,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Category spending doesn't affect Ready to Assign, only budgeting does
-    /// YNAB Principle: SPENDING from category != ASSIGNING to category
+    /// ZeroBudget Principle: SPENDING from category != ASSIGNING to category
     func test_categorySpending_doesNotAffectReadyToAssign_onlyBudgeting() throws {
         // Arrange: Setup budget
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
@@ -408,7 +408,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         modelContext.insert(category)
 
         // Initial Ready to Assign
-        let initialReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let initialReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [category]
@@ -422,7 +422,7 @@ final class YNABMethodologyTests: ZeroBasedBudgetTests {
         try saveContext()
 
         // Calculate Ready to Assign after spending
-        let afterSpendingReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let afterSpendingReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [expense1, expense2],
             categories: [category]

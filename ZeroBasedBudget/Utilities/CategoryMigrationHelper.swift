@@ -76,7 +76,7 @@ enum CategoryMigrationHelper {
             allTransactions: allTransactions
         )
 
-        // Create new monthly budget with $0 budgeted (YNAB principle)
+        // Create new monthly budget with $0 budgeted (ZeroBudget principle)
         let monthlyBudget = CategoryMonthlyBudget(
             category: category,
             month: normalizedMonth,

@@ -92,7 +92,7 @@ struct ImportResultsSheet: View {
                     .padding(.horizontal)
                 }
 
-                // YNAB reminder for category assignment
+                // ZeroBudget reminder for category assignment
                 if result.successCount > 0 {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {

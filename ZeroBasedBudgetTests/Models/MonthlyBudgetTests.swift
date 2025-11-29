@@ -5,7 +5,7 @@
 //  Created by Claude Code on 2025-11-05.
 //
 //  Unit tests for MonthlyBudget model
-//  Tests monthly budget initialization, starting balance, and YNAB principles
+//  Tests monthly budget initialization, starting balance, and ZeroBudget principles
 //
 
 import XCTest
@@ -37,7 +37,7 @@ final class MonthlyBudgetTests: ZeroBasedBudgetTests {
     // MARK: - Starting Balance Tests
 
     /// Test: Starting balance maintains Decimal precision
-    /// YNAB Principle: startingBalance represents actual money available at month start
+    /// ZeroBudget Principle: startingBalance represents actual money available at month start
     func test_startingBalance_withDecimal_maintainsPrecision() throws {
         // Arrange
         let preciseBalance = Decimal(string: "3456.78")!
@@ -49,9 +49,9 @@ final class MonthlyBudgetTests: ZeroBasedBudgetTests {
         assertDecimalEqual(budget.startingBalance, preciseBalance, accuracy: 0.001)
     }
 
-    /// Test: Starting balance allows zero (YNAB principle: start with what you have)
-    /// YNAB Principle: If you have $0, you start with $0 (no future income assumed)
-    func test_startingBalance_withZero_allowsYNABStartingPoint() throws {
+    /// Test: Starting balance allows zero (ZeroBudget principle: start with what you have)
+    /// ZeroBudget Principle: If you have $0, you start with $0 (no future income assumed)
+    func test_startingBalance_withZero_allowsZeroBudgetStartingPoint() throws {
         // Arrange & Act
         let budget = TestDataFactory.createMonthlyBudget(startingBalance: 0)
 
@@ -64,7 +64,7 @@ final class MonthlyBudgetTests: ZeroBasedBudgetTests {
     // MARK: - Month Date Tests
 
     /// Test: Month stores first day of month correctly
-    /// YNAB Principle: Budgets are organized by month
+    /// ZeroBudget Principle: Budgets are organized by month
     func test_month_storesFirstDayOfMonth_correctly() throws {
         // Arrange
         let january2024 = Date.from(year: 2024, month: 1, day: 1)

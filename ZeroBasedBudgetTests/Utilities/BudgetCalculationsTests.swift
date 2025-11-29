@@ -5,7 +5,7 @@
 //  Created by Claude Code on 2025-11-05.
 //
 //  Unit tests for BudgetCalculations utility
-//  Tests date calculations, transaction filtering, spending aggregation, and YNAB calculations
+//  Tests date calculations, transaction filtering, spending aggregation, and ZeroBudget calculations
 //
 
 import XCTest

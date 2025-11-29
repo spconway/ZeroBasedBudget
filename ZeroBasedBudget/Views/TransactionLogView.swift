@@ -164,7 +164,7 @@ struct TransactionLogView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Quick Assign reminder section (YNAB Enhancement 2.2)
+                // Quick Assign reminder section (ZeroBudget Enhancement 2.2)
                 if hasIncomeTransactions {
                     Section {
                         Button(action: {
@@ -449,7 +449,7 @@ struct TransactionRow: View {
 
             // Second row: Category badge and Net Worth
             HStack(spacing: 8) {
-                // Category badge (income shows "Ready to Assign" per YNAB)
+                // Category badge (income shows "Ready to Assign" per ZeroBudget)
                 HStack(spacing: 4) {
                     Circle()
                         .fill(transaction.type == .income
@@ -487,7 +487,7 @@ struct TransactionRow: View {
     private var accessibilityLabel: String {
         let typeLabel = transaction.type == .income ? "Income" : "Expense"
         let amountText = CurrencyFormatHelpers.formatCurrency(transaction.amount, currencyCode: currencyCode, numberFormat: numberFormat)
-        // Income goes to "Ready to Assign" per YNAB, expenses have categories
+        // Income goes to "Ready to Assign" per ZeroBudget, expenses have categories
         let categoryText = transaction.type == .income
             ? "Ready to Assign"
             : (transaction.category?.name ?? "Uncategorized")
@@ -528,7 +528,7 @@ struct AddTransactionSheet: View {
             .trimmingCharacters(in: .whitespaces)) ?? 0
     }
 
-    // YNAB: Income doesn't require category (flows to Ready to Assign)
+    // ZeroBudget: Income doesn't require category (flows to Ready to Assign)
     private var isValid: Bool {
         !description.trimmingCharacters(in: .whitespaces).isEmpty &&
         amount > 0 &&
@@ -595,7 +595,7 @@ struct AddTransactionSheet: View {
                         .foregroundStyle(colors.textSecondary)
                 }
 
-                // YNAB: Only expenses require category selection
+                // ZeroBudget: Only expenses require category selection
                 if transactionType == .expense {
                     Section {
                         Picker("Category", selection: $selectedCategory) {
@@ -762,7 +762,7 @@ struct EditTransactionSheet: View {
         Decimal(string: amountText.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: "$", with: "").trimmingCharacters(in: .whitespaces)) ?? 0
     }
 
-    // YNAB: Income doesn't require category (flows to Ready to Assign)
+    // ZeroBudget: Income doesn't require category (flows to Ready to Assign)
     private var isValid: Bool {
         !description.trimmingCharacters(in: .whitespaces).isEmpty &&
         amount > 0 &&
@@ -829,7 +829,7 @@ struct EditTransactionSheet: View {
                         .foregroundStyle(colors.textSecondary)
                 }
 
-                // YNAB: Only expenses require category selection
+                // ZeroBudget: Only expenses require category selection
                 if transactionType == .expense {
                     Section {
                         Picker("Category", selection: $selectedCategory) {

@@ -37,8 +37,8 @@ final class BudgetCategoryTests: ZeroBasedBudgetTests {
     // MARK: - Budgeted Amount Tests
 
     /// Test: Category allows zero budgeted amount
-    /// YNAB Principle: Categories can have $0 (tracked but unfunded)
-    func test_budgetedAmount_withZero_allowsYNABPrinciple() throws {
+    /// ZeroBudget Principle: Categories can have $0 (tracked but unfunded)
+    func test_budgetedAmount_withZero_allowsZeroBudgetPrinciple() throws {
         // Arrange & Act
         let category = TestDataFactory.createCategory(budgetedAmount: 0)
 

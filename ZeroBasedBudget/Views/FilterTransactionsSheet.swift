@@ -113,7 +113,7 @@ struct FilterTransactionsSheet: View {
                         .tracking(0.8)
                         .foregroundStyle(colors.textSecondary)
                 } footer: {
-                    Text("'Uncategorized' shows expense transactions without a category. Income transactions are excluded as they flow to 'Ready to Assign' per YNAB principles.")
+                    Text("'Uncategorized' shows expense transactions without a category. Income transactions are excluded as they flow to 'Ready to Assign' per ZeroBudget principles.")
                         .foregroundStyle(colors.textSecondary)
                 }
 

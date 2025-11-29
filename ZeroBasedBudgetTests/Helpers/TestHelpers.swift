@@ -149,7 +149,7 @@ enum TestScenarios {
         )
     }
 
-    /// Create simple YNAB scenario for testing Ready to Assign calculations
+    /// Create simple ZeroBudget scenario for testing Ready to Assign calculations
     ///
     /// Scenario:
     /// - 1 account: Checking ($1000)
@@ -159,7 +159,7 @@ enum TestScenarios {
     ///
     /// - Parameter context: ModelContext to insert data into
     /// - Returns: Tuple of (account, categories, readyToAssign)
-    static func createYNABScenario(
+    static func createZeroBudgetScenario(
         in context: ModelContext
     ) throws -> (account: Account, categories: [BudgetCategory], expectedReadyToAssign: Decimal) {
 
@@ -210,7 +210,7 @@ enum TestScenarios {
         let creditCard = TestDataFactory.createCreditCardAccount(balance: -5000.00)
         context.insert(creditCard)
 
-        // Category with zero budget (YNAB principle: tracked but unfunded)
+        // Category with zero budget (ZeroBudget principle: tracked but unfunded)
         let unfundedCategory = TestDataFactory.createCategory(
             name: "Unfunded Category",
             budgetedAmount: 0
@@ -258,12 +258,12 @@ extension ModelContext {
     }
 }
 
-// MARK: - YNAB Methodology Testing Helpers
+// MARK: - ZeroBudget Methodology Testing Helpers
 
-/// Helpers for validating YNAB methodology compliance
-enum YNABTestHelpers {
+/// Helpers for validating ZeroBudget methodology compliance
+enum ZeroBudgetTestHelpers {
 
-    /// Calculate expected Ready to Assign amount following YNAB rules
+    /// Calculate expected Ready to Assign amount following ZeroBudget rules
     ///
     /// Formula: Sum(account.startingBalance) + Sum(income transactions) - Sum(category.budgetedAmount)
     ///
@@ -288,11 +288,11 @@ enum YNABTestHelpers {
         // Sum of budgeted amounts (money assigned to categories)
         let totalBudgeted = categories.reduce(Decimal(0)) { $0 + $1.budgetedAmount }
 
-        // YNAB Formula: Available money = Starting money + Income - Budgeted
+        // ZeroBudget Formula: Available money = Starting money + Income - Budgeted
         return totalStartingBalance + totalIncome - totalBudgeted
     }
 
-    /// Validate YNAB principle: Expenses don't reduce Ready to Assign
+    /// Validate ZeroBudget principle: Expenses don't reduce Ready to Assign
     ///
     /// Only budgeting reduces Ready to Assign, not spending.
     /// Spending reduces account balances and category available amounts.
@@ -300,7 +300,7 @@ enum YNABTestHelpers {
     /// - Parameters:
     ///   - readyToAssignBefore: Ready to Assign before expense
     ///   - readyToAssignAfter: Ready to Assign after expense
-    /// - Returns: True if amounts are equal (YNAB compliant)
+    /// - Returns: True if amounts are equal (ZeroBudget compliant)
     static func validateExpenseDoesNotReduceReadyToAssign(
         before: Decimal,
         after: Decimal
@@ -308,13 +308,13 @@ enum YNABTestHelpers {
         abs(before - after) < 0.01 // Should be equal within precision
     }
 
-    /// Validate YNAB principle: Income increases Ready to Assign
+    /// Validate ZeroBudget principle: Income increases Ready to Assign
     ///
     /// - Parameters:
     ///   - readyToAssignBefore: Ready to Assign before income
     ///   - readyToAssignAfter: Ready to Assign after income
     ///   - incomeAmount: Amount of income transaction
-    /// - Returns: True if increase matches income amount (YNAB compliant)
+    /// - Returns: True if increase matches income amount (ZeroBudget compliant)
     static func validateIncomeIncreasesReadyToAssign(
         before: Decimal,
         after: Decimal,

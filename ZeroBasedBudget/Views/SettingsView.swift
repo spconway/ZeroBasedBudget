@@ -33,7 +33,7 @@ struct SettingsView: View {
     @Query private var monthlyBudgets: [MonthlyBudget]
 
     @State private var showingClearDataAlert = false
-    @State private var showingYNABMethodology = false
+    @State private var showingZeroBudgetMethodology = false
     @State private var showingExportCSV = false
     @State private var showingExportJSON = false
     @State private var showingImportPicker = false
@@ -114,8 +114,8 @@ struct SettingsView: View {
             } message: {
                 Text("This will permanently delete all accounts, categories, transactions, and budgets. This action cannot be undone.")
             }
-            .sheet(isPresented: $showingYNABMethodology) {
-                ynabMethodologySheet
+            .sheet(isPresented: $showingZeroBudgetMethodology) {
+                ZeroBudgetMethodologySheet
             }
             .sheet(isPresented: $showingExportCSV) {
                 if let data = csvExportData {
@@ -482,11 +482,11 @@ struct SettingsView: View {
                     .foregroundStyle(colors.textSecondary)
             }
 
-            // YNAB Methodology
+            // ZeroBudget Methodology
             Button {
-                showingYNABMethodology = true
+                showingZeroBudgetMethodology = true
             } label: {
-                Label("YNAB Methodology", systemImage: "book")
+                Label("ZeroBudget Methodology", systemImage: "book")
             }
 
             // Privacy
@@ -513,11 +513,11 @@ struct SettingsView: View {
         }
     }
 
-    private var ynabMethodologySheet: some View {
+    private var ZeroBudgetMethodologySheet: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    Text("YNAB METHODOLOGY")
+                    Text("ZeroBudget METHODOLOGY")
                         .font(.system(size: 24, weight: .semibold))
                         .tracking(1.0)
                         .foregroundStyle(colors.textPrimary)
@@ -558,7 +558,7 @@ struct SettingsView: View {
                             .font(.system(size: 15, weight: .regular))
                     }
 
-                    Text("This app follows YNAB principles by tracking real account balances and helping you assign every dollar a specific job.")
+                    Text("This app follows ZeroBudget principles by tracking real account balances and helping you assign every dollar a specific job.")
                         .font(.system(size: 14, weight: .regular))
                         .foregroundStyle(colors.textSecondary)
                         .padding(.top, 8)
@@ -566,14 +566,14 @@ struct SettingsView: View {
                 .padding()
             }
             .background(colors.background)
-            .navigationTitle("YNAB Methodology")
+            .navigationTitle("ZeroBudget Methodology")
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(colors.surface, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
-                        showingYNABMethodology = false
+                        showingZeroBudgetMethodology = false
                     }
                 }
             }

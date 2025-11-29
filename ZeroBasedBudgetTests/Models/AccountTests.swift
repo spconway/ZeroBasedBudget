@@ -5,7 +5,7 @@
 //  Created by Claude Code on 2025-11-05.
 //
 //  Unit tests for Account model
-//  Tests account initialization, balance tracking, relationships, and YNAB principles
+//  Tests account initialization, balance tracking, relationships, and ZeroBudget principles
 //
 
 import XCTest
@@ -34,7 +34,7 @@ final class AccountTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Account initializes with zero balance correctly
-    /// YNAB Principle: Accounts can start with $0 (new account, empty wallet, etc.)
+    /// ZeroBudget Principle: Accounts can start with $0 (new account, empty wallet, etc.)
     func test_accountInitialization_withZeroBalance_setsStartingBalanceToZero() throws {
         // Arrange & Act
         let account = TestDataFactory.createAccount(balance: 0)
@@ -45,7 +45,7 @@ final class AccountTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Account allows negative balance for credit cards
-    /// YNAB Principle: Credit card debt is represented as negative account balance
+    /// ZeroBudget Principle: Credit card debt is represented as negative account balance
     func test_accountInitialization_withNegativeBalance_allowsNegativeForCreditCards() throws {
         // Arrange & Act
         let creditCard = TestDataFactory.createCreditCardAccount(balance: -1500.00)
@@ -59,7 +59,7 @@ final class AccountTests: ZeroBasedBudgetTests {
     // MARK: - Starting Balance Tests
 
     /// Test: Starting balance matches initial balance after initialization
-    /// YNAB Principle: startingBalance is used for Ready to Assign calculation
+    /// ZeroBudget Principle: startingBalance is used for Ready to Assign calculation
     func test_startingBalance_afterInitialization_matchesInitialBalance() throws {
         // Arrange
         let initialBalance: Decimal = 2500.75

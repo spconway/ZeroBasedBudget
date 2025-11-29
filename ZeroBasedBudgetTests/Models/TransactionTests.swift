@@ -62,7 +62,7 @@ final class TransactionTests: ZeroBasedBudgetTests {
     // MARK: - Transaction Type Tests
 
     /// Test: Income transaction is created correctly
-    /// YNAB Principle: Income increases Ready to Assign
+    /// ZeroBudget Principle: Income increases Ready to Assign
     func test_transactionType_income_createdCorrectly() throws {
         // Arrange & Act
         let income = TestDataFactory.createIncome(
@@ -77,7 +77,7 @@ final class TransactionTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Expense transaction is created correctly
-    /// YNAB Principle: Expenses reduce account balance, not Ready to Assign
+    /// ZeroBudget Principle: Expenses reduce account balance, not Ready to Assign
     func test_transactionType_expense_createdCorrectly() throws {
         // Arrange
         let category = TestDataFactory.createCategory(name: "Groceries")
@@ -143,7 +143,7 @@ final class TransactionTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Transaction links to account correctly
-    /// YNAB Principle: Transactions update account balances
+    /// ZeroBudget Principle: Transactions update account balances
     func test_accountRelationship_whenSet_linksCorrectly() throws {
         // Arrange
         let account = TestDataFactory.createCheckingAccount(balance: 1000)

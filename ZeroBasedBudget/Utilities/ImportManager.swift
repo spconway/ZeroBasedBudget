@@ -442,7 +442,7 @@ class ImportManager {
                 amount: finalAmount,
                 description: description,
                 type: finalType,
-                category: nil, // User must assign category later (YNAB principle)
+                category: nil, // User must assign category later (ZeroBudget principle)
                 account: selectedAccount
             )
 

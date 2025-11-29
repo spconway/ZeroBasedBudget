@@ -16,7 +16,7 @@ final class BudgetCategory {
     var categoryType: String  // "Fixed", "Variable", "Quarterly", "Income"
     var colorHex: String
     var dueDate: Date?  // DEPRECATED: Kept for backward compatibility. Use dueDayOfMonth instead.
-    var dueDayOfMonth: Int?  // Day of month (1-31) for YNAB-style recurring due dates
+    var dueDayOfMonth: Int?  // Day of month (1-31) for ZeroBudget-style recurring due dates
     var notificationID: UUID  // UUID for notification tracking
     var isLastDayOfMonth: Bool  // If true, due date is always last day of current month
 

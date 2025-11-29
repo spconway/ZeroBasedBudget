@@ -10,7 +10,7 @@ import SwiftData
 
 /// Main view for managing financial accounts
 ///
-/// YNAB Principle: Accounts represent real money that exists today.
+/// ZeroBudget Principle: Accounts represent real money that exists today.
 /// The sum of all account balances = total money available to budget.
 struct AccountsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -68,7 +68,7 @@ struct AccountsView: View {
                             .font(.title2.bold())
                             .foregroundStyle(colors.textPrimary)
 
-                        Text("Add your first account to start budgeting with the YNAB method.")
+                        Text("Add your first account to start budgeting with the ZeroBudget method.")
                             .font(.body)
                             .foregroundStyle(colors.textSecondary)
                             .multilineTextAlignment(.center)

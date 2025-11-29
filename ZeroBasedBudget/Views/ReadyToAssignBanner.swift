@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Refined banner showing Ready to Assign amount with minimalist styling
 ///
-/// YNAB Principle: Ready to Assign = Total money in accounts - Money assigned to categories
+/// ZeroBudget Principle: Ready to Assign = Total money in accounts - Money assigned to categories
 /// Goal: Get this to $0 (all money has been given a job)
 struct ReadyToAssignBanner: View {
     @Environment(\.themeColors) private var colors

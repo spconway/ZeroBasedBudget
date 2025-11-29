@@ -130,7 +130,7 @@ final class ValidationHelpersTests: ZeroBasedBudgetTests {
     }
 
     /// Test: Zero amount is valid for isValidNonNegativeAmount
-    /// YNAB Principle: Categories can have $0 budgeted
+    /// ZeroBudget Principle: Categories can have $0 budgeted
     func test_isValidNonNegativeAmount_withZero_returnsTrue() throws {
         // Arrange
         let zero: Decimal = 0
@@ -139,7 +139,7 @@ final class ValidationHelpersTests: ZeroBasedBudgetTests {
         let isValid = ValidationHelpers.isValidNonNegativeAmount(zero)
 
         // Assert
-        XCTAssertTrue(isValid, "Zero should be valid for non-negative amount (YNAB principle)")
+        XCTAssertTrue(isValid, "Zero should be valid for non-negative amount (ZeroBudget principle)")
     }
 
     /// Test: Reasonable amount is within valid range

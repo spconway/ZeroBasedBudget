@@ -16,7 +16,7 @@ struct BudgetPlanningView: View {
     @Query private var allTransactions: [Transaction]
     @Query private var allMonthlyBudgets: [MonthlyBudget]
     @Query private var allCategoryMonthlyBudgets: [CategoryMonthlyBudget]
-    @Query private var allAccounts: [Account]  // NEW: Query accounts for YNAB-style budgeting
+    @Query private var allAccounts: [Account]  // NEW: Query accounts for ZeroBudget-style budgeting
     @Query(sort: \CategoryGroup.sortOrder) private var categoryGroups: [CategoryGroup]
     @Query private var settings: [AppSettings]
 
@@ -143,9 +143,9 @@ struct BudgetPlanningView: View {
         return monthlyBudget.totalAvailable(actualSpent: actualSpent)
     }
 
-    // MARK: - YNAB-Style Computed Properties
+    // MARK: - ZeroBudget-Style Computed Properties
 
-    // NEW: Total balance across all accounts (source of truth for YNAB budgeting)
+    // NEW: Total balance across all accounts (source of truth for ZeroBudget budgeting)
     private var totalAccountBalances: Decimal {
         allAccounts.reduce(0) { $0 + $1.balance }
     }
@@ -165,7 +165,7 @@ struct BudgetPlanningView: View {
             .reduce(0) { $0 + $1.budgetedAmount }
     }
 
-    // Ready to Assign calculation using YNAB methodology
+    // Ready to Assign calculation using ZeroBudget methodology
     // Formula: (Current Account Balances + Total Expenses) - Total Budgeted
     // Equivalent to: (Starting Balance + Income) - Total Budgeted
     //
@@ -544,7 +544,7 @@ struct BudgetPlanningView: View {
             .sheet(item: $editingGroup) { group in
                 EditCategoryGroupSheet(group: group)
             }
-            .alert("Ready to Assign - YNAB Methodology", isPresented: $showingReadyToAssignInfo) {
+            .alert("Ready to Assign - ZeroBudget Methodology", isPresented: $showingReadyToAssignInfo) {
                 Button("Got It", role: .cancel) { }
             } message: {
                 Text("""
@@ -554,7 +554,7 @@ struct BudgetPlanningView: View {
                 • When income arrives, log it as a transaction - it will increase your Ready to Assign
                 • Your goal: Assign all money until Ready to Assign = $0
 
-                This is the core of YNAB budgeting: Give every dollar a job!
+                This is the core of ZeroBudget budgeting: Give every dollar a job!
                 """)
             }
             .alert("Unassigned Money", isPresented: $showingMonthSwitchAlert) {

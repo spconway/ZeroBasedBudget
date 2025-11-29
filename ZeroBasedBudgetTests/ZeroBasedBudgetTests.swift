@@ -245,15 +245,15 @@ class ZeroBasedBudgetTests: XCTestCase {
         assertDecimalPositive(account.balance)
     }
 
-    /// Sample YNAB test to verify methodology validation works
-    func testYNAB_readyToAssign_calculatesCorrectly() throws {
-        // Arrange: Create YNAB scenario
-        let (account, categories, expectedReadyToAssign) = try TestScenarios.createYNABScenario(in: modelContext)
+    /// Sample ZeroBudget test to verify methodology validation works
+    func testZeroBudget_readyToAssign_calculatesCorrectly() throws {
+        // Arrange: Create ZeroBudget scenario
+        let (account, categories, expectedReadyToAssign) = try TestScenarios.createZeroBudgetScenario(in: modelContext)
 
         // Act: Calculate Ready to Assign
         let accounts = [account]
         let transactions: [Transaction] = [] // No income yet
-        let actualReadyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let actualReadyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: accounts,
             transactions: transactions,
             categories: categories

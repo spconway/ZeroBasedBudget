@@ -10,7 +10,7 @@
 //  to save tokens while developing. Use these tests instead of the full 140-test
 //  suite for UI changes, minor bug fixes, and documentation updates.
 //
-//  Coverage: Models, YNAB calculations, themes, persistence, validation
+//  Coverage: Models, ZeroBudget calculations, themes, persistence, validation
 //
 //  Usage:
 //  xcodebuild test -scheme ZeroBasedBudget -only-testing:ZeroBasedBudgetTests/SmokeTests -destination 'platform=iOS Simulator,name=iPhone 17'
@@ -75,7 +75,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
         XCTAssertEqual(settings.currencyCode, "USD")
     }
 
-    // MARK: - YNAB Calculation Smoke Tests (4 tests)
+    // MARK: - ZeroBudget Calculation Smoke Tests (4 tests)
 
     /// Smoke test: Ready to Assign calculates correctly
     func testSmoke_readyToAssign_calculatesCorrectly() throws {
@@ -84,7 +84,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
         modelContext.insert(account)
         modelContext.insert(category)
 
-        let readyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let readyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [category]
@@ -98,7 +98,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
         let account = TestDataFactory.createCheckingAccount(balance: 1000)
         modelContext.insert(account)
 
-        let beforeIncome = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let beforeIncome = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: []
@@ -107,14 +107,14 @@ final class SmokeTests: ZeroBasedBudgetTests {
         let income = TestDataFactory.createIncome(amount: 500, account: account)
         modelContext.insert(income)
 
-        let afterIncome = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let afterIncome = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [income],
             categories: []
         )
 
         XCTAssertTrue(
-            YNABTestHelpers.validateIncomeIncreasesReadyToAssign(
+            ZeroBudgetTestHelpers.validateIncomeIncreasesReadyToAssign(
                 before: beforeIncome,
                 after: afterIncome,
                 incomeAmount: 500
@@ -129,7 +129,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
         modelContext.insert(account)
         modelContext.insert(category)
 
-        let beforeExpense = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let beforeExpense = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [],
             categories: [category]
@@ -138,14 +138,14 @@ final class SmokeTests: ZeroBasedBudgetTests {
         let expense = TestDataFactory.createExpense(amount: 100, category: category, account: account)
         modelContext.insert(expense)
 
-        let afterExpense = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let afterExpense = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [expense],
             categories: [category]
         )
 
         XCTAssertTrue(
-            YNABTestHelpers.validateExpenseDoesNotReduceReadyToAssign(
+            ZeroBudgetTestHelpers.validateExpenseDoesNotReduceReadyToAssign(
                 before: beforeExpense,
                 after: afterExpense
             )
@@ -167,7 +167,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
     // MARK: - Theme Manager Smoke Tests
     // Note: Theme manager tests removed due to @MainActor isolation requirements
     // Theme functionality is covered by ThemeManagerTests.swift (26 tests)
-    // Smoke tests focus on core models, YNAB calculations, and persistence
+    // Smoke tests focus on core models, ZeroBudget calculations, and persistence
 
     // MARK: - SwiftData Persistence Smoke Tests (4 tests)
 
@@ -223,7 +223,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
 
     // MARK: - Validation Smoke Tests (2 tests)
 
-    /// Smoke test: Categories allow zero budget (YNAB principle)
+    /// Smoke test: Categories allow zero budget (ZeroBudget principle)
     func testSmoke_validation_categoriesAllowZeroBudget() throws {
         let category = TestDataFactory.createCategory(budgetedAmount: 0)
         modelContext.insert(category)
@@ -245,8 +245,8 @@ final class SmokeTests: ZeroBasedBudgetTests {
 
     // MARK: - Integration Smoke Test (1 test)
 
-    /// Smoke test: Complete YNAB workflow works
-    func testSmoke_integration_completeYNABWorkflow() throws {
+    /// Smoke test: Complete ZeroBudget workflow works
+    func testSmoke_integration_completeZeroBudgetWorkflow() throws {
         // Create account with starting balance
         let account = TestDataFactory.createCheckingAccount(balance: 2000)
         modelContext.insert(account)
@@ -268,7 +268,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
         try saveContext()
 
         // Verify Ready to Assign
-        let readyToAssign = YNABTestHelpers.calculateExpectedReadyToAssign(
+        let readyToAssign = ZeroBudgetTestHelpers.calculateExpectedReadyToAssign(
             accounts: [account],
             transactions: [income, expense],
             categories: [rent, groceries]
@@ -279,7 +279,7 @@ final class SmokeTests: ZeroBasedBudgetTests {
 
         // Verify account balance reflects expense (not income, since income is just budgetable)
         // Account balance logic: startingBalance + all transactions applied
-        // Note: In YNAB, account balance is separate from Ready to Assign
+        // Note: In ZeroBudget, account balance is separate from Ready to Assign
         XCTAssertEqual(account.transactions.count, 2)
     }
 }

@@ -10,7 +10,7 @@ import SwiftData
 
 /// Represents a real-world financial account (checking, savings, cash, credit card)
 ///
-/// YNAB Principle: Accounts represent actual money that exists TODAY.
+/// ZeroBudget Principle: Accounts represent actual money that exists TODAY.
 /// The sum of all account balances = total money available to budget.
 @Model
 final class Account {

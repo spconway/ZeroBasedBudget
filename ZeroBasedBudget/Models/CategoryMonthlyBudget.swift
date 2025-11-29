@@ -3,14 +3,14 @@
 //  ZeroBasedBudget
 //
 //  Created by Claude on 11/16/25.
-//  YNAB-style monthly budget tracking per category
+//  ZeroBudget-style monthly budget tracking per category
 //
 
 import Foundation
 import SwiftData
 
 /// Tracks budget data for a specific category in a specific month
-/// This model implements YNAB's carry-forward methodology where:
+/// This model implements ZeroBudget's carry-forward methodology where:
 /// - Budgeted amounts reset to $0 each month (fresh budgeting decision)
 /// - Available balances carry forward from previous months
 /// - Formula: Available = (Previous Available) + (This Month Budgeted) - (This Month Spent)
@@ -23,7 +23,7 @@ final class CategoryMonthlyBudget {
     var month: Date
 
     /// Amount budgeted for this category THIS month only
-    /// Resets to $0 when navigating to a new month (YNAB principle)
+    /// Resets to $0 when navigating to a new month (ZeroBudget principle)
     var budgetedAmount: Decimal
 
     /// Available balance carried forward from the previous month

@@ -36,7 +36,7 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Tab 0: Accounts (NEW - YNAB-style account tracking)
+            // Tab 0: Accounts (NEW - ZeroBudget-style account tracking)
             AccountsView()
                 .tabItem {
                     Label("Accounts", systemImage: "banknote")
